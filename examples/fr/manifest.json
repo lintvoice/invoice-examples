@@ -1,0 +1,1521 @@
+{
+  "generator": "invoice-examples 0.1.0",
+  "target": "fr",
+  "syntax": "CII",
+  "profile": "Factur-X EN 16931",
+  "rules": {
+    "EN 16931": "1.3.17 (CII)",
+    "Factur-X": "1.09.2, EN 16931 profile",
+    "BR-FR": "1.4.0.04 (France_RFE, FNFE-MPE)"
+  },
+  "licence": "CC0-1.0",
+  "examples": [
+    {
+      "id": "valid",
+      "status": "valid",
+      "fires": [],
+      "files": {
+        "xml": "valid.xml",
+        "pdf": "valid.pdf"
+      },
+      "description": {
+        "en": "Passes every rule listed.",
+        "fr": "Passe toutes les règles listées."
+      }
+    },
+    {
+      "id": "BR-FR-01",
+      "status": "invalid",
+      "rule": "BR-FR-01",
+      "fires": [
+        "BR-FR-01_BT-1"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-01.xml",
+        "pdf": "invalid/BR-FR-01.pdf"
+      },
+      "description": {
+        "en": "The invoice number (BT-1) is longer than 35 characters.",
+        "fr": "Le numéro de facture (BT-1) dépasse 35 caractères."
+      }
+    },
+    {
+      "id": "BR-FR-02",
+      "status": "invalid",
+      "rule": "BR-FR-02",
+      "fires": [
+        "BR-FR-02_BT-1"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-02.xml",
+        "pdf": "invalid/BR-FR-02.pdf"
+      },
+      "description": {
+        "en": "The invoice number (BT-1) contains a character outside letters, digits and + - _ /.",
+        "fr": "Le numéro de facture (BT-1) contient un caractère autre que lettres, chiffres et + - _ /."
+      }
+    },
+    {
+      "id": "BR-FR-03",
+      "status": "invalid",
+      "rule": "BR-FR-03",
+      "fires": [
+        "BR-FR-03_BT-2"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-03.xml",
+        "pdf": "invalid/BR-FR-03.pdf"
+      },
+      "description": {
+        "en": "The issue date (BT-2) has a year outside 2000-2099.",
+        "fr": "La date d'émission (BT-2) a une année hors de 2000-2099."
+      }
+    },
+    {
+      "id": "BR-FR-04",
+      "status": "invalid",
+      "rule": "BR-FR-04",
+      "fires": [
+        "BR-FR-04_BT-3"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-04.xml",
+        "pdf": "invalid/BR-FR-04.pdf"
+      },
+      "description": {
+        "en": "The document type code (BT-3) is 326 (partial invoice), valid in EN 16931 but not in the French list.",
+        "fr": "Le code type de document (BT-3) est 326 (facture partielle), valide en EN 16931 mais absent de la liste française."
+      }
+    },
+    {
+      "id": "BR-FR-05-PMT",
+      "status": "invalid",
+      "rule": "BR-FR-05",
+      "fires": [
+        "BR-FR-05_BT-22_PMT"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-05-PMT.xml",
+        "pdf": "invalid/BR-FR-05-PMT.pdf"
+      },
+      "description": {
+        "en": "The note about the fixed recovery fee (subject code PMT) is missing.",
+        "fr": "La mention de l'indemnité forfaitaire pour frais de recouvrement (code PMT) est absente."
+      }
+    },
+    {
+      "id": "BR-FR-05-PMD",
+      "status": "invalid",
+      "rule": "BR-FR-05",
+      "fires": [
+        "BR-FR-05_BT-22_PMD"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-05-PMD.xml",
+        "pdf": "invalid/BR-FR-05-PMD.pdf"
+      },
+      "description": {
+        "en": "The note about late payment penalties (subject code PMD) is missing.",
+        "fr": "La mention des pénalités de retard (code PMD) est absente."
+      }
+    },
+    {
+      "id": "BR-FR-05-AAB",
+      "status": "invalid",
+      "rule": "BR-FR-05",
+      "fires": [
+        "BR-FR-05_BT-22_AAB"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-05-AAB.xml",
+        "pdf": "invalid/BR-FR-05-AAB.pdf"
+      },
+      "description": {
+        "en": "The note about early payment discount (subject code AAB) is missing.",
+        "fr": "La mention relative à l'escompte (code AAB) est absente."
+      }
+    },
+    {
+      "id": "BR-FR-06",
+      "status": "invalid",
+      "rule": "BR-FR-06",
+      "fires": [
+        "BR-FR-06_BT-21_PMT"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-06.xml",
+        "pdf": "invalid/BR-FR-06.pdf"
+      },
+      "description": {
+        "en": "Two notes have the subject code PMT.",
+        "fr": "Deux mentions ont le code sujet PMT."
+      }
+    },
+    {
+      "id": "BR-FR-08",
+      "status": "invalid",
+      "rule": "BR-FR-08",
+      "fires": [
+        "BR-FR-08_BT-23"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-08.xml",
+        "pdf": "invalid/BR-FR-08.pdf"
+      },
+      "description": {
+        "en": "The billing framework (BT-23, cadre de facturation) is missing.",
+        "fr": "Le cadre de facturation (BT-23) est absent."
+      }
+    },
+    {
+      "id": "BR-FR-09",
+      "status": "invalid",
+      "rule": "BR-FR-09",
+      "fires": [
+        "BR-FR-09_BT-29"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-09.xml",
+        "pdf": "invalid/BR-FR-09.pdf"
+      },
+      "description": {
+        "en": "The seller's SIRET (BT-29) does not start with its SIREN (BT-30).",
+        "fr": "Le SIRET du vendeur (BT-29) ne commence pas par son SIREN (BT-30)."
+      }
+    },
+    {
+      "id": "BR-FR-10",
+      "status": "invalid",
+      "rule": "BR-FR-10",
+      "fires": [
+        "BR-FR-10_BT-30"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-10.xml",
+        "pdf": "invalid/BR-FR-10.pdf"
+      },
+      "description": {
+        "en": "The seller's SIREN (BT-30) is missing (and so is its SIRET, BT-29).",
+        "fr": "Le SIREN du vendeur (BT-30) est absent (son SIRET, BT-29, aussi)."
+      }
+    },
+    {
+      "id": "BR-FR-11",
+      "status": "invalid",
+      "rule": "BR-FR-11",
+      "fires": [
+        "BR-FR-11_BT-47"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-11.xml",
+        "pdf": "invalid/BR-FR-11.pdf"
+      },
+      "description": {
+        "en": "The invoice is B2B (note BAR = B2B) but the buyer's SIREN (BT-47) is missing.",
+        "fr": "La facture est B2B (mention BAR = B2B) mais le SIREN de l'acheteur (BT-47) est absent."
+      }
+    },
+    {
+      "id": "BR-FR-12",
+      "status": "invalid",
+      "rule": "BR-FR-12",
+      "fires": [
+        "BR-FR-12_BT-49"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-12.xml",
+        "pdf": "invalid/BR-FR-12.pdf"
+      },
+      "description": {
+        "en": "The buyer's electronic address (BT-49) is missing.",
+        "fr": "L'adresse électronique de l'acheteur (BT-49) est absente."
+      }
+    },
+    {
+      "id": "BR-FR-13",
+      "status": "invalid",
+      "rule": "BR-FR-13",
+      "fires": [
+        "BR-FR-13_BT-34"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-13.xml",
+        "pdf": "invalid/BR-FR-13.pdf"
+      },
+      "description": {
+        "en": "The seller's electronic address (BT-34) is missing.",
+        "fr": "L'adresse électronique du vendeur (BT-34) est absente."
+      }
+    },
+    {
+      "id": "BR-FR-16",
+      "status": "invalid",
+      "rule": "BR-FR-16",
+      "fires": [
+        "BR-FR-16_BT-119",
+        "BR-FR-16_BT-152"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-16.xml",
+        "pdf": "invalid/BR-FR-16.pdf"
+      },
+      "description": {
+        "en": "The VAT rate is 21 %, which is not a French rate (lines BT-152 and breakdown BT-119).",
+        "fr": "Le taux de TVA est 21 %, qui n'est pas un taux français (lignes BT-152 et ventilation BT-119)."
+      }
+    },
+    {
+      "id": "BR-FR-17",
+      "status": "invalid",
+      "rule": "BR-FR-17",
+      "fires": [
+        "BR-FR-17_BT-123"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-17.xml",
+        "pdf": "invalid/BR-FR-17.pdf"
+      },
+      "description": {
+        "en": "An attachment (BT-123) is qualified with a code outside the French list.",
+        "fr": "Une pièce jointe (BT-123) est qualifiée par un code hors de la liste française."
+      }
+    },
+    {
+      "id": "BR-FR-18",
+      "status": "invalid",
+      "rule": "BR-FR-18",
+      "fires": [
+        "BR-FR-18_BT-123"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-18.xml",
+        "pdf": "invalid/BR-FR-18.pdf"
+      },
+      "description": {
+        "en": "Two attachments are described as LISIBLE (BT-123): only one readable copy is allowed.",
+        "fr": "Deux pièces jointes sont décrites LISIBLE (BT-123) : une seule version lisible est permise."
+      }
+    },
+    {
+      "id": "BR-FR-20",
+      "status": "invalid",
+      "rule": "BR-FR-20",
+      "fires": [
+        "BR-FR-20_BT-21"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-20.xml",
+        "pdf": "invalid/BR-FR-20.pdf"
+      },
+      "description": {
+        "en": "The note BAR (BT-21) has a value outside B2B, B2BINT, B2C, B2CINT, OUTOFSCOPE, ARCHIVEONLY.",
+        "fr": "La mention BAR (BT-21) a une valeur hors de B2B, B2BINT, B2C, B2CINT, OUTOFSCOPE, ARCHIVEONLY."
+      }
+    },
+    {
+      "id": "BR-FR-21",
+      "status": "invalid",
+      "rule": "BR-FR-21",
+      "fires": [
+        "BR-FR-21_BT-49"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-21.xml",
+        "pdf": "invalid/BR-FR-21.pdf"
+      },
+      "description": {
+        "en": "The invoice is B2B but the buyer's electronic address (BT-49) does not start with its SIREN.",
+        "fr": "La facture est B2B mais l'adresse électronique de l'acheteur (BT-49) ne commence pas par son SIREN."
+      }
+    },
+    {
+      "id": "BR-FR-23",
+      "status": "invalid",
+      "rule": "BR-FR-23",
+      "fires": [
+        "BR-FR-23_BT-34"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-23.xml",
+        "pdf": "invalid/BR-FR-23.pdf"
+      },
+      "description": {
+        "en": "The seller's electronic address (BT-34) contains a character outside letters, digits and - _ .",
+        "fr": "L'adresse électronique du vendeur (BT-34) contient un caractère autre que lettres, chiffres et - _ ."
+      }
+    },
+    {
+      "id": "BR-FR-25",
+      "status": "invalid",
+      "rule": "BR-FR-25",
+      "fires": [
+        "BR-FR-25_BT-34"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-25.xml",
+        "pdf": "invalid/BR-FR-25.pdf"
+      },
+      "description": {
+        "en": "The seller's electronic address (BT-34) is longer than 125 characters.",
+        "fr": "L'adresse électronique du vendeur (BT-34) dépasse 125 caractères."
+      }
+    },
+    {
+      "id": "BR-FR-27",
+      "status": "invalid",
+      "rule": "BR-FR-27",
+      "fires": [
+        "BR-FR-27_BT-160"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-27.xml",
+        "pdf": "invalid/BR-FR-27.pdf"
+      },
+      "description": {
+        "en": "An item attribute (BG-32) has an empty name (BT-160).",
+        "fr": "Un attribut d'article (BG-32) a un nom vide (BT-160)."
+      }
+    },
+    {
+      "id": "BR-FR-29",
+      "status": "invalid",
+      "rule": "BR-FR-29",
+      "fires": [
+        "BR-FR-29_BT-18"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-29.xml",
+        "pdf": "invalid/BR-FR-29.pdf"
+      },
+      "description": {
+        "en": "Two invoiced object identifiers (BT-18) use the reference type AFL.",
+        "fr": "Deux identifiants d'objet facturé (BT-18) utilisent le type de référence AFL."
+      }
+    },
+    {
+      "id": "BR-FR-31",
+      "status": "invalid",
+      "rule": "BR-FR-31",
+      "fires": [
+        "BR-FR-31_BT-21"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-31.xml",
+        "pdf": "invalid/BR-FR-31.pdf"
+      },
+      "description": {
+        "en": "Two notes have the subject code BAR.",
+        "fr": "Deux mentions ont le code sujet BAR."
+      }
+    },
+    {
+      "id": "BR-FR-32",
+      "status": "invalid",
+      "rule": "BR-FR-32",
+      "fires": [
+        "BR-FR-32-LEGALID"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-32.xml",
+        "pdf": "invalid/BR-FR-32.pdf"
+      },
+      "description": {
+        "en": "The buyer's identifier with scheme 0002 (SIREN, BT-47) does not have 9 digits.",
+        "fr": "L'identifiant de l'acheteur au schéma 0002 (SIREN, BT-47) n'a pas 9 chiffres."
+      }
+    },
+    {
+      "id": "BR-FR-CO-07",
+      "status": "invalid",
+      "rule": "BR-FR-CO-07",
+      "fires": [
+        "BR-FR-CO-07_BT-9"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-CO-07.xml",
+        "pdf": "invalid/BR-FR-CO-07.pdf"
+      },
+      "description": {
+        "en": "The payment due date (BT-9) is before the issue date (BT-2).",
+        "fr": "La date d'échéance (BT-9) est antérieure à la date d'émission (BT-2)."
+      }
+    },
+    {
+      "id": "BR-FR-CO-12",
+      "status": "invalid",
+      "rule": "BR-FR-CO-12",
+      "fires": [
+        "BR-FR-CO-12_BT-5"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-CO-12.xml",
+        "pdf": "invalid/BR-FR-CO-12.pdf"
+      },
+      "description": {
+        "en": "The invoice is in USD but gives no VAT accounting currency EUR (BT-6) and no VAT total in EUR.",
+        "fr": "La facture est en USD mais n'indique ni devise de comptabilisation de la TVA en EUR (BT-6) ni total de TVA en EUR."
+      }
+    },
+    {
+      "id": "BR-FR-DEC-02",
+      "status": "invalid",
+      "rule": "BR-FR-DEC-02",
+      "fires": [
+        "BR-FR-DEC-02_BT-129"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-DEC-02.xml",
+        "pdf": "invalid/BR-FR-DEC-02.pdf"
+      },
+      "description": {
+        "en": "The invoiced quantity (BT-129) has more than 4 decimals.",
+        "fr": "La quantité facturée (BT-129) a plus de 4 décimales."
+      }
+    },
+    {
+      "id": "BR-FR-09-buyer",
+      "status": "invalid",
+      "rule": "BR-FR-09",
+      "fires": [
+        "BR-FR-09_BT-46"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-09-buyer.xml",
+        "pdf": "invalid/BR-FR-09-buyer.pdf"
+      },
+      "description": {
+        "en": "The buyer's SIRET (BT-46) does not start with its SIREN (BT-47).",
+        "fr": "Le SIRET de l'acheteur (BT-46) ne commence pas par son SIREN (BT-47)."
+      }
+    },
+    {
+      "id": "BR-FR-23-buyer",
+      "status": "invalid",
+      "rule": "BR-FR-23",
+      "fires": [
+        "BR-FR-23_BT-49"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-23-buyer.xml",
+        "pdf": "invalid/BR-FR-23-buyer.pdf"
+      },
+      "description": {
+        "en": "The buyer's electronic address (BT-49) contains a character outside letters, digits and - _ .",
+        "fr": "L'adresse électronique de l'acheteur (BT-49) contient un caractère autre que lettres, chiffres et - _ ."
+      }
+    },
+    {
+      "id": "BR-FR-24",
+      "status": "invalid",
+      "rule": "BR-FR-24",
+      "fires": [
+        "BR-FR-24_BT-29"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-24.xml",
+        "pdf": "invalid/BR-FR-24.pdf"
+      },
+      "description": {
+        "en": "The seller's private identifier (BT-29, scheme 0224) contains a space.",
+        "fr": "L'identifiant privé du vendeur (BT-29, schéma 0224) contient une espace."
+      }
+    },
+    {
+      "id": "BR-FR-26",
+      "status": "invalid",
+      "rule": "BR-FR-26",
+      "fires": [
+        "BR-FR-26_BT-29"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-26.xml",
+        "pdf": "invalid/BR-FR-26.pdf"
+      },
+      "description": {
+        "en": "The seller's private identifier (BT-29, scheme 0224) is longer than 100 characters.",
+        "fr": "L'identifiant privé du vendeur (BT-29, schéma 0224) dépasse 100 caractères."
+      }
+    },
+    {
+      "id": "BR-FR-CO-05",
+      "status": "invalid",
+      "rule": "BR-FR-CO-05",
+      "fires": [
+        "BR-FR-CO-05_BT-3"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-CO-05.xml",
+        "pdf": "invalid/BR-FR-CO-05.pdf"
+      },
+      "description": {
+        "en": "A credit note (BT-3 = 381) does not reference the invoice it corrects (BT-25).",
+        "fr": "Un avoir (BT-3 = 381) ne référence pas la facture qu'il corrige (BT-25)."
+      }
+    },
+    {
+      "id": "BR-FR-DEC-04",
+      "status": "invalid",
+      "rule": "BR-FR-DEC-04",
+      "fires": [
+        "BR-FR-DEC-04_BT-119",
+        "BR-FR-DEC-04_BT-152",
+        "BR-FR-16_BT-119",
+        "BR-FR-16_BT-152"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-DEC-04.xml",
+        "pdf": "invalid/BR-FR-DEC-04.pdf"
+      },
+      "description": {
+        "en": "The VAT rate is written with 3 decimals (20.000): more than 2, and not in the list of French rates as written.",
+        "fr": "Le taux de TVA est écrit avec 3 décimales (20.000) : plus de 2, et absent de la liste des taux français tel qu'écrit."
+      }
+    },
+    {
+      "id": "BR-FR-01-BT-25",
+      "status": "invalid",
+      "rule": "BR-FR-01",
+      "fires": [
+        "BR-FR-01_BT-25"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-01-BT-25.xml",
+        "pdf": "invalid/BR-FR-01-BT-25.pdf"
+      },
+      "description": {
+        "en": "The preceding invoice reference (BT-25) is longer than 35 characters.",
+        "fr": "La référence de la facture antérieure (BT-25) dépasse 35 caractères."
+      }
+    },
+    {
+      "id": "BR-FR-02-BT-25",
+      "status": "invalid",
+      "rule": "BR-FR-02",
+      "fires": [
+        "BR-FR-02_BT-25"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-02-BT-25.xml",
+        "pdf": "invalid/BR-FR-02-BT-25.pdf"
+      },
+      "description": {
+        "en": "The preceding invoice reference (BT-25) contains a character outside letters, digits and + - _ /.",
+        "fr": "La référence de la facture antérieure (BT-25) contient un caractère autre que lettres, chiffres et + - _ /."
+      }
+    },
+    {
+      "id": "BR-FR-03-BT-9",
+      "status": "invalid",
+      "rule": "BR-FR-03",
+      "fires": [
+        "BR-FR-03_BT-9"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-03-BT-9.xml",
+        "pdf": "invalid/BR-FR-03-BT-9.pdf"
+      },
+      "description": {
+        "en": "The payment due date (BT-9) has a year outside 2000-2099.",
+        "fr": "La date d'échéance (BT-9) a une année hors de 2000-2099."
+      }
+    },
+    {
+      "id": "BR-FR-03-BT-26",
+      "status": "invalid",
+      "rule": "BR-FR-03",
+      "fires": [
+        "BR-FR-03_BT-26"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-03-BT-26.xml",
+        "pdf": "invalid/BR-FR-03-BT-26.pdf"
+      },
+      "description": {
+        "en": "The preceding invoice issue date (BT-26) has a year outside 2000-2099.",
+        "fr": "La date d'émission de la facture antérieure (BT-26) a une année hors de 2000-2099."
+      }
+    },
+    {
+      "id": "BR-FR-03-BT-72",
+      "status": "invalid",
+      "rule": "BR-FR-03",
+      "fires": [
+        "BR-FR-03_BT-72"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-03-BT-72.xml",
+        "pdf": "invalid/BR-FR-03-BT-72.pdf"
+      },
+      "description": {
+        "en": "The actual delivery date (BT-72) has a year outside 2000-2099.",
+        "fr": "La date de livraison effective (BT-72) a une année hors de 2000-2099."
+      }
+    },
+    {
+      "id": "BR-FR-06-PMD",
+      "status": "invalid",
+      "rule": "BR-FR-06",
+      "fires": [
+        "BR-FR-06_BT-21_PMD"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-06-PMD.xml",
+        "pdf": "invalid/BR-FR-06-PMD.pdf"
+      },
+      "description": {
+        "en": "Two notes have the subject code PMD.",
+        "fr": "Deux mentions ont le code sujet PMD."
+      }
+    },
+    {
+      "id": "BR-FR-06-AAB",
+      "status": "invalid",
+      "rule": "BR-FR-06",
+      "fires": [
+        "BR-FR-06_BT-21_AAB"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-06-AAB.xml",
+        "pdf": "invalid/BR-FR-06-AAB.pdf"
+      },
+      "description": {
+        "en": "Two notes have the subject code AAB.",
+        "fr": "Deux mentions ont le code sujet AAB."
+      }
+    },
+    {
+      "id": "BR-FR-25-buyer",
+      "status": "invalid",
+      "rule": "BR-FR-25",
+      "fires": [
+        "BR-FR-25_BT-49"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-25-buyer.xml",
+        "pdf": "invalid/BR-FR-25-buyer.pdf"
+      },
+      "description": {
+        "en": "The buyer's electronic address (BT-49) is longer than 125 characters.",
+        "fr": "L'adresse électronique de l'acheteur (BT-49) dépasse 125 caractères."
+      }
+    },
+    {
+      "id": "BR-FR-29-AFL",
+      "status": "invalid",
+      "rule": "BR-FR-29",
+      "fires": [
+        "BR-FR-29_AFL",
+        "BR-52"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-29-AFL.xml",
+        "pdf": "invalid/BR-FR-29-AFL.pdf"
+      },
+      "description": {
+        "en": "An invoiced object identifier (BT-18) of type AFL is blank (EN 16931 BR-52 fires too: a document reference is required).",
+        "fr": "Un identifiant d'objet facturé (BT-18) de type AFL est vide (la règle EN 16931 BR-52 se déclenche aussi : une référence est exigée)."
+      }
+    },
+    {
+      "id": "BR-FR-32-GLOBALID",
+      "status": "invalid",
+      "rule": "BR-FR-32",
+      "fires": [
+        "BR-FR-32-GLOBALID"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-32-GLOBALID.xml",
+        "pdf": "invalid/BR-FR-32-GLOBALID.pdf"
+      },
+      "description": {
+        "en": "The seller's identifier with scheme 0002 (BT-29) does not have 9 digits.",
+        "fr": "L'identifiant du vendeur au schéma 0002 (BT-29) n'a pas 9 chiffres."
+      }
+    },
+    {
+      "id": "BR-FR-CO-04",
+      "status": "invalid",
+      "rule": "BR-FR-CO-04",
+      "fires": [
+        "BR-FR-CO-04_BT-4"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-CO-04.xml",
+        "pdf": "invalid/BR-FR-CO-04.pdf"
+      },
+      "description": {
+        "en": "A corrective invoice (BT-3 = 384) does not reference exactly one preceding invoice (BT-25).",
+        "fr": "Une facture rectificative (BT-3 = 384) ne référence pas exactement une facture antérieure (BT-25)."
+      }
+    },
+    {
+      "id": "BR-FR-CO-08",
+      "status": "invalid",
+      "rule": "BR-FR-CO-08",
+      "fires": [
+        "BR-FR-CO-08_BT-23"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-CO-08.xml",
+        "pdf": "invalid/BR-FR-CO-08.pdf"
+      },
+      "description": {
+        "en": "A prepayment invoice (BT-3 = 386) uses a final-invoice-after-deposit framework (BT-23 = S4).",
+        "fr": "Une facture d'acompte (BT-3 = 386) utilise un cadre de facture définitive après acompte (BT-23 = S4)."
+      }
+    },
+    {
+      "id": "BR-FR-CO-09",
+      "status": "invalid",
+      "rule": "BR-FR-CO-09",
+      "fires": [
+        "BR-FR-CO-09_BT-23-1",
+        "BR-FR-CO-09_BT-23-2"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-CO-09.xml",
+        "pdf": "invalid/BR-FR-CO-09.pdf"
+      },
+      "description": {
+        "en": "The framework says already paid (BT-23 = S2), but the paid amount (BT-113) is not the total and the amount due (BT-115) is not 0.",
+        "fr": "Le cadre indique une facture déjà payée (BT-23 = S2), mais le montant payé (BT-113) n'est pas le total et le net à payer (BT-115) n'est pas 0."
+      }
+    },
+    {
+      "id": "BR-FR-DEC-03",
+      "status": "invalid",
+      "rule": "BR-FR-DEC-03",
+      "fires": [
+        "BR-FR-DEC-03_BT-146"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-DEC-03.xml",
+        "pdf": "invalid/BR-FR-DEC-03.pdf"
+      },
+      "description": {
+        "en": "The item net price (BT-146) has more than 6 decimals.",
+        "fr": "Le prix net de l'article (BT-146) a plus de 6 décimales."
+      }
+    },
+    {
+      "id": "BR-FR-15",
+      "status": "invalid",
+      "rule": "BR-FR-15",
+      "fires": [
+        "BR-FR-15_BT-95_BT-151",
+        "BR-FR-15_BT-95_BT-151_LM",
+        "BR-FR-15_BT-95_BT-118",
+        "BR-FR-15_BT-95_BT-118_LM"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-15.xml",
+        "pdf": "invalid/BR-FR-15.pdf"
+      },
+      "description": {
+        "en": "The line and the VAT breakdown use VAT category L (Canary Islands), which does not apply in France.",
+        "fr": "La ligne et la ventilation de TVA utilisent la catégorie L (îles Canaries), qui ne s'applique pas en France."
+      }
+    },
+    {
+      "id": "BR-FR-22",
+      "status": "invalid",
+      "rule": "BR-FR-22",
+      "fires": [
+        "BR-FR-22_BT-34"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-22.xml",
+        "pdf": "invalid/BR-FR-22.pdf"
+      },
+      "description": {
+        "en": "A B2B self-billed invoice (BT-3 = 389): the seller's electronic address (BT-34) does not start with its SIREN.",
+        "fr": "Une autofacture B2B (BT-3 = 389) : l'adresse électronique du vendeur (BT-34) ne commence pas par son SIREN."
+      }
+    },
+    {
+      "id": "BR-FR-CO-03",
+      "status": "invalid",
+      "rule": "BR-FR-CO-03",
+      "fires": [
+        "BR-FR-CO-03_BT-3"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-CO-03.xml",
+        "pdf": "invalid/BR-FR-CO-03.pdf"
+      },
+      "description": {
+        "en": "A document of type 262 gives no contract reference (BT-12) and no billing period (BT-73, BT-74).",
+        "fr": "Un document de type 262 n'indique ni référence de contrat (BT-12) ni période de facturation (BT-73, BT-74)."
+      }
+    },
+    {
+      "id": "BR-FR-CO-10",
+      "status": "invalid",
+      "rule": "BR-FR-CO-10",
+      "fires": [
+        "BR-FR-CO-10_BT-29-1",
+        "FX-SCH-A-000440"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-CO-10.xml",
+        "pdf": "invalid/BR-FR-CO-10.pdf"
+      },
+      "description": {
+        "en": "The seller's identifier (BT-29) has no scheme identifier (BT-29-1); the Factur-X profile rules reject it too.",
+        "fr": "L'identifiant du vendeur (BT-29) n'a pas d'identifiant de schéma (BT-29-1) ; les règles du profil Factur-X le refusent aussi."
+      }
+    },
+    {
+      "id": "BR-FR-DEC-01",
+      "status": "invalid",
+      "rule": "BR-FR-DEC-01",
+      "fires": [
+        "BR-FR-DEC-01_BT-112",
+        "BR-FR-DEC-01_BT-115",
+        "BR-DEC-14",
+        "BR-DEC-18"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-DEC-01.xml",
+        "pdf": "invalid/BR-FR-DEC-01.pdf"
+      },
+      "description": {
+        "en": "The total with VAT (BT-112) and the amount due (BT-115) are written with 3 decimals (EN 16931 BR-DEC-14 and BR-DEC-18 fire too).",
+        "fr": "Le total TTC (BT-112) et le net à payer (BT-115) sont écrits avec 3 décimales (les règles EN 16931 BR-DEC-14 et BR-DEC-18 se déclenchent aussi)."
+      }
+    },
+    {
+      "id": "BR-CO-15",
+      "status": "invalid",
+      "rule": "BR-CO-15",
+      "fires": [
+        "BR-CO-15"
+      ],
+      "files": {
+        "xml": "invalid/BR-CO-15.xml",
+        "pdf": "invalid/BR-CO-15.pdf"
+      },
+      "description": {
+        "en": "The invoice total with VAT (BT-112) is not the total without VAT (BT-109) plus the VAT total (BT-110).",
+        "fr": "Le total TTC (BT-112) n'est pas égal au total HT (BT-109) plus le total de TVA (BT-110)."
+      }
+    },
+    {
+      "id": "BR-FR-03-BT-7",
+      "status": "invalid",
+      "rule": "BR-FR-03",
+      "fires": [
+        "BR-FR-03_BT-7"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-03-BT-7.xml",
+        "pdf": "invalid/BR-FR-03-BT-7.pdf"
+      },
+      "description": {
+        "en": "The VAT point date (BT-7) has a year outside 2000-2099.",
+        "fr": "La date d'exigibilité de la TVA (BT-7) a une année hors de 2000-2099."
+      }
+    },
+    {
+      "id": "BR-FR-03-BT-73",
+      "status": "invalid",
+      "rule": "BR-FR-03",
+      "fires": [
+        "BR-FR-03_BT-73"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-03-BT-73.xml",
+        "pdf": "invalid/BR-FR-03-BT-73.pdf"
+      },
+      "description": {
+        "en": "The invoicing period start date (BT-73) has a year outside 2000-2099.",
+        "fr": "La date de début de la période de facturation (BT-73) a une année hors de 2000-2099."
+      }
+    },
+    {
+      "id": "BR-FR-03-BT-74",
+      "status": "invalid",
+      "rule": "BR-FR-03",
+      "fires": [
+        "BR-FR-03_BT-74"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-03-BT-74.xml",
+        "pdf": "invalid/BR-FR-03-BT-74.pdf"
+      },
+      "description": {
+        "en": "The invoicing period end date (BT-74) has a year outside 2000-2099.",
+        "fr": "La date de fin de la période de facturation (BT-74) a une année hors de 2000-2099."
+      }
+    },
+    {
+      "id": "BR-FR-06-TXD",
+      "status": "invalid",
+      "rule": "BR-FR-06",
+      "fires": [
+        "BR-FR-06_BT-21_TXD"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-06-TXD.xml",
+        "pdf": "invalid/BR-FR-06-TXD.pdf"
+      },
+      "description": {
+        "en": "Two notes have the subject code TXD.",
+        "fr": "Deux mentions ont le code sujet TXD."
+      }
+    },
+    {
+      "id": "BR-FR-09-payee",
+      "status": "invalid",
+      "rule": "BR-FR-09",
+      "fires": [
+        "BR-FR-09_BT-60"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-09-payee.xml",
+        "pdf": "invalid/BR-FR-09-payee.pdf"
+      },
+      "description": {
+        "en": "The payee's SIRET (BT-60) does not start with its SIREN: it is the seller's SIRET.",
+        "fr": "Le SIRET du bénéficiaire (BT-60) ne commence pas par son SIREN : c'est celui du vendeur."
+      }
+    },
+    {
+      "id": "BR-FR-09-ship-to",
+      "status": "invalid",
+      "rule": "BR-FR-09",
+      "fires": [
+        "BR-FR-09_BT-71"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-09-ship-to.xml",
+        "pdf": "invalid/BR-FR-09-ship-to.pdf"
+      },
+      "description": {
+        "en": "The deliver-to location identifier with scheme 0009 (SIRET, BT-71) is not 14 digits: it has spaces.",
+        "fr": "L'identifiant du lieu de livraison au schéma 0009 (SIRET, BT-71) n'a pas 14 chiffres : il contient des espaces."
+      }
+    },
+    {
+      "id": "BR-FR-15-allowance",
+      "status": "invalid",
+      "rule": "BR-FR-15",
+      "fires": [
+        "BR-FR-15_BT-95_BT-102",
+        "BR-FR-15_BT-95_BT-102_LM",
+        "BR-FR-15_BT-95_BT-118",
+        "BR-FR-15_BT-95_BT-118_LM"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-15-allowance.xml",
+        "pdf": "invalid/BR-FR-15-allowance.pdf"
+      },
+      "description": {
+        "en": "A document level allowance (BT-95), and so its VAT breakdown (BT-118), has the VAT category L (Canary Islands), not used in France.",
+        "fr": "Une remise au niveau du document (BT-95), et donc sa ventilation de TVA (BT-118), a la catégorie L (îles Canaries), non utilisée en France."
+      }
+    },
+    {
+      "id": "BR-FR-16-allowance",
+      "status": "invalid",
+      "rule": "BR-FR-16",
+      "fires": [
+        "BR-FR-16_BT-96_BT-103",
+        "BR-FR-16_BT-119"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-16-allowance.xml",
+        "pdf": "invalid/BR-FR-16-allowance.pdf"
+      },
+      "description": {
+        "en": "A document level allowance (BT-96), and so its VAT breakdown (BT-119), has a VAT rate of 21 %, not a French rate.",
+        "fr": "Une remise au niveau du document (BT-96), et donc sa ventilation de TVA (BT-119), a un taux de 21 %, qui n'est pas un taux français."
+      }
+    },
+    {
+      "id": "BR-FR-DEC-04-allowance",
+      "status": "invalid",
+      "rule": "BR-FR-DEC-04",
+      "fires": [
+        "BR-FR-DEC-04_BT-96_BT-103",
+        "BR-FR-16_BT-96_BT-103"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-DEC-04-allowance.xml",
+        "pdf": "invalid/BR-FR-DEC-04-allowance.pdf"
+      },
+      "description": {
+        "en": "A document level allowance's VAT rate (BT-96) has 3 decimals (20.000); BR-FR-16 rejects it too, as 20.000 is not in its list of rates.",
+        "fr": "Le taux de TVA d'une remise au niveau du document (BT-96) a 3 décimales (20.000) ; BR-FR-16 le refuse aussi, 20.000 n'étant pas dans sa liste de taux."
+      }
+    },
+    {
+      "id": "BR-FR-24-buyer",
+      "status": "invalid",
+      "rule": "BR-FR-24",
+      "fires": [
+        "BR-FR-24_BT-46"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-24-buyer.xml",
+        "pdf": "invalid/BR-FR-24-buyer.pdf"
+      },
+      "description": {
+        "en": "The buyer's identifier with scheme 0224 (BT-46) contains a space.",
+        "fr": "L'identifiant de l'acheteur au schéma 0224 (BT-46) contient une espace."
+      }
+    },
+    {
+      "id": "BR-FR-26-buyer",
+      "status": "invalid",
+      "rule": "BR-FR-26",
+      "fires": [
+        "BR-FR-26_BT-46"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-26-buyer.xml",
+        "pdf": "invalid/BR-FR-26-buyer.pdf"
+      },
+      "description": {
+        "en": "The buyer's identifier with scheme 0224 (BT-46) is longer than 100 characters.",
+        "fr": "L'identifiant de l'acheteur au schéma 0224 (BT-46) dépasse 100 caractères."
+      }
+    },
+    {
+      "id": "BR-FR-29-AVV",
+      "status": "invalid",
+      "rule": "BR-FR-29",
+      "fires": [
+        "BR-FR-29_AVV",
+        "BR-52"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-29-AVV.xml",
+        "pdf": "invalid/BR-FR-29-AVV.pdf"
+      },
+      "description": {
+        "en": "An invoiced object identifier (BT-18) with reference type AVV is blank (EN 16931 rule BR-52 fires too: a reference is required).",
+        "fr": "Un identifiant d'objet facturé (BT-18) de type AVV est vide (la règle EN 16931 BR-52 se déclenche aussi : une référence est exigée)."
+      }
+    },
+    {
+      "id": "BR-FR-CO-09-BT-9",
+      "status": "invalid",
+      "rule": "BR-FR-CO-09",
+      "fires": [
+        "BR-FR-CO-09_BT-23-3"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-CO-09-BT-9.xml",
+        "pdf": "invalid/BR-FR-CO-09-BT-9.pdf"
+      },
+      "description": {
+        "en": "An already paid invoice (billing frame S2) has no payment due date (BT-9).",
+        "fr": "Une facture déjà payée (cadre de facturation S2) n'a pas de date d'échéance (BT-9)."
+      }
+    },
+    {
+      "id": "BR-FR-CO-10-BT-29-2",
+      "status": "invalid",
+      "rule": "BR-FR-CO-10",
+      "fires": [
+        "BR-FR-CO-10_BT-29-2"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-CO-10-BT-29-2.xml",
+        "pdf": "invalid/BR-FR-CO-10-BT-29-2.pdf"
+      },
+      "description": {
+        "en": "The seller has two identifiers (BT-29) with the same scheme 0009.",
+        "fr": "Le vendeur a deux identifiants (BT-29) au même schéma 0009."
+      }
+    },
+    {
+      "id": "BR-FR-CO-10-BT-46-1",
+      "status": "invalid",
+      "rule": "BR-FR-CO-10",
+      "fires": [
+        "BR-FR-CO-10_BT-46-1",
+        "FX-SCH-A-000420"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-CO-10-BT-46-1.xml",
+        "pdf": "invalid/BR-FR-CO-10-BT-46-1.pdf"
+      },
+      "description": {
+        "en": "The buyer's identifier (BT-46) has no scheme identifier; the Factur-X profile rules reject it too.",
+        "fr": "L'identifiant de l'acheteur (BT-46) n'a pas d'identifiant de schéma ; les règles du profil Factur-X le refusent aussi."
+      }
+    },
+    {
+      "id": "BR-FR-CO-10-BT-46-2",
+      "status": "invalid",
+      "rule": "BR-FR-CO-10",
+      "fires": [
+        "BR-FR-CO-10_BT-46-2",
+        "FX-SCH-A-000164"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-CO-10-BT-46-2.xml",
+        "pdf": "invalid/BR-FR-CO-10-BT-46-2.pdf"
+      },
+      "description": {
+        "en": "The buyer has two identifiers (BT-46) with the same scheme 0009; the Factur-X profile rules reject it too.",
+        "fr": "L'acheteur a deux identifiants (BT-46) au même schéma 0009 ; les règles du profil Factur-X le refusent aussi."
+      }
+    },
+    {
+      "id": "BR-FR-CO-10-BT-60-1",
+      "status": "invalid",
+      "rule": "BR-FR-CO-10",
+      "fires": [
+        "BR-FR-CO-10_BT-60-1",
+        "FX-SCH-A-000470"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-CO-10-BT-60-1.xml",
+        "pdf": "invalid/BR-FR-CO-10-BT-60-1.pdf"
+      },
+      "description": {
+        "en": "The payee's identifier (BT-60) has no scheme identifier; the Factur-X profile rules reject it too.",
+        "fr": "L'identifiant du bénéficiaire (BT-60) n'a pas d'identifiant de schéma ; les règles du profil Factur-X le refusent aussi."
+      }
+    },
+    {
+      "id": "BR-FR-CO-10-BT-60-2",
+      "status": "invalid",
+      "rule": "BR-FR-CO-10",
+      "fires": [
+        "BR-FR-CO-10_BT-60-2",
+        "FX-SCH-A-000468"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-CO-10-BT-60-2.xml",
+        "pdf": "invalid/BR-FR-CO-10-BT-60-2.pdf"
+      },
+      "description": {
+        "en": "The payee has two identifiers (BT-60) with the same scheme 0009; the Factur-X profile rules reject it too.",
+        "fr": "Le bénéficiaire a deux identifiants (BT-60) au même schéma 0009 ; les règles du profil Factur-X le refusent aussi."
+      }
+    },
+    {
+      "id": "BR-FR-CO-10-BT-71-1",
+      "status": "invalid",
+      "rule": "BR-FR-CO-10",
+      "fires": [
+        "BR-FR-CO-10_BT-71-1",
+        "FX-SCH-A-000453"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-CO-10-BT-71-1.xml",
+        "pdf": "invalid/BR-FR-CO-10-BT-71-1.pdf"
+      },
+      "description": {
+        "en": "The deliver-to location identifier (BT-71) has no scheme identifier; the Factur-X profile rules reject it too.",
+        "fr": "L'identifiant du lieu de livraison (BT-71) n'a pas d'identifiant de schéma ; les règles du profil Factur-X le refusent aussi."
+      }
+    },
+    {
+      "id": "BR-FR-CO-10-BT-71-2",
+      "status": "invalid",
+      "rule": "BR-FR-CO-10",
+      "fires": [
+        "BR-FR-CO-10_BT-71-2",
+        "FX-SCH-A-000452"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-CO-10-BT-71-2.xml",
+        "pdf": "invalid/BR-FR-CO-10-BT-71-2.pdf"
+      },
+      "description": {
+        "en": "The deliver-to party has two location identifiers (BT-71) with the same scheme 0088 (GLN); the Factur-X profile rules reject it too.",
+        "fr": "Le lieu de livraison a deux identifiants (BT-71) au même schéma 0088 (GLN) ; les règles du profil Factur-X le refusent aussi."
+      }
+    },
+    {
+      "id": "BR-FR-DEC-01-BT-92",
+      "status": "invalid",
+      "rule": "BR-FR-DEC-01",
+      "fires": [
+        "BR-FR-DEC-01_BT-92_BT-99",
+        "BR-DEC-01"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-DEC-01-BT-92.xml",
+        "pdf": "invalid/BR-FR-DEC-01-BT-92.pdf"
+      },
+      "description": {
+        "en": "A document level allowance amount (BT-92) has 3 decimals (EN 16931 BR-DEC-01 fires too).",
+        "fr": "Le montant d'une remise au niveau du document (BT-92) a 3 décimales (la règle EN 16931 BR-DEC-01 se déclenche aussi)."
+      }
+    },
+    {
+      "id": "BR-FR-DEC-01-BT-93",
+      "status": "invalid",
+      "rule": "BR-FR-DEC-01",
+      "fires": [
+        "BR-FR-DEC-01_BT-93_BT-100",
+        "BR-DEC-02"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-DEC-01-BT-93.xml",
+        "pdf": "invalid/BR-FR-DEC-01-BT-93.pdf"
+      },
+      "description": {
+        "en": "A document level allowance base amount (BT-93) has 3 decimals (EN 16931 BR-DEC-02 fires too).",
+        "fr": "L'assiette d'une remise au niveau du document (BT-93) a 3 décimales (la règle EN 16931 BR-DEC-02 se déclenche aussi)."
+      }
+    },
+    {
+      "id": "BR-FR-DEC-01-BT-106",
+      "status": "invalid",
+      "rule": "BR-FR-DEC-01",
+      "fires": [
+        "BR-FR-DEC-01_BT-106",
+        "BR-DEC-09"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-DEC-01-BT-106.xml",
+        "pdf": "invalid/BR-FR-DEC-01-BT-106.pdf"
+      },
+      "description": {
+        "en": "The sum of the invoice line net amounts (BT-106) has 3 decimals (EN 16931 BR-DEC-09 fires too).",
+        "fr": "La somme des montants nets des lignes (BT-106) a 3 décimales (la règle EN 16931 BR-DEC-09 se déclenche aussi)."
+      }
+    },
+    {
+      "id": "BR-FR-DEC-01-BT-107",
+      "status": "invalid",
+      "rule": "BR-FR-DEC-01",
+      "fires": [
+        "BR-FR-DEC-01_BT-107",
+        "BR-DEC-10"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-DEC-01-BT-107.xml",
+        "pdf": "invalid/BR-FR-DEC-01-BT-107.pdf"
+      },
+      "description": {
+        "en": "The sum of allowances on document level (BT-107) has 3 decimals (EN 16931 BR-DEC-10 fires too).",
+        "fr": "La somme des remises au niveau du document (BT-107) a 3 décimales (la règle EN 16931 BR-DEC-10 se déclenche aussi)."
+      }
+    },
+    {
+      "id": "BR-FR-DEC-01-BT-108",
+      "status": "invalid",
+      "rule": "BR-FR-DEC-01",
+      "fires": [
+        "BR-FR-DEC-01_BT-108",
+        "BR-DEC-11"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-DEC-01-BT-108.xml",
+        "pdf": "invalid/BR-FR-DEC-01-BT-108.pdf"
+      },
+      "description": {
+        "en": "The sum of charges on document level (BT-108) has 3 decimals (EN 16931 BR-DEC-11 fires too).",
+        "fr": "La somme des frais au niveau du document (BT-108) a 3 décimales (la règle EN 16931 BR-DEC-11 se déclenche aussi)."
+      }
+    },
+    {
+      "id": "BR-FR-DEC-01-BT-109",
+      "status": "invalid",
+      "rule": "BR-FR-DEC-01",
+      "fires": [
+        "BR-FR-DEC-01_BT-109",
+        "BR-DEC-12"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-DEC-01-BT-109.xml",
+        "pdf": "invalid/BR-FR-DEC-01-BT-109.pdf"
+      },
+      "description": {
+        "en": "The total without VAT (BT-109) has 3 decimals (EN 16931 BR-DEC-12 fires too).",
+        "fr": "Le total HT (BT-109) a 3 décimales (la règle EN 16931 BR-DEC-12 se déclenche aussi)."
+      }
+    },
+    {
+      "id": "BR-FR-DEC-01-BT-110",
+      "status": "invalid",
+      "rule": "BR-FR-DEC-01",
+      "fires": [
+        "BR-FR-DEC-01_BT-110"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-DEC-01-BT-110.xml",
+        "pdf": "invalid/BR-FR-DEC-01-BT-110.pdf"
+      },
+      "description": {
+        "en": "The VAT total (BT-110) has 3 decimals.",
+        "fr": "Le total de TVA (BT-110) a 3 décimales."
+      }
+    },
+    {
+      "id": "BR-FR-DEC-01-BT-113",
+      "status": "invalid",
+      "rule": "BR-FR-DEC-01",
+      "fires": [
+        "BR-FR-DEC-01_BT-113",
+        "BR-DEC-16"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-DEC-01-BT-113.xml",
+        "pdf": "invalid/BR-FR-DEC-01-BT-113.pdf"
+      },
+      "description": {
+        "en": "The paid amount (BT-113) has 3 decimals (EN 16931 BR-DEC-16 fires too).",
+        "fr": "Le montant déjà payé (BT-113) a 3 décimales (la règle EN 16931 BR-DEC-16 se déclenche aussi)."
+      }
+    },
+    {
+      "id": "BR-FR-DEC-01-BT-114",
+      "status": "invalid",
+      "rule": "BR-FR-DEC-01",
+      "fires": [
+        "BR-FR-DEC-01_BT-114",
+        "BR-DEC-17"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-DEC-01-BT-114.xml",
+        "pdf": "invalid/BR-FR-DEC-01-BT-114.pdf"
+      },
+      "description": {
+        "en": "The rounding amount (BT-114) has 3 decimals (EN 16931 BR-DEC-17 fires too).",
+        "fr": "Le montant d'arrondi (BT-114) a 3 décimales (la règle EN 16931 BR-DEC-17 se déclenche aussi)."
+      }
+    },
+    {
+      "id": "BR-FR-DEC-01-BT-116",
+      "status": "invalid",
+      "rule": "BR-FR-DEC-01",
+      "fires": [
+        "BR-FR-DEC-01_BT-116",
+        "BR-DEC-19"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-DEC-01-BT-116.xml",
+        "pdf": "invalid/BR-FR-DEC-01-BT-116.pdf"
+      },
+      "description": {
+        "en": "A VAT category taxable amount (BT-116) has 3 decimals (EN 16931 BR-DEC-19 fires too).",
+        "fr": "La base d'imposition d'une catégorie de TVA (BT-116) a 3 décimales (la règle EN 16931 BR-DEC-19 se déclenche aussi)."
+      }
+    },
+    {
+      "id": "BR-FR-DEC-01-BT-117",
+      "status": "invalid",
+      "rule": "BR-FR-DEC-01",
+      "fires": [
+        "BR-FR-DEC-01_BT-117",
+        "BR-DEC-20"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-DEC-01-BT-117.xml",
+        "pdf": "invalid/BR-FR-DEC-01-BT-117.pdf"
+      },
+      "description": {
+        "en": "A VAT category tax amount (BT-117) has 3 decimals (EN 16931 BR-DEC-20 fires too).",
+        "fr": "Le montant de TVA d'une catégorie (BT-117) a 3 décimales (la règle EN 16931 BR-DEC-20 se déclenche aussi)."
+      }
+    },
+    {
+      "id": "BR-FR-DEC-01-BT-131",
+      "status": "invalid",
+      "rule": "BR-FR-DEC-01",
+      "fires": [
+        "BR-FR-DEC-01_BT-131",
+        "BR-DEC-23"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-DEC-01-BT-131.xml",
+        "pdf": "invalid/BR-FR-DEC-01-BT-131.pdf"
+      },
+      "description": {
+        "en": "An invoice line net amount (BT-131) has 3 decimals (EN 16931 BR-DEC-23 fires too).",
+        "fr": "Le montant net d'une ligne (BT-131) a 3 décimales (la règle EN 16931 BR-DEC-23 se déclenche aussi)."
+      }
+    },
+    {
+      "id": "BR-FR-DEC-01-BT-136",
+      "status": "invalid",
+      "rule": "BR-FR-DEC-01",
+      "fires": [
+        "BR-FR-DEC-01_BT-136_BT-141",
+        "BR-DEC-24"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-DEC-01-BT-136.xml",
+        "pdf": "invalid/BR-FR-DEC-01-BT-136.pdf"
+      },
+      "description": {
+        "en": "An invoice line allowance amount (BT-136) has 3 decimals (EN 16931 BR-DEC-24 fires too).",
+        "fr": "Le montant d'une remise de ligne (BT-136) a 3 décimales (la règle EN 16931 BR-DEC-24 se déclenche aussi)."
+      }
+    },
+    {
+      "id": "BR-FR-DEC-01-BT-137",
+      "status": "invalid",
+      "rule": "BR-FR-DEC-01",
+      "fires": [
+        "BR-FR-DEC-01_BT-137_BT-142",
+        "BR-DEC-25"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-DEC-01-BT-137.xml",
+        "pdf": "invalid/BR-FR-DEC-01-BT-137.pdf"
+      },
+      "description": {
+        "en": "An invoice line allowance base amount (BT-137) has 3 decimals (EN 16931 BR-DEC-25 fires too).",
+        "fr": "L'assiette d'une remise de ligne (BT-137) a 3 décimales (la règle EN 16931 BR-DEC-25 se déclenche aussi)."
+      }
+    },
+    {
+      "id": "BR-FR-DEC-02-BT-149",
+      "status": "invalid",
+      "rule": "BR-FR-DEC-02",
+      "fires": [
+        "BR-FR-DEC-02_BT-149"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-DEC-02-BT-149.xml",
+        "pdf": "invalid/BR-FR-DEC-02-BT-149.pdf"
+      },
+      "description": {
+        "en": "An item price base quantity (BT-149) has 5 decimals.",
+        "fr": "La quantité de base du prix d'un article (BT-149) a 5 décimales."
+      }
+    },
+    {
+      "id": "BR-FR-DEC-03-BT-147",
+      "status": "invalid",
+      "rule": "BR-FR-DEC-03",
+      "fires": [
+        "BR-FR-DEC-03_BT-147"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-DEC-03-BT-147.xml",
+        "pdf": "invalid/BR-FR-DEC-03-BT-147.pdf"
+      },
+      "description": {
+        "en": "An item price discount (BT-147) has 7 decimals.",
+        "fr": "La remise sur le prix d'un article (BT-147) a 7 décimales."
+      }
+    },
+    {
+      "id": "BR-FR-DEC-03-BT-148",
+      "status": "invalid",
+      "rule": "BR-FR-DEC-03",
+      "fires": [
+        "BR-FR-DEC-03_BT-148"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-DEC-03-BT-148.xml",
+        "pdf": "invalid/BR-FR-DEC-03-BT-148.pdf"
+      },
+      "description": {
+        "en": "An item gross price (BT-148) has 7 decimals.",
+        "fr": "Le prix brut d'un article (BT-148) a 7 décimales."
+      }
+    }
+  ]
+}

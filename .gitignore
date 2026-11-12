@@ -1,0 +1,6 @@
+.venv/
+__pycache__/
+*.pyc
+dist/
+# Official rules downloaded by the test suite (tests/conftest.py)
+.rules-cache/
