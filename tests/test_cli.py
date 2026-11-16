@@ -66,6 +66,34 @@ def test_pdf_carries_the_xml_as_factur_x(tmp_path):
     assert reader.attachments["factur-x.xml"] == [xml]
 
 
+def test_pdf_page_is_readable_and_marked_specimen():
+    """The page shows the invoice's own data, and says it is a fictitious specimen."""
+    xml = cii.to_bytes(fr.build())
+    text = PdfReader(io.BytesIO(pdf.facturx_pdf(xml))).pages[0].extract_text()
+    for expected in ("SPÉCIMEN", "F2026-0042", "Atelier Exemple SAS", "lintvoice/invoice-examples"):
+        assert expected in text
+
+
+def test_invalid_pdf_states_the_rule_and_shows_the_wrong_value():
+    valid = cii.to_bytes(fr.build())
+    variant = next(v for v in fr.VARIANTS if v.id == "BR-CO-15")
+    xml = cii.to_bytes(fr.build(variant))
+    text = (
+        PdfReader(io.BytesIO(pdf.facturx_pdf(xml, reference=valid, rule=variant.rule, description=variant.fr)))
+        .pages[0]
+        .extract_text()
+    )
+    assert "Erreur volontaire" in text and "BR-CO-15" in text
+    assert pdf.read(xml)["gross"] != pdf.read(valid)["gross"]  # the value the page draws in the error colour
+
+
+def test_annotated_pdf_gives_business_term_numbers(run, tmp_path):
+    run("generate", "--out", tmp_path)
+    manifest = json.loads((tmp_path / "fr" / "manifest.json").read_text(encoding="utf-8"))
+    text = PdfReader(tmp_path / "fr" / manifest["annotated"]["pdf"]).pages[0].extract_text()
+    assert "BT-1" in text and "BT-112" in text
+
+
 def test_committed_examples_are_up_to_date(run, tmp_path):
     """examples/ is generated: regenerate it and compare, so the repository never drifts from the code."""
     run("generate", "--out", tmp_path)

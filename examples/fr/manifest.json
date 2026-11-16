@@ -1,5 +1,5 @@
 {
-  "generator": "invoice-examples 0.1.0",
+  "generator": "invoice-examples 0.2.0",
   "target": "fr",
   "syntax": "CII",
   "profile": "Factur-X EN 16931",
@@ -1517,5 +1517,8 @@
         "fr": "Le prix brut d'un article (BT-148) a 7 décimales."
       }
     }
-  ]
+  ],
+  "annotated": {
+    "pdf": "annotated.pdf"
+  }
 }

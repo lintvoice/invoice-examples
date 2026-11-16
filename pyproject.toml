@@ -1,6 +1,6 @@
 [project]
 name = "invoice-examples"
-version = "0.1.0"
+version = "0.2.0"
 description = "Valid and invalid e-invoice examples (Factur-X, CII), one invalid variant per rule, CC0"
 readme = "README.md"
 license = "MIT"
@@ -10,6 +10,7 @@ authors = [{ name = "AllGood Services SAS" }]
 dependencies = [
     "lxml>=6.1",
     "pypdf>=6.21.4",  # 7 CVEs (crafted PDFs: infinite loops, memory) fixed in 6.21.3 and 6.21.4
+    "reportlab>=5.1",
 ]
 keywords = ["e-invoice", "invoice", "examples", "test", "factur-x", "zugferd", "cii", "en16931", "br-fr"]
 classifiers = [

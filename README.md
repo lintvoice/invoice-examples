@@ -3,7 +3,7 @@
 Valid and invalid e-invoice examples, **one invalid example per rule**, checked against the official rules.
 Free to use for anything: the examples are in the public domain ([CC0](examples/LICENSE)).
 
-> Status: 0.1.0, first target `fr` (Factur-X / CII, French reform rules).
+> Status: 0.2.0, first target `fr` (Factur-X / CII, French reform rules).
 
 ## Download the examples
 
@@ -31,7 +31,7 @@ Free to use for anything: the examples are in the public domain ([CC0](examples/
 
 **Coverage:** 91 invalid examples cover all 98 BR-FR rule ids that can fire on a Factur-X EN 16931 invoice. Three more apply but cannot fire, two because of the Factur-X schema and one because of how the rule file is written: [COVERAGE.md](COVERAGE.md) says why.
 
-**About the PDFs:** they carry the XML as `factur-x.xml`. They are not PDF/A-3: they are for testing XML extraction and the XML rules, not PDF/A-3 validation.
+**About the PDFs:** each one has a readable page drawn from its own XML, marked SPECIMEN, and carries that XML as `factur-x.xml`. On an invalid example, the page names the rule it fails and shows in red every value that differs from the valid invoice. `annotated.pdf` is the valid invoice with each value's EN 16931 business term number (BT-…), for learning to read an e-invoice. The PDFs are not PDF/A-3: they are for testing XML extraction and the XML rules, not PDF/A-3 validation.
 
 ## Use them in a test suite
 
@@ -72,5 +72,6 @@ uv run python scripts/coverage.py   # rewrites COVERAGE.md
 
 - The examples (`examples/`): [CC0-1.0](examples/LICENSE).
 - The code: [MIT](LICENSE).
+- The fonts drawn in the PDFs (`src/invoice_examples/fonts/`): IBM Plex, [SIL Open Font License 1.1](src/invoice_examples/fonts/OFL.txt).
 - The official rules used by the tests keep their own licences (EUPL-1.2 for EN 16931; Apache-2.0 for the France_RFE repository, whose Schematron file headers say EUPL)
   and are not part of this repository.

@@ -22,12 +22,14 @@ def _write(path, data):
     return path
 
 
-def _files(out, stem, xml, formats):
+def _files(out, stem, xml, formats, **page):
+    """Write the XML and its PDF. `page` goes to the PDF page: the valid invoice as reference, the rule and
+    what is wrong, so an invalid variant's page shows where the mistake is."""
     written = {}
     if "xml" in formats:
         written["xml"] = _write(out / f"{stem}.xml", xml).relative_to(out).as_posix()
     if "pdf" in formats:
-        written["pdf"] = _write(out / f"{stem}.pdf", pdf.facturx_pdf(xml)).relative_to(out).as_posix()
+        written["pdf"] = _write(out / f"{stem}.pdf", pdf.facturx_pdf(xml, **page)).relative_to(out).as_posix()
     return written
 
 
@@ -56,12 +58,13 @@ def cmd_generate(args, out):
             return 2
     formats = [f.strip() for f in args.format.split(",")]
     root = Path(args.out) / args.target
+    valid = cii.to_bytes(target.build())
     entries = [
         {
             "id": "valid",
             "status": "valid",
             "fires": [],
-            "files": _files(root, "valid", cii.to_bytes(target.build()), formats),
+            "files": _files(root, "valid", valid, formats),
             "description": {"en": "Passes every rule listed.", "fr": "Passe toutes les règles listées."},
         }
     ]
@@ -72,10 +75,24 @@ def cmd_generate(args, out):
                 "status": "invalid",
                 "rule": v.rule,
                 "fires": list(v.fires),
-                "files": _files(root, f"invalid/{v.id}", cii.to_bytes(target.build(v)), formats),
+                "files": _files(
+                    root,
+                    f"invalid/{v.id}",
+                    cii.to_bytes(target.build(v)),
+                    formats,
+                    reference=valid,
+                    rule=v.rule,
+                    description=v.fr,
+                ),
                 "description": {"en": v.en, "fr": v.fr},
             }
         )
+    annotated = {}
+    if "pdf" in formats:
+        # the valid invoice again, each value with its EN 16931 business term number: for reading, not for tests
+        annotated = {
+            "pdf": _write(root / "annotated.pdf", pdf.facturx_pdf(valid, annotate=True)).relative_to(root).as_posix()
+        }
     manifest = {
         "generator": f"invoice-examples {__version__}",
         "target": args.target,
@@ -84,6 +101,7 @@ def cmd_generate(args, out):
         "rules": target.RULES,
         "licence": "CC0-1.0",
         "examples": entries,
+        "annotated": annotated,
     }
     _write(root / "manifest.json", (json.dumps(manifest, indent=2, ensure_ascii=False) + "\n").encode("utf-8"))
     print(f"wrote {len(entries)} examples ({', '.join(formats)}) and manifest.json in {root}", file=out)
