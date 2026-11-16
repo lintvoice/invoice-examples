@@ -270,6 +270,32 @@ def _gross_price(gross, discount):
     return edit
 
 
+def _shift(delta, *tags):
+    """Add delta to several header monetary totals, so that only the rule under test sees a difference."""
+    return _edit_all(*(_set_amount(tag, delta) for tag in tags))
+
+
+def _tax_point_with_code(value):
+    """Give each VAT breakdown a VAT point date (BT-7) next to its VAT point date code (BT-8), which BR-CO-03 forbids."""
+
+    def edit(root):
+        for tax in _first(root, "ApplicableHeaderTradeSettlement").iterfind(_ram("ApplicableTradeTax")):
+            point = _new("ram:TaxPointDate")
+            _sub(point, "udt:DateString", value, format="102")
+            _insert(tax, point, before="DueDateTypeCode")
+
+    return edit
+
+
+def _empty_period(where):
+    """Add an invoicing period with no dates: at document level (BG-14) or on the first line (BG-26)."""
+
+    def edit(root):
+        _insert(_first(root, where), _new("ram:BillingSpecifiedPeriod"), after="ApplicableTradeTax")
+
+    return edit
+
+
 NOTES = cii.FRENCH["notes"]
 BAR_B2B = ("BAR", "B2B")
 SELLER, BUYER = cii.FRENCH["seller"], cii.FRENCH["buyer"]
@@ -717,6 +743,94 @@ VARIANTS = (
         "The invoice total with VAT (BT-112) is not the total without VAT (BT-109) plus the VAT total (BT-110).",
         "Le total TTC (BT-112) n'est pas égal au total HT (BT-109) plus le total de TVA (BT-110).",
         edit=_edit_all(_set_amount("GrandTotalAmount", 1), _set_amount("DuePayableAmount", 1)),
+    ),
+    Variant(
+        "BR-CO-03",
+        "BR-CO-03",
+        ("BR-CO-03",),
+        "The VAT breakdown gives both a VAT point date (BT-7) and a VAT point date code (BT-8); only one is allowed.",
+        "La ventilation de TVA indique à la fois une date d'exigibilité de la TVA (BT-7) et un code de date d'exigibilité (BT-8) ; un seul est permis.",
+        edit=_tax_point_with_code("20261015"),
+    ),
+    Variant(
+        "BR-CO-09",
+        "BR-CO-09",
+        ("BR-CO-09",),
+        "The seller's VAT number (BT-31) does not start with a country code (ZZ is not one).",
+        "Le numéro de TVA du vendeur (BT-31) ne commence pas par un code pays (ZZ n'en est pas un).",
+        {"seller": {**SELLER, "vat": "ZZ12345678901"}},
+    ),
+    Variant(
+        "BR-CO-10",
+        "BR-CO-10",
+        ("BR-CO-10",),
+        "The sum of the line net amounts (BT-106) is not the total of the lines (BT-131); the other totals follow it.",
+        "La somme des montants nets des lignes (BT-106) n'est pas égale au total des lignes (BT-131) ; les autres totaux suivent.",
+        edit=_shift(1, "LineTotalAmount", "TaxBasisTotalAmount", "GrandTotalAmount", "DuePayableAmount"),
+    ),
+    Variant(
+        "BR-CO-11",
+        "BR-CO-11",
+        ("BR-CO-11",),
+        "The total of document level allowances (BT-107) is not the sum of the allowances (BT-92).",
+        "Le total des remises au niveau du document (BT-107) n'est pas égal à la somme des remises (BT-92).",
+        {"allowances": [("10.00", "95", "Remise", "S", "20")]},
+        edit=_edit_all(
+            _set_amount("AllowanceTotalAmount", 1),
+            _shift(-1, "TaxBasisTotalAmount", "GrandTotalAmount", "DuePayableAmount"),
+        ),
+    ),
+    Variant(
+        "BR-CO-12",
+        "BR-CO-12",
+        ("BR-CO-12",),
+        "The total of document level charges (BT-108) is not the sum of the charges (BT-99).",
+        "Le total des frais au niveau du document (BT-108) n'est pas égal à la somme des frais (BT-99).",
+        {"charges": [("10.00", "FC", "Frais de port", "S", "20")]},
+        edit=_edit_all(
+            _set_amount("ChargeTotalAmount", 1),
+            _shift(1, "TaxBasisTotalAmount", "GrandTotalAmount", "DuePayableAmount"),
+        ),
+    ),
+    Variant(
+        "BR-CO-13",
+        "BR-CO-13",
+        ("BR-CO-13",),
+        "The total without VAT (BT-109) is not the sum of the lines (BT-106) minus the allowances (BT-107) plus the charges (BT-108).",
+        "Le total HT (BT-109) n'est pas égal à la somme des lignes (BT-106) moins les remises (BT-107) plus les frais (BT-108).",
+        edit=_shift(1, "TaxBasisTotalAmount", "GrandTotalAmount", "DuePayableAmount"),
+    ),
+    Variant(
+        "BR-CO-14",
+        "BR-CO-14",
+        ("BR-CO-14",),
+        "The VAT total (BT-110) is not the sum of the VAT amounts per category (BT-117).",
+        "Le total de TVA (BT-110) n'est pas égal à la somme des montants de TVA par catégorie (BT-117).",
+        edit=_shift(1, "TaxTotalAmount", "GrandTotalAmount", "DuePayableAmount"),
+    ),
+    Variant(
+        "BR-CO-16",
+        "BR-CO-16",
+        ("BR-CO-16",),
+        "The amount due (BT-115) is not the total with VAT (BT-112) minus the paid amount (BT-113) plus the rounding amount (BT-114).",
+        "Le net à payer (BT-115) n'est pas égal au total TTC (BT-112) moins le montant déjà payé (BT-113) plus l'arrondi (BT-114).",
+        edit=_set_amount("DuePayableAmount", 1),
+    ),
+    Variant(
+        "BR-CO-19",
+        "BR-CO-19",
+        ("BR-CO-19",),
+        "The invoicing period (BG-14) has neither a start date (BT-73) nor an end date (BT-74).",
+        "La période de facturation (BG-14) n'a ni date de début (BT-73) ni date de fin (BT-74).",
+        edit=_empty_period("ApplicableHeaderTradeSettlement"),
+    ),
+    Variant(
+        "BR-CO-20",
+        "BR-CO-20",
+        ("BR-CO-20",),
+        "The first line's period (BG-26) has neither a start date (BT-134) nor an end date (BT-135).",
+        "La période de la première ligne (BG-26) n'a ni date de début (BT-134) ni date de fin (BT-135).",
+        edit=_empty_period("SpecifiedLineTradeSettlement"),
     ),
     Variant(
         "BR-FR-03-BT-7",

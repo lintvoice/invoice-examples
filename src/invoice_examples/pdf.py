@@ -101,6 +101,15 @@ def read(xml_bytes):
         code, content = _text(note, "ram:SubjectCode"), _text(note, "ram:Content")
         notes.append(f"Traitement (BAR) : {content}" if code == "BAR" else content)
     total = "//ram:SpecifiedTradeSettlementHeaderMonetarySummation/ram:"
+    # document level allowances (BG-20) and charges (BG-21), in the order of the XML
+    adjustments = [
+        {
+            "charge": _text(ac, "ram:ChargeIndicator/udt:Indicator") == "true",
+            "reason": _text(ac, "ram:Reason") or _text(ac, "ram:ReasonCode"),
+            "amount": _text(ac, "ram:ActualAmount"),
+        }
+        for ac in root.xpath("//ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge", namespaces=NS)
+    ]
     return {
         "type": _text(root, "//rsm:ExchangedDocument/ram:TypeCode"),
         "number": _text(root, "//rsm:ExchangedDocument/ram:ID"),
@@ -117,9 +126,15 @@ def read(xml_bytes):
         "iban": _text(root, "//ram:PayeePartyCreditorFinancialAccount/ram:IBANID"),
         "bic": _text(root, "//ram:PayeeSpecifiedCreditorFinancialInstitution/ram:BICID"),
         "notes": notes,
+        "lines_total": _text(root, f"{total}LineTotalAmount"),
+        "adjustments": adjustments,
+        "allowance_total": _text(root, f"{total}AllowanceTotalAmount"),
+        "charge_total": _text(root, f"{total}ChargeTotalAmount"),
         "net": _text(root, f"{total}TaxBasisTotalAmount"),
         "vat": _text(root, f"{total}TaxTotalAmount"),
         "gross": _text(root, f"{total}GrandTotalAmount"),
+        "prepaid": _text(root, f"{total}TotalPrepaidAmount"),
+        "rounding": _text(root, f"{total}RoundingAmount"),
         "payable": _text(root, f"{total}DuePayableAmount"),
     }
 
@@ -308,19 +323,31 @@ class _Page:
         return y
 
     def totals(self, y):
+        """The totals, from the sum of the lines to the amount due; the optional ones only when the invoice has them."""
         x = 360
-        rows = (
-            ("Total HT", "net", "BT-109"),
-            ("TVA", "vat", "BT-110"),
-            ("Total TTC", "gross", "BT-112"),
-            ("Net à payer", "payable", "BT-115"),
-        )
-        for label, key, bt in rows:
+        d = self.d
+        rows = [("Total des lignes HT", ("lines_total",), "BT-106")]
+        for i, a in enumerate(d["adjustments"]):
+            kind = "Frais" if a["charge"] else "Remise"
+            label = kind if not a["reason"] or a["reason"].lower() == kind.lower() else f"{kind} · {a['reason']}"
+            rows.append((label, ("adjustments", i, "amount"), "BT-99" if a["charge"] else "BT-92"))
+        if d["allowance_total"]:
+            rows.append(("Total des remises", ("allowance_total",), "BT-107"))
+        if d["charge_total"]:
+            rows.append(("Total des frais", ("charge_total",), "BT-108"))
+        rows += [("Total HT", ("net",), "BT-109"), ("TVA", ("vat",), "BT-110"), ("Total TTC", ("gross",), "BT-112")]
+        if d["prepaid"]:
+            rows.append(("Déjà payé", ("prepaid",), "BT-113"))
+        if d["rounding"]:
+            rows.append(("Arrondi", ("rounding",), "BT-114"))
+        rows.append(("Net à payer", ("payable",), "BT-115"))
+        for label, keys, bt in rows:
+            key = keys[0]
             strong = key in ("gross", "payable")
             font, size = ("Plex-SemiBold", 9.5) if strong else ("Plex", 9)
             w = self.text(x, y, label, font, size, INK if strong else MUTED)
             self.code(x + w + 4, y + 0.5, bt)
-            self.value(W - M, y, _money(self.d[key]), (key,), "Plex-Mono", size, "r")
+            self.value(W - M, y, _money(_get(d, keys)), keys, "Plex-Mono", size, "r")
             if key == "vat":
                 self.c.setStrokeColor(INK)
                 self.c.setLineWidth(0.8)

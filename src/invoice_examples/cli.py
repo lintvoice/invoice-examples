@@ -5,6 +5,7 @@ invoice-examples generate --target fr --out examples/        # the valid invoice
 invoice-examples generate --target fr --rule BR-FR-10 --out . # one variant, plus the valid invoice
 """
 
+import dataclasses
 import argparse
 import json
 import sys
@@ -80,7 +81,11 @@ def cmd_generate(args, out):
                     f"invalid/{v.id}",
                     cii.to_bytes(target.build(v)),
                     formats,
-                    reference=valid,
+                    # the same invoice before the edit that breaks the rule: the page marks only what the edit
+                    # changed, not what the variant's own context (an allowance, a charge…) adds to every invoice
+                    reference=cii.to_bytes(target.build(dataclasses.replace(v, edit=None)))
+                    if v.changes and v.edit
+                    else valid,
                     rule=v.rule,
                     description=v.fr,
                 ),

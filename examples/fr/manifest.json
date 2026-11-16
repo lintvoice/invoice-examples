@@ -901,6 +901,166 @@
       }
     },
     {
+      "id": "BR-CO-03",
+      "status": "invalid",
+      "rule": "BR-CO-03",
+      "fires": [
+        "BR-CO-03"
+      ],
+      "files": {
+        "xml": "invalid/BR-CO-03.xml",
+        "pdf": "invalid/BR-CO-03.pdf"
+      },
+      "description": {
+        "en": "The VAT breakdown gives both a VAT point date (BT-7) and a VAT point date code (BT-8); only one is allowed.",
+        "fr": "La ventilation de TVA indique à la fois une date d'exigibilité de la TVA (BT-7) et un code de date d'exigibilité (BT-8) ; un seul est permis."
+      }
+    },
+    {
+      "id": "BR-CO-09",
+      "status": "invalid",
+      "rule": "BR-CO-09",
+      "fires": [
+        "BR-CO-09"
+      ],
+      "files": {
+        "xml": "invalid/BR-CO-09.xml",
+        "pdf": "invalid/BR-CO-09.pdf"
+      },
+      "description": {
+        "en": "The seller's VAT number (BT-31) does not start with a country code (ZZ is not one).",
+        "fr": "Le numéro de TVA du vendeur (BT-31) ne commence pas par un code pays (ZZ n'en est pas un)."
+      }
+    },
+    {
+      "id": "BR-CO-10",
+      "status": "invalid",
+      "rule": "BR-CO-10",
+      "fires": [
+        "BR-CO-10"
+      ],
+      "files": {
+        "xml": "invalid/BR-CO-10.xml",
+        "pdf": "invalid/BR-CO-10.pdf"
+      },
+      "description": {
+        "en": "The sum of the line net amounts (BT-106) is not the total of the lines (BT-131); the other totals follow it.",
+        "fr": "La somme des montants nets des lignes (BT-106) n'est pas égale au total des lignes (BT-131) ; les autres totaux suivent."
+      }
+    },
+    {
+      "id": "BR-CO-11",
+      "status": "invalid",
+      "rule": "BR-CO-11",
+      "fires": [
+        "BR-CO-11"
+      ],
+      "files": {
+        "xml": "invalid/BR-CO-11.xml",
+        "pdf": "invalid/BR-CO-11.pdf"
+      },
+      "description": {
+        "en": "The total of document level allowances (BT-107) is not the sum of the allowances (BT-92).",
+        "fr": "Le total des remises au niveau du document (BT-107) n'est pas égal à la somme des remises (BT-92)."
+      }
+    },
+    {
+      "id": "BR-CO-12",
+      "status": "invalid",
+      "rule": "BR-CO-12",
+      "fires": [
+        "BR-CO-12"
+      ],
+      "files": {
+        "xml": "invalid/BR-CO-12.xml",
+        "pdf": "invalid/BR-CO-12.pdf"
+      },
+      "description": {
+        "en": "The total of document level charges (BT-108) is not the sum of the charges (BT-99).",
+        "fr": "Le total des frais au niveau du document (BT-108) n'est pas égal à la somme des frais (BT-99)."
+      }
+    },
+    {
+      "id": "BR-CO-13",
+      "status": "invalid",
+      "rule": "BR-CO-13",
+      "fires": [
+        "BR-CO-13"
+      ],
+      "files": {
+        "xml": "invalid/BR-CO-13.xml",
+        "pdf": "invalid/BR-CO-13.pdf"
+      },
+      "description": {
+        "en": "The total without VAT (BT-109) is not the sum of the lines (BT-106) minus the allowances (BT-107) plus the charges (BT-108).",
+        "fr": "Le total HT (BT-109) n'est pas égal à la somme des lignes (BT-106) moins les remises (BT-107) plus les frais (BT-108)."
+      }
+    },
+    {
+      "id": "BR-CO-14",
+      "status": "invalid",
+      "rule": "BR-CO-14",
+      "fires": [
+        "BR-CO-14"
+      ],
+      "files": {
+        "xml": "invalid/BR-CO-14.xml",
+        "pdf": "invalid/BR-CO-14.pdf"
+      },
+      "description": {
+        "en": "The VAT total (BT-110) is not the sum of the VAT amounts per category (BT-117).",
+        "fr": "Le total de TVA (BT-110) n'est pas égal à la somme des montants de TVA par catégorie (BT-117)."
+      }
+    },
+    {
+      "id": "BR-CO-16",
+      "status": "invalid",
+      "rule": "BR-CO-16",
+      "fires": [
+        "BR-CO-16"
+      ],
+      "files": {
+        "xml": "invalid/BR-CO-16.xml",
+        "pdf": "invalid/BR-CO-16.pdf"
+      },
+      "description": {
+        "en": "The amount due (BT-115) is not the total with VAT (BT-112) minus the paid amount (BT-113) plus the rounding amount (BT-114).",
+        "fr": "Le net à payer (BT-115) n'est pas égal au total TTC (BT-112) moins le montant déjà payé (BT-113) plus l'arrondi (BT-114)."
+      }
+    },
+    {
+      "id": "BR-CO-19",
+      "status": "invalid",
+      "rule": "BR-CO-19",
+      "fires": [
+        "BR-CO-19"
+      ],
+      "files": {
+        "xml": "invalid/BR-CO-19.xml",
+        "pdf": "invalid/BR-CO-19.pdf"
+      },
+      "description": {
+        "en": "The invoicing period (BG-14) has neither a start date (BT-73) nor an end date (BT-74).",
+        "fr": "La période de facturation (BG-14) n'a ni date de début (BT-73) ni date de fin (BT-74)."
+      }
+    },
+    {
+      "id": "BR-CO-20",
+      "status": "invalid",
+      "rule": "BR-CO-20",
+      "fires": [
+        "BR-CO-20"
+      ],
+      "files": {
+        "xml": "invalid/BR-CO-20.xml",
+        "pdf": "invalid/BR-CO-20.pdf"
+      },
+      "description": {
+        "en": "The first line's period (BG-26) has neither a start date (BT-134) nor an end date (BT-135).",
+        "fr": "La période de la première ligne (BG-26) n'a ni date de début (BT-134) ni date de fin (BT-135)."
+      }
+    },
+    {
       "id": "BR-FR-03-BT-7",
       "status": "invalid",
       "rule": "BR-FR-03",
