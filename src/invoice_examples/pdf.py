@@ -1,9 +1,10 @@
 """Wrap a CII invoice in a PDF, as Factur-X does: one readable page, the XML attached as factur-x.xml.
 
 The page is drawn from the XML itself, so it shows exactly what the XML says, mistakes included. It is
-marked SPECIMEN: these invoices are fictitious. For an invalid variant, the page states the rule it fails,
-and every value that differs from the valid invoice is drawn in the error colour. The annotated page adds
-each value's business term number (BT-…) from EN 16931, for people learning to read an e-invoice.
+marked SPECIMEN and says at the top that the invoice is fictitious. For an invalid variant, the top of the page
+also states the rule it fails, and every value that differs from the valid invoice is drawn in the error colour.
+The annotated page adds each value's business term number (BT-…) from EN 16931, for people learning to read an
+e-invoice.
 
 The PDF is deterministic (no dates, a fixed file identifier) so that regenerated examples do not change.
 It is not PDF/A-3: these examples are for testing XML extraction and the XML rules, not PDF/A-3 validation.
@@ -215,9 +216,46 @@ class _Page:
             y -= 11.5
         return y
 
+    def header(self, rule, description):
+        """Above the invoice, before anything else: what this page is and, for an invalid variant, what is wrong.
+        Returns the height it takes."""
+        c = self.c
+        y = H - 30
+        self.text(
+            M,
+            y,
+            "Spécimen : facture fictive, sans valeur, générée par lintvoice/invoice-examples (domaine public, CC0).",
+            "Plex-SemiBold",
+            7.5,
+            MUTED,
+        )
+        second = "Cette page reprend les données du fichier factur-x.xml joint au PDF" + (
+            ", erreur comprise." if rule else "."
+        )
+        if self.annotate:
+            second += " Les petits codes BT-… sont les numéros des données dans la norme européenne EN 16931."
+        self.text(M, y - 10, second, size=7.5, color=MUTED)
+        y -= 22
+        if rule:
+            wrapped = simpleSplit(description or "", "Plex", 8.5, W - 2 * M - 20)
+            height = 22 + 11 * len(wrapped)
+            c.setFillColor(ERROR_FILL)
+            c.setStrokeColor(ERROR)
+            c.setLineWidth(0.8)
+            c.roundRect(M, y - height, W - 2 * M, height, 4, stroke=1, fill=1)
+            # "×" and a word: the status never relies on colour alone
+            self.text(M + 10, y - 13, f"× Erreur · {rule}", "Plex-SemiBold", 8.5, ERROR)
+            for i, line in enumerate(wrapped):
+                self.text(M + 10, y - 26 - 11 * i, line, size=8.5)
+            y -= height + 6
+        return H - y
+
     def draw(self, rule=None, description=None):
         c, d = self.c, self.d
         self.watermark()
+        top = self.header(rule, description)
+        c.saveState()
+        c.translate(0, -(top - 28))  # the invoice starts under the header
         c.setStrokeColor(ACCENT)
         c.setLineWidth(2)
         c.line(M, H - 40, W - M, H - 40)
@@ -237,32 +275,10 @@ class _Page:
             self.code(W - M - 84 - c.stringWidth(label, "Plex", 8), y, bt, "r")
             self.value(W - M, y, v, (key,), "Plex-Mono", 8.5, "r")
         y = min(self.party(340, H - 170, "Acheteur", "buyer", ("BT-47", "BT-46", "BT-48", "BT-49")), H - 250) - 14
-        if rule:
-            wrapped = simpleSplit(description or "", "Plex", 8.5, W - 2 * M - 20)
-            height = 22 + 11 * len(wrapped)
-            c.setFillColor(ERROR_FILL)
-            c.setStrokeColor(ERROR)
-            c.setLineWidth(0.8)
-            c.roundRect(M, y - height + 8, W - 2 * M, height, 4, stroke=1, fill=1)
-            # "×" and a word: the status never relies on colour alone
-            self.text(M + 10, y - 5, f"× Erreur volontaire · {rule}", "Plex-SemiBold", 8.5, ERROR)
-            for i, line in enumerate(wrapped):
-                self.text(M + 10, y - 18 - 11 * i, line, size=8.5)
-            y -= height + 14
         y = self.lines(y)
         y = self.totals(y - 14)
         self.notes(y - 24)
-        self.text(
-            M,
-            40,
-            "Facture fictive, sans valeur : un exemple de test généré par lintvoice/invoice-examples, dans le domaine public (CC0).",
-            size=7,
-            color=MUTED,
-        )
-        last = "Cette page reprend les données du fichier factur-x.xml joint au PDF, y compris ses erreurs volontaires."
-        if self.annotate:
-            last = "Les petits codes BT-… sont les numéros des données dans la norme européenne EN 16931."
-        self.text(M, 30, last, size=7, color=MUTED)
+        c.restoreState()
 
     def lines(self, y):
         cols = (

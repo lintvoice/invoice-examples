@@ -83,7 +83,7 @@ def test_invalid_pdf_states_the_rule_and_shows_the_wrong_value():
         .pages[0]
         .extract_text()
     )
-    assert "Erreur volontaire" in text and "BR-CO-15" in text
+    assert "Erreur · BR-CO-15" in text
     assert pdf.read(xml)["gross"] != pdf.read(valid)["gross"]  # the value the page draws in the error colour
 
 
