@@ -70,28 +70,28 @@ def cmd_generate(args, out):
         }
     ]
     for v in variants:
-        entries.append(
-            {
-                "id": v.id,
-                "status": "invalid",
-                "rule": v.rule,
-                "fires": list(v.fires),
-                "files": _files(
-                    root,
-                    f"invalid/{v.id}",
-                    cii.to_bytes(target.build(v)),
-                    formats,
-                    # the same invoice before the edit that breaks the rule: the page marks only what the edit
-                    # changed, not what the variant's own context (an allowance, a charge…) adds to every invoice
-                    reference=cii.to_bytes(target.build(dataclasses.replace(v, edit=None)))
-                    if v.changes and v.edit
-                    else valid,
-                    rule=v.rule,
-                    description=v.fr,
-                ),
-                "description": {"en": v.en, "fr": v.fr},
-            }
-        )
+        # A variant that first sets a context (an allowance, a charge, lines…) and then breaks a rule also gets the
+        # same invoice before the break, which passes every rule: its page compares with it, and so can the reader.
+        fixed = cii.to_bytes(target.build(dataclasses.replace(v, edit=v.fixed))) if v.changes and v.edit else None
+        entry = {
+            "id": v.id,
+            "status": "invalid",
+            "rule": v.rule,
+            "fires": list(v.fires),
+            "files": _files(
+                root,
+                f"invalid/{v.id}",
+                cii.to_bytes(target.build(v)),
+                formats,
+                reference=fixed or valid,
+                rule=v.rule,
+                description=v.fr,
+            ),
+            "description": {"en": v.en, "fr": v.fr},
+        }
+        if fixed:
+            entry["fixed"] = _files(root, f"fixed/{v.id}", fixed, formats)
+        entries.append(entry)
     annotated = {}
     if "pdf" in formats:
         # the valid invoice again, each value with its EN 16931 business term number: for reading, not for tests

@@ -12,6 +12,8 @@ Free to use for anything: the examples are in the public domain ([CC0](examples/
 - `valid.xml`, `valid.pdf`: a French invoice that passes every rule listed below;
 - `invalid/<rule>.xml`, `invalid/<rule>.pdf`: the same invoice with one thing wrong, for example
   `invalid/BR-FR-10.xml` (the seller's SIREN is missing);
+- `fixed/<rule>.xml`, `fixed/<rule>.pdf`: for an invalid example that first adds something to the invoice (an
+  allowance, a charge, lines), the same invoice without the mistake, which passes every rule;
 - `manifest.json`: for each example, the rules it fails, in English and French, and the rule versions.
 
 | Rules checked | Version |

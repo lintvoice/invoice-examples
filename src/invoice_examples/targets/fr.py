@@ -29,6 +29,9 @@ class Variant:
     fr: str  # the same, in French
     changes: dict = field(default_factory=dict)  # baseline keys to replace
     edit: object = None  # optional function(root) applied to the XML tree
+    # with changes and an edit: the edit that gives the same invoice without the mistake, when that is not simply
+    # no edit at all (the variant's edit both sets a context and breaks the rule)
+    fixed: object = None
 
 
 def _ram(tag):
@@ -254,6 +257,12 @@ def _paid_without_due_date(root):
     _prepaid(sums.find(_ram("GrandTotalAmount")).text, "0.00")(root)
     terms = _first(root, "SpecifiedTradePaymentTerms")
     terms.remove(terms.find(_ram("DueDateDateTime")))
+
+
+def _paid_with_due_date(root):
+    """Already paid, as in _paid_without_due_date, but the payment due date (BT-9) stays."""
+    sums = _first(root, "SpecifiedTradeSettlementHeaderMonetarySummation")
+    _prepaid(sums.find(_ram("GrandTotalAmount")).text, "0.00")(root)
 
 
 def _gross_price(gross, discount):
@@ -938,6 +947,7 @@ VARIANTS = (
         "Une facture déjà payée (cadre de facturation S2) n'a pas de date d'échéance (BT-9).",
         {"billing_frame": "S2"},
         edit=_paid_without_due_date,
+        fixed=_paid_with_due_date,
     ),
     Variant(
         "BR-FR-CO-10-BT-29-2",

@@ -962,6 +962,10 @@
       "description": {
         "en": "The total of document level allowances (BT-107) is not the sum of the allowances (BT-92).",
         "fr": "Le total des remises au niveau du document (BT-107) n'est pas égal à la somme des remises (BT-92)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-CO-11.xml",
+        "pdf": "fixed/BR-CO-11.pdf"
       }
     },
     {
@@ -978,6 +982,10 @@
       "description": {
         "en": "The total of document level charges (BT-108) is not the sum of the charges (BT-99).",
         "fr": "Le total des frais au niveau du document (BT-108) n'est pas égal à la somme des frais (BT-99)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-CO-12.xml",
+        "pdf": "fixed/BR-CO-12.pdf"
       }
     },
     {
@@ -1074,6 +1082,10 @@
       "description": {
         "en": "The VAT point date (BT-7) has a year outside 2000-2099.",
         "fr": "La date d'exigibilité de la TVA (BT-7) a une année hors de 2000-2099."
+      },
+      "fixed": {
+        "xml": "fixed/BR-FR-03-BT-7.xml",
+        "pdf": "fixed/BR-FR-03-BT-7.pdf"
       }
     },
     {
@@ -1207,6 +1219,10 @@
       "description": {
         "en": "A document level allowance's VAT rate (BT-96) has 3 decimals (20.000); BR-FR-16 rejects it too, as 20.000 is not in its list of rates.",
         "fr": "Le taux de TVA d'une remise au niveau du document (BT-96) a 3 décimales (20.000) ; BR-FR-16 le refuse aussi, 20.000 n'étant pas dans sa liste de taux."
+      },
+      "fixed": {
+        "xml": "fixed/BR-FR-DEC-04-allowance.xml",
+        "pdf": "fixed/BR-FR-DEC-04-allowance.pdf"
       }
     },
     {
@@ -1272,6 +1288,10 @@
       "description": {
         "en": "An already paid invoice (billing frame S2) has no payment due date (BT-9).",
         "fr": "Une facture déjà payée (cadre de facturation S2) n'a pas de date d'échéance (BT-9)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-FR-CO-09-BT-9.xml",
+        "pdf": "fixed/BR-FR-CO-09-BT-9.pdf"
       }
     },
     {
@@ -1407,6 +1427,10 @@
       "description": {
         "en": "A document level allowance amount (BT-92) has 3 decimals (EN 16931 BR-DEC-01 fires too).",
         "fr": "Le montant d'une remise au niveau du document (BT-92) a 3 décimales (la règle EN 16931 BR-DEC-01 se déclenche aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-FR-DEC-01-BT-92.xml",
+        "pdf": "fixed/BR-FR-DEC-01-BT-92.pdf"
       }
     },
     {
@@ -1424,6 +1448,10 @@
       "description": {
         "en": "A document level allowance base amount (BT-93) has 3 decimals (EN 16931 BR-DEC-02 fires too).",
         "fr": "L'assiette d'une remise au niveau du document (BT-93) a 3 décimales (la règle EN 16931 BR-DEC-02 se déclenche aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-FR-DEC-01-BT-93.xml",
+        "pdf": "fixed/BR-FR-DEC-01-BT-93.pdf"
       }
     },
     {
@@ -1458,6 +1486,10 @@
       "description": {
         "en": "The sum of allowances on document level (BT-107) has 3 decimals (EN 16931 BR-DEC-10 fires too).",
         "fr": "La somme des remises au niveau du document (BT-107) a 3 décimales (la règle EN 16931 BR-DEC-10 se déclenche aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-FR-DEC-01-BT-107.xml",
+        "pdf": "fixed/BR-FR-DEC-01-BT-107.pdf"
       }
     },
     {
@@ -1475,6 +1507,10 @@
       "description": {
         "en": "The sum of charges on document level (BT-108) has 3 decimals (EN 16931 BR-DEC-11 fires too).",
         "fr": "La somme des frais au niveau du document (BT-108) a 3 décimales (la règle EN 16931 BR-DEC-11 se déclenche aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-FR-DEC-01-BT-108.xml",
+        "pdf": "fixed/BR-FR-DEC-01-BT-108.pdf"
       }
     },
     {
@@ -1610,6 +1646,10 @@
       "description": {
         "en": "An invoice line allowance amount (BT-136) has 3 decimals (EN 16931 BR-DEC-24 fires too).",
         "fr": "Le montant d'une remise de ligne (BT-136) a 3 décimales (la règle EN 16931 BR-DEC-24 se déclenche aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-FR-DEC-01-BT-136.xml",
+        "pdf": "fixed/BR-FR-DEC-01-BT-136.pdf"
       }
     },
     {
@@ -1627,6 +1667,10 @@
       "description": {
         "en": "An invoice line allowance base amount (BT-137) has 3 decimals (EN 16931 BR-DEC-25 fires too).",
         "fr": "L'assiette d'une remise de ligne (BT-137) a 3 décimales (la règle EN 16931 BR-DEC-25 se déclenche aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-FR-DEC-01-BT-137.xml",
+        "pdf": "fixed/BR-FR-DEC-01-BT-137.pdf"
       }
     },
     {
