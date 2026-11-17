@@ -3,7 +3,7 @@
 Valid and invalid e-invoice examples, **one invalid example per rule**, checked against the official rules.
 Free to use for anything: the examples are in the public domain ([CC0](examples/LICENSE)).
 
-> Status: 0.2.0, first target `fr` (Factur-X / CII, French reform rules).
+> Status: 0.3.0, first target `fr` (Factur-X / CII, French reform rules).
 
 ## Download the examples
 
