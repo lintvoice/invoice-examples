@@ -17,7 +17,9 @@ RULES = {
     "EN 16931": "1.3.17 (CII)",
     "Factur-X": "1.09.2, EN 16931 profile",
     "BR-FR": "1.4.0.04 (France_RFE, FNFE-MPE)",
+    "EXTENDED-CTC-FR": "1.4.0.04 (France_RFE), with the CII D22B schema, for the examples in that profile",
 }
+EXTENDED_CTC_FR = "urn:cen.eu:en16931:2017#conformant#urn.cpro.gouv.fr:1p0:extended-ctc-fr"
 
 
 @dataclass(frozen=True)
@@ -353,6 +355,12 @@ def _line_charge(amount, reason):
         _shift(amount * 1.2, "GrandTotalAmount", "DuePayableAmount")(root)
 
     return edit
+
+
+def _no_payment_terms(root):
+    """Remove the payment terms block: the payment due date (BT-9) and the payment terms text (BT-20)."""
+    settle = _first(root, "ApplicableHeaderTradeSettlement")
+    settle.remove(settle.find(_ram("SpecifiedTradePaymentTerms")))
 
 
 def _line_tax_type(code):
@@ -964,6 +972,15 @@ VARIANTS = (
         "Des frais sur ligne n'ont ni motif (BT-144) ni code de motif (BT-145) (la règle EN 16931 BR-44 dit la même chose et échoue aussi).",
         edit=_line_charge(10.0, reason=False),
         fixed=_line_charge(10.0, reason=True),
+    ),
+    Variant(
+        "BR-CO-25",
+        "BR-CO-25",
+        ("BR-CO-25",),
+        "An EXTENDED-CTC-FR invoice with an amount due (BT-115) gives neither a payment due date (BT-9) nor payment terms (BT-20).",
+        "Une facture au profil EXTENDED-CTC-FR, avec un net à payer (BT-115), n'indique ni date d'échéance (BT-9) ni conditions de paiement (BT-20).",
+        {"profile": EXTENDED_CTC_FR},
+        edit=_no_payment_terms,
     ),
     Variant(
         "BR-CO-26",

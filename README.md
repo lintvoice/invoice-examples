@@ -21,6 +21,9 @@ Free to use for anything: the examples are in the public domain ([CC0](examples/
 | EN 16931 (CII) | [1.3.17](https://github.com/ConnectingEurope/eInvoicing-EN16931/releases/tag/validation-1.3.17) |
 | Factur-X, EN 16931 profile | 1.09.2 |
 | BR-FR (French e-invoicing reform), [FNFE-MPE France_RFE](https://github.com/fnfempe/France_RFE/tree/97ba0f3d4ef2abed5780e9490d5c3a2be832ab1d) | 1.4.0.04 |
+| EXTENDED-CTC-FR (France_RFE), with the CII D22B schema: only for the examples in that profile (`BR-CO-25`) | 1.4.0.04 |
+
+Most examples use the Factur-X EN 16931 profile. An example whose rule exists only in a richer profile uses it and says so: `BR-CO-25` is an EXTENDED-CTC-FR invoice, one of the profiles the French reform admits, since the EN 16931 validation files no longer carry that rule ([release notes of 1.3.16](https://github.com/ConnectingEurope/eInvoicing-EN16931/releases/tag/validation-1.3.16)).
 
 **Valid** means:
 - no fatal error from these three rule sets;

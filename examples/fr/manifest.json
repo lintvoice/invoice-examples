@@ -6,7 +6,8 @@
   "rules": {
     "EN 16931": "1.3.17 (CII)",
     "Factur-X": "1.09.2, EN 16931 profile",
-    "BR-FR": "1.4.0.04 (France_RFE, FNFE-MPE)"
+    "BR-FR": "1.4.0.04 (France_RFE, FNFE-MPE)",
+    "EXTENDED-CTC-FR": "1.4.0.04 (France_RFE), with the CII D22B schema, for the examples in that profile"
   },
   "licence": "CC0-1.0",
   "examples": [
@@ -1185,6 +1186,26 @@
       "fixed": {
         "xml": "fixed/BR-CO-24.xml",
         "pdf": "fixed/BR-CO-24.pdf"
+      }
+    },
+    {
+      "id": "BR-CO-25",
+      "status": "invalid",
+      "rule": "BR-CO-25",
+      "fires": [
+        "BR-CO-25"
+      ],
+      "files": {
+        "xml": "invalid/BR-CO-25.xml",
+        "pdf": "invalid/BR-CO-25.pdf"
+      },
+      "description": {
+        "en": "An EXTENDED-CTC-FR invoice with an amount due (BT-115) gives neither a payment due date (BT-9) nor payment terms (BT-20).",
+        "fr": "Une facture au profil EXTENDED-CTC-FR, avec un net à payer (BT-115), n'indique ni date d'échéance (BT-9) ni conditions de paiement (BT-20)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-CO-25.xml",
+        "pdf": "fixed/BR-CO-25.pdf"
       }
     },
     {
