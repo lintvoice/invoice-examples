@@ -72,7 +72,11 @@ def cmd_generate(args, out):
     for v in variants:
         # A variant that first sets a context (an allowance, a charge, lines…) and then breaks a rule also gets the
         # same invoice before the break, which passes every rule: its page compares with it, and so can the reader.
-        fixed = cii.to_bytes(target.build(dataclasses.replace(v, edit=v.fixed))) if v.changes and v.edit else None
+        fixed = (
+            cii.to_bytes(target.build(dataclasses.replace(v, edit=v.fixed)))
+            if (v.changes and v.edit) or v.fixed
+            else None
+        )
         entry = {
             "id": v.id,
             "status": "invalid",

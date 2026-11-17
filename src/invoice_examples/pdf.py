@@ -80,6 +80,26 @@ def _party(root, tag):
     }
 
 
+def _adjustments(node, path):
+    """Allowances and charges under node: kind, reason (text, else code, else None) and amount."""
+    return [
+        {
+            "charge": _text(ac, "ram:ChargeIndicator/udt:Indicator") == "true",
+            "reason": _text(ac, "ram:Reason") or _text(ac, "ram:ReasonCode") or None,
+            "amount": _text(ac, "ram:ActualAmount"),
+        }
+        for ac in node.xpath(path, namespaces=NS)
+    ]
+
+
+def _adjustment_label(a):
+    """'Remise', 'Frais · Emballage', or 'Remise · sans motif' when it has neither reason nor reason code."""
+    kind = "Frais" if a["charge"] else "Remise"
+    if not a["reason"]:
+        return f"{kind} · sans motif"
+    return kind if a["reason"].lower() == kind.lower() else f"{kind} · {a['reason']}"
+
+
 def read(xml_bytes):
     """The values the page shows, as strings, read from the invoice's XML."""
     root = etree.fromstring(xml_bytes)
@@ -94,6 +114,7 @@ def read(xml_bytes):
                     item, ".//ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:RateApplicablePercent"
                 ),
                 "net": _text(item, ".//ram:SpecifiedTradeSettlementLineMonetarySummation/ram:LineTotalAmount"),
+                "adjustments": _adjustments(item, "ram:SpecifiedLineTradeSettlement/ram:SpecifiedTradeAllowanceCharge"),
             }
         )
     notes = []
@@ -102,14 +123,7 @@ def read(xml_bytes):
         notes.append(f"Traitement (BAR) : {content}" if code == "BAR" else content)
     total = "//ram:SpecifiedTradeSettlementHeaderMonetarySummation/ram:"
     # document level allowances (BG-20) and charges (BG-21), in the order of the XML
-    adjustments = [
-        {
-            "charge": _text(ac, "ram:ChargeIndicator/udt:Indicator") == "true",
-            "reason": _text(ac, "ram:Reason") or _text(ac, "ram:ReasonCode"),
-            "amount": _text(ac, "ram:ActualAmount"),
-        }
-        for ac in root.xpath("//ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge", namespaces=NS)
-    ]
+    adjustments = _adjustments(root, "//ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge")
     return {
         "type": _text(root, "//rsm:ExchangedDocument/ram:TypeCode"),
         "number": _text(root, "//rsm:ExchangedDocument/ram:ID"),
@@ -316,6 +330,14 @@ class _Page:
             self.value(400, y, _money(line["price"]), ("lines", i, "price"), "Plex-Mono", 8.5, "r")
             self.value(450, y, _number(line["rate"], " %"), ("lines", i, "rate"), "Plex-Mono", 8.5, "r")
             self.value(W - M, y, _money(line["net"]), ("lines", i, "net"), "Plex-Mono", 8.5, "r")
+            for j, a in enumerate(line.get("adjustments") or []):
+                y -= 13
+                keys = ("lines", i, "adjustments", j)
+                self.value(
+                    M + 12, y, _adjustment_label(a), (*keys, "reason"), size=8, bad=None if a["reason"] else True
+                )
+                sign = "+ " if a["charge"] else "− "
+                self.value(W - M, y, sign + _money(a["amount"]), (*keys, "amount"), "Plex-Mono", 8, "r")
             self.c.setStrokeColor(LINE)
             self.c.setLineWidth(0.5)
             self.c.line(M, y - 6, W - M, y - 6)
@@ -328,9 +350,7 @@ class _Page:
         d = self.d
         rows = [("Total des lignes HT", ("lines_total",), "BT-106")]
         for i, a in enumerate(d["adjustments"]):
-            kind = "Frais" if a["charge"] else "Remise"
-            label = kind if not a["reason"] or a["reason"].lower() == kind.lower() else f"{kind} · {a['reason']}"
-            rows.append((label, ("adjustments", i, "amount"), "BT-99" if a["charge"] else "BT-92"))
+            rows.append((_adjustment_label(a), ("adjustments", i, "amount"), "BT-99" if a["charge"] else "BT-92"))
         if d["allowance_total"]:
             rows.append(("Total des remises", ("allowance_total",), "BT-107"))
         if d["charge_total"]:
@@ -345,7 +365,8 @@ class _Page:
             key = keys[0]
             strong = key in ("gross", "payable")
             font, size = ("Plex-SemiBold", 9.5) if strong else ("Plex", 9)
-            w = self.text(x, y, label, font, size, INK if strong else MUTED)
+            color = ERROR if label.endswith("sans motif") else INK if strong else MUTED  # a missing reason is an error
+            w = self.text(x, y, label, font, size, color)
             self.code(x + w + 4, y + 0.5, bt)
             self.value(W - M, y, _money(_get(d, keys)), keys, "Plex-Mono", size, "r")
             if key == "vat":

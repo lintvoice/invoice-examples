@@ -21,7 +21,7 @@ def test_variant_fails_exactly_the_declared_rules(judge, variant):
     assert judge.fired(xml) == set(variant.fires)
 
 
-@pytest.mark.parametrize("variant", [v for v in fr.VARIANTS if v.changes and v.edit], ids=lambda v: v.id)
+@pytest.mark.parametrize("variant", [v for v in fr.VARIANTS if (v.changes and v.edit) or v.fixed], ids=lambda v: v.id)
 def test_fixed_counterpart_passes_every_rule(judge, variant):
     """The same invoice before the edit that breaks the rule: what the reader compares with."""
     xml = cii.to_bytes(fr.build(dataclasses.replace(variant, edit=variant.fixed)))

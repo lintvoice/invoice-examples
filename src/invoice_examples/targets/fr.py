@@ -29,8 +29,8 @@ class Variant:
     fr: str  # the same, in French
     changes: dict = field(default_factory=dict)  # baseline keys to replace
     edit: object = None  # optional function(root) applied to the XML tree
-    # with changes and an edit: the edit that gives the same invoice without the mistake, when that is not simply
-    # no edit at all (the variant's edit both sets a context and breaks the rule)
+    # the edit that gives the same invoice without the mistake, when that is not simply the variant without its
+    # edit (the variant's edit both sets a context and breaks the rule)
     fixed: object = None
 
 
@@ -303,6 +303,73 @@ def _empty_period(where):
         _insert(_first(root, where), _new("ram:BillingSpecifiedPeriod"), after="ApplicableTradeTax")
 
     return edit
+
+
+def _vat_amount(delta):
+    """Add delta to the first VAT breakdown's tax amount (BT-117), and to the totals that follow from it."""
+
+    def edit(root):
+        node = _first(root, "ApplicableHeaderTradeSettlement", "ApplicableTradeTax", "CalculatedAmount")
+        node.text = f"{float(node.text) + delta:.2f}"
+        _shift(delta, "TaxTotalAmount", "GrandTotalAmount", "DuePayableAmount")(root)
+
+    return edit
+
+
+def _no_reasons(where):
+    """Remove the reason (BT-97, BT-104, BT-139, BT-144) and the reason code of every allowance or charge in where:
+    the document level (ApplicableHeaderTradeSettlement) or the first line (SpecifiedLineTradeSettlement)."""
+
+    def edit(root):
+        for ac in _first(root, where).iterfind(_ram("SpecifiedTradeAllowanceCharge")):
+            for tag in ("ReasonCode", "Reason"):
+                for node in ac.findall(_ram(tag)):
+                    ac.remove(node)
+
+    return edit
+
+
+def _line_charge(amount, reason):
+    """Add a charge (BG-28) to the first line, with or without its reason, and carry it into the line net amount, the
+    VAT breakdown (20 %) and every total."""
+
+    def edit(root):
+        settle = _first(root, "SpecifiedLineTradeSettlement")
+        ac = _new("ram:SpecifiedTradeAllowanceCharge")
+        _sub(_sub(ac, "ram:ChargeIndicator"), "udt:Indicator", "true")
+        _sub(ac, "ram:ActualAmount", f"{amount:.2f}")
+        if reason:
+            _sub(ac, "ram:ReasonCode", "ABL")
+            _sub(ac, "ram:Reason", "Emballage")
+        _insert(settle, ac, before="SpecifiedTradeSettlementLineMonetarySummation")
+        net = settle.find(f"{_ram('SpecifiedTradeSettlementLineMonetarySummation')}/{_ram('LineTotalAmount')}")
+        net.text = f"{float(net.text) + amount:.2f}"
+        tax = _first(root, "ApplicableHeaderTradeSettlement", "ApplicableTradeTax")
+        for tag, delta in (("BasisAmount", amount), ("CalculatedAmount", amount * 0.2)):
+            node = tax.find(_ram(tag))
+            node.text = f"{float(node.text) + delta:.2f}"
+        _shift(amount, "LineTotalAmount", "TaxBasisTotalAmount")(root)
+        _shift(amount * 0.2, "TaxTotalAmount")(root)
+        _shift(amount * 1.2, "GrandTotalAmount", "DuePayableAmount")(root)
+
+    return edit
+
+
+def _line_tax_type(code):
+    """Declare the first line's tax with another type code than VAT."""
+
+    def edit(root):
+        _first(root, "SpecifiedLineTradeSettlement", "ApplicableTradeTax", "TypeCode").text = code
+
+    return edit
+
+
+def _no_seller_identifiers(root):
+    """Remove every identifier of the seller: SIRET (BT-29), SIREN (BT-30) and VAT number (BT-31)."""
+    seller = _first(root, "SellerTradeParty")
+    for tag in ("GlobalID", "SpecifiedLegalOrganization", "SpecifiedTaxRegistration"):
+        for node in seller.findall(_ram(tag)):
+            seller.remove(node)
 
 
 NOTES = cii.FRENCH["notes"]
@@ -840,6 +907,71 @@ VARIANTS = (
         "The first line's period (BG-26) has neither a start date (BT-134) nor an end date (BT-135).",
         "La période de la première ligne (BG-26) n'a ni date de début (BT-134) ni date de fin (BT-135).",
         edit=_empty_period("SpecifiedLineTradeSettlement"),
+    ),
+    Variant(
+        "BR-CO-04",
+        "BR-CO-04",
+        ("BR-CO-04", "CII-DT-037", "FX-SCH-A-000620"),
+        "The first line's tax is declared with the type GST instead of VAT, so the line has no VAT category (the CII syntax rule CII-DT-037 and a Factur-X profile rule fail too).",
+        "La taxe de la première ligne est déclarée avec le type GST au lieu de VAT : la ligne n'a donc pas de catégorie de TVA (la règle de syntaxe CII-DT-037 et une règle du profil Factur-X échouent aussi).",
+        edit=_line_tax_type("GST"),
+    ),
+    Variant(
+        "BR-CO-17",
+        "BR-CO-17",
+        ("BR-CO-17", "BR-S-09"),
+        "The VAT amount of the 20 % rate (BT-117) is not its taxable amount (BT-116) times the rate (BR-S-09, the same check for the standard rate, fails too).",
+        "Le montant de TVA du taux de 20 % (BT-117) n'est pas sa base (BT-116) multipliée par le taux (BR-S-09, le même contrôle pour le taux normal, échoue aussi).",
+        edit=_vat_amount(2),
+    ),
+    Variant(
+        "BR-CO-21",
+        "BR-CO-21",
+        ("BR-33", "BR-CO-21"),
+        "A document level allowance gives neither a reason (BT-97) nor a reason code (BT-98) (EN 16931 BR-33 says the same and fails too).",
+        "Une remise au niveau du document n'a ni motif (BT-97) ni code de motif (BT-98) (la règle EN 16931 BR-33 dit la même chose et échoue aussi).",
+        {"allowances": [("10.00", "95", "Remise", "S", "20")]},
+        edit=_no_reasons("ApplicableHeaderTradeSettlement"),
+    ),
+    Variant(
+        "BR-CO-22",
+        "BR-CO-22",
+        ("BR-38", "BR-CO-22"),
+        "A document level charge gives neither a reason (BT-104) nor a reason code (BT-105) (EN 16931 BR-38 says the same and fails too).",
+        "Des frais au niveau du document n'ont ni motif (BT-104) ni code de motif (BT-105) (la règle EN 16931 BR-38 dit la même chose et échoue aussi).",
+        {"charges": [("10.00", "FC", "Frais de port", "S", "20")]},
+        edit=_no_reasons("ApplicableHeaderTradeSettlement"),
+    ),
+    Variant(
+        "BR-CO-23",
+        "BR-CO-23",
+        ("BR-42", "BR-CO-23"),
+        "A line allowance gives neither a reason (BT-139) nor a reason code (BT-140) (EN 16931 BR-42 says the same and fails too).",
+        "Une remise sur ligne n'a ni motif (BT-139) ni code de motif (BT-140) (la règle EN 16931 BR-42 dit la même chose et échoue aussi).",
+        {
+            "lines": [
+                ("Atelier de formation", "2", "450.00", "S", "20", "50.00"),
+                ("Support de cours", "10", "12.50", "S", "20"),
+            ]
+        },
+        edit=_no_reasons("SpecifiedLineTradeSettlement"),
+    ),
+    Variant(
+        "BR-CO-24",
+        "BR-CO-24",
+        ("BR-44", "BR-CO-24"),
+        "A line charge gives neither a reason (BT-144) nor a reason code (BT-145) (EN 16931 BR-44 says the same and fails too).",
+        "Des frais sur ligne n'ont ni motif (BT-144) ni code de motif (BT-145) (la règle EN 16931 BR-44 dit la même chose et échoue aussi).",
+        edit=_line_charge(10.0, reason=False),
+        fixed=_line_charge(10.0, reason=True),
+    ),
+    Variant(
+        "BR-CO-26",
+        "BR-CO-26",
+        ("BR-CO-26", "BR-FR-10_BT-30", "BR-S-02"),
+        "The seller has no identifier at all: no SIRET (BT-29), no SIREN (BT-30), no VAT number (BT-31) (BR-FR-10, which requires the SIREN, and BR-S-02, which requires the VAT number for standard-rated VAT, fail too).",
+        "Le vendeur n'a aucun identifiant : ni SIRET (BT-29), ni SIREN (BT-30), ni numéro de TVA (BT-31) (BR-FR-10, qui exige le SIREN, et BR-S-02, qui exige le numéro de TVA pour le taux normal, échouent aussi).",
+        edit=_no_seller_identifiers,
     ),
     Variant(
         "BR-FR-03-BT-7",

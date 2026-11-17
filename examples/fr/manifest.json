@@ -1069,6 +1069,143 @@
       }
     },
     {
+      "id": "BR-CO-04",
+      "status": "invalid",
+      "rule": "BR-CO-04",
+      "fires": [
+        "BR-CO-04",
+        "CII-DT-037",
+        "FX-SCH-A-000620"
+      ],
+      "files": {
+        "xml": "invalid/BR-CO-04.xml",
+        "pdf": "invalid/BR-CO-04.pdf"
+      },
+      "description": {
+        "en": "The first line's tax is declared with the type GST instead of VAT, so the line has no VAT category (the CII syntax rule CII-DT-037 and a Factur-X profile rule fail too).",
+        "fr": "La taxe de la première ligne est déclarée avec le type GST au lieu de VAT : la ligne n'a donc pas de catégorie de TVA (la règle de syntaxe CII-DT-037 et une règle du profil Factur-X échouent aussi)."
+      }
+    },
+    {
+      "id": "BR-CO-17",
+      "status": "invalid",
+      "rule": "BR-CO-17",
+      "fires": [
+        "BR-CO-17",
+        "BR-S-09"
+      ],
+      "files": {
+        "xml": "invalid/BR-CO-17.xml",
+        "pdf": "invalid/BR-CO-17.pdf"
+      },
+      "description": {
+        "en": "The VAT amount of the 20 % rate (BT-117) is not its taxable amount (BT-116) times the rate (BR-S-09, the same check for the standard rate, fails too).",
+        "fr": "Le montant de TVA du taux de 20 % (BT-117) n'est pas sa base (BT-116) multipliée par le taux (BR-S-09, le même contrôle pour le taux normal, échoue aussi)."
+      }
+    },
+    {
+      "id": "BR-CO-21",
+      "status": "invalid",
+      "rule": "BR-CO-21",
+      "fires": [
+        "BR-33",
+        "BR-CO-21"
+      ],
+      "files": {
+        "xml": "invalid/BR-CO-21.xml",
+        "pdf": "invalid/BR-CO-21.pdf"
+      },
+      "description": {
+        "en": "A document level allowance gives neither a reason (BT-97) nor a reason code (BT-98) (EN 16931 BR-33 says the same and fails too).",
+        "fr": "Une remise au niveau du document n'a ni motif (BT-97) ni code de motif (BT-98) (la règle EN 16931 BR-33 dit la même chose et échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-CO-21.xml",
+        "pdf": "fixed/BR-CO-21.pdf"
+      }
+    },
+    {
+      "id": "BR-CO-22",
+      "status": "invalid",
+      "rule": "BR-CO-22",
+      "fires": [
+        "BR-38",
+        "BR-CO-22"
+      ],
+      "files": {
+        "xml": "invalid/BR-CO-22.xml",
+        "pdf": "invalid/BR-CO-22.pdf"
+      },
+      "description": {
+        "en": "A document level charge gives neither a reason (BT-104) nor a reason code (BT-105) (EN 16931 BR-38 says the same and fails too).",
+        "fr": "Des frais au niveau du document n'ont ni motif (BT-104) ni code de motif (BT-105) (la règle EN 16931 BR-38 dit la même chose et échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-CO-22.xml",
+        "pdf": "fixed/BR-CO-22.pdf"
+      }
+    },
+    {
+      "id": "BR-CO-23",
+      "status": "invalid",
+      "rule": "BR-CO-23",
+      "fires": [
+        "BR-42",
+        "BR-CO-23"
+      ],
+      "files": {
+        "xml": "invalid/BR-CO-23.xml",
+        "pdf": "invalid/BR-CO-23.pdf"
+      },
+      "description": {
+        "en": "A line allowance gives neither a reason (BT-139) nor a reason code (BT-140) (EN 16931 BR-42 says the same and fails too).",
+        "fr": "Une remise sur ligne n'a ni motif (BT-139) ni code de motif (BT-140) (la règle EN 16931 BR-42 dit la même chose et échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-CO-23.xml",
+        "pdf": "fixed/BR-CO-23.pdf"
+      }
+    },
+    {
+      "id": "BR-CO-24",
+      "status": "invalid",
+      "rule": "BR-CO-24",
+      "fires": [
+        "BR-44",
+        "BR-CO-24"
+      ],
+      "files": {
+        "xml": "invalid/BR-CO-24.xml",
+        "pdf": "invalid/BR-CO-24.pdf"
+      },
+      "description": {
+        "en": "A line charge gives neither a reason (BT-144) nor a reason code (BT-145) (EN 16931 BR-44 says the same and fails too).",
+        "fr": "Des frais sur ligne n'ont ni motif (BT-144) ni code de motif (BT-145) (la règle EN 16931 BR-44 dit la même chose et échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-CO-24.xml",
+        "pdf": "fixed/BR-CO-24.pdf"
+      }
+    },
+    {
+      "id": "BR-CO-26",
+      "status": "invalid",
+      "rule": "BR-CO-26",
+      "fires": [
+        "BR-CO-26",
+        "BR-FR-10_BT-30",
+        "BR-S-02"
+      ],
+      "files": {
+        "xml": "invalid/BR-CO-26.xml",
+        "pdf": "invalid/BR-CO-26.pdf"
+      },
+      "description": {
+        "en": "The seller has no identifier at all: no SIRET (BT-29), no SIREN (BT-30), no VAT number (BT-31) (BR-FR-10, which requires the SIREN, and BR-S-02, which requires the VAT number for standard-rated VAT, fail too).",
+        "fr": "Le vendeur n'a aucun identifiant : ni SIRET (BT-29), ni SIREN (BT-30), ni numéro de TVA (BT-31) (BR-FR-10, qui exige le SIREN, et BR-S-02, qui exige le numéro de TVA pour le taux normal, échouent aussi)."
+      }
+    },
+    {
       "id": "BR-FR-03-BT-7",
       "status": "invalid",
       "rule": "BR-FR-03",
