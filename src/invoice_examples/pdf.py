@@ -92,6 +92,21 @@ def _adjustments(node, path):
     ]
 
 
+# The VAT categories other than the standard rate, as the page names them; the ones that need an exemption reason
+# (BT-120 or BT-121: BR-E-10, BR-AE-10, BR-IC-10, BR-G-10, BR-O-10).
+CATEGORIES = {
+    "Z": "taux zéro",
+    "E": "exonéré",
+    "AE": "autoliquidation",
+    "K": "intracommunautaire",
+    "G": "export",
+    "O": "hors champ",
+    "L": "Canaries",
+    "M": "Ceuta et Melilla",
+}
+NEEDS_REASON = {"E", "AE", "K", "G", "O"}
+
+
 def _adjustment_label(a):
     """'Remise', 'Frais · Emballage', or 'Remise · sans motif' when it has neither reason nor reason code."""
     kind = "Frais" if a["charge"] else "Remise"
@@ -109,6 +124,7 @@ def read(xml_bytes):
             {
                 "name": _text(item, ".//ram:SpecifiedTradeProduct/ram:Name"),
                 "qty": _text(item, ".//ram:BilledQuantity"),
+                "unit": _text(item, ".//ram:BilledQuantity/@unitCode"),
                 "price": _text(item, ".//ram:NetPriceProductTradePrice/ram:ChargeAmount"),
                 "rate": _text(
                     item, ".//ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:RateApplicablePercent"
@@ -124,6 +140,17 @@ def read(xml_bytes):
     total = "//ram:SpecifiedTradeSettlementHeaderMonetarySummation/ram:"
     # document level allowances (BG-20) and charges (BG-21), in the order of the XML
     adjustments = _adjustments(root, "//ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge")
+    # the VAT breakdown (BG-23): one row per category and rate
+    breakdown = [
+        {
+            "category": _text(tax, "ram:CategoryCode"),
+            "rate": _text(tax, "ram:RateApplicablePercent"),
+            "basis": _text(tax, "ram:BasisAmount"),
+            "amount": _text(tax, "ram:CalculatedAmount"),
+            "reason": _text(tax, "ram:ExemptionReason") or _text(tax, "ram:ExemptionReasonCode"),
+        }
+        for tax in root.xpath("//ram:ApplicableHeaderTradeSettlement/ram:ApplicableTradeTax", namespaces=NS)
+    ]
     return {
         "type": _text(root, "//rsm:ExchangedDocument/ram:TypeCode"),
         "number": _text(root, "//rsm:ExchangedDocument/ram:ID"),
@@ -142,6 +169,7 @@ def read(xml_bytes):
         "notes": notes,
         "lines_total": _text(root, f"{total}LineTotalAmount"),
         "adjustments": adjustments,
+        "breakdown": breakdown,
         "allowance_total": _text(root, f"{total}AllowanceTotalAmount"),
         "charge_total": _text(root, f"{total}ChargeTotalAmount"),
         "net": _text(root, f"{total}TaxBasisTotalAmount"),
@@ -305,7 +333,7 @@ class _Page:
             self.value(W - M, y, v, (key,), "Plex-Mono", 8.5, "r")
         y = min(self.party(340, H - 170, "Acheteur", "buyer", ("BT-47", "BT-46", "BT-48", "BT-49")), H - 250) - 14
         y = self.lines(y)
-        y = self.totals(y - 14)
+        y = min(self.totals(y - 14), self.breakdown(y - 14))
         self.notes(y - 24)
         c.restoreState()
 
@@ -326,7 +354,9 @@ class _Page:
         y -= 18
         for i, line in enumerate(self.d["lines"]):
             self.value(M, y, line["name"] or "absent", ("lines", i, "name"), size=9)
-            self.value(330, y, _number(line["qty"]), ("lines", i, "qty"), "Plex-Mono", 8.5, "r")
+            qty, unit = _number(line["qty"]), line.get("unit")
+            changed = self.changed(("lines", i, "qty")) or self.changed(("lines", i, "unit"))
+            self.value(330, y, qty if unit else f"{qty} sans unité", (), "Plex-Mono", 8.5, "r", bad=changed)
             self.value(400, y, _money(line["price"]), ("lines", i, "price"), "Plex-Mono", 8.5, "r")
             self.value(450, y, _number(line["rate"], " %"), ("lines", i, "rate"), "Plex-Mono", 8.5, "r")
             self.value(W - M, y, _money(line["net"]), ("lines", i, "net"), "Plex-Mono", 8.5, "r")
@@ -374,6 +404,33 @@ class _Page:
                 self.c.setLineWidth(0.8)
                 self.c.line(x, y - 6, W - M, y - 6)
             y -= 18
+        return y
+
+    def breakdown(self, y):
+        """The VAT per rate, left of the totals: each category and rate with its taxable amount and VAT, and the
+        exemption reason of the categories that need one."""
+        d = self.d
+        self.text(M, y, "TVA PAR TAUX", "Plex-SemiBold", 7.5, ACCENT)
+        self.code(M + self.c.stringWidth("TVA PAR TAUX", "Plex-SemiBold", 7.5) + 4, y, "BG-23")
+        y -= 14
+        for x, label, bt in ((M, "Taux", "BT-119"), (M + 190, "Base HT", "BT-116"), (M + 262, "TVA", "BT-117")):
+            align = "l" if x == M else "r"
+            self.text(x, y, label, "Plex-SemiBold", 7.5, MUTED, align)
+            self.code(x, y + 8, bt, align)
+        y -= 13
+        for i, row in enumerate(d["breakdown"]):
+            keys = ("breakdown", i)
+            name = CATEGORIES.get(row["category"])
+            rate = _number(row["rate"], " %")
+            self.value(M, y, f"{rate} · {name}" if name else rate, (*keys, "rate"), "Plex-Mono", 8.5)
+            self.value(M + 190, y, _money(row["basis"]), (*keys, "basis"), "Plex-Mono", 8.5, "r")
+            self.value(M + 262, y, _money(row["amount"]), (*keys, "amount"), "Plex-Mono", 8.5, "r")
+            if row["category"] in NEEDS_REASON:
+                y -= 11
+                reason = row["reason"] or "Motif d'exonération absent"
+                self.value(M + 12, y, reason, (*keys, "reason"), size=8, bad=None if row["reason"] else True)
+                self.code(M + 16 + self.c.stringWidth(reason, "Plex", 8), y + 0.5, "BT-120")
+            y -= 13
         return y
 
     def notes(self, y):

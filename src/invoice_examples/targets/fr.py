@@ -380,6 +380,51 @@ def _no_seller_identifiers(root):
             seller.remove(node)
 
 
+def _no_unit_code(root):
+    """Remove the unit of measure code (BT-130) of the first line's invoiced quantity."""
+    del _first(root, "SpecifiedLineTradeDelivery", "BilledQuantity").attrib["unitCode"]
+
+
+def _allowance_as_negative_line(root):
+    """Write the document level allowance as a last line of quantity 1 at a negative net price (BT-146): the same
+    amounts and totals, the discount typed as a line."""
+    settle = _first(root, "ApplicableHeaderTradeSettlement")
+    allowance = settle.find(_ram("SpecifiedTradeAllowanceCharge"))
+    amount, reason = allowance.find(_ram("ActualAmount")).text, allowance.find(_ram("Reason")).text
+    settle.remove(allowance)
+    lines = root.findall(f".//{_ram('IncludedSupplyChainTradeLineItem')}")
+    line = copy.deepcopy(lines[-1])
+    for path, text in (
+        (("LineID",), str(len(lines) + 1)),
+        (("SpecifiedTradeProduct", "Name"), reason),
+        (("NetPriceProductTradePrice", "ChargeAmount"), f"-{amount}"),
+        (("BilledQuantity",), "1"),
+        (("SpecifiedTradeSettlementLineMonetarySummation", "LineTotalAmount"), f"-{amount}"),
+    ):
+        _first(line, *path).text = text
+    lines[-1].addnext(line)
+    sums = _first(root, "SpecifiedTradeSettlementHeaderMonetarySummation")
+    sums.remove(sums.find(_ram("AllowanceTotalAmount")))
+    _set_amount("LineTotalAmount", -float(amount))(root)
+
+
+def _vat_basis(delta):
+    """Add delta to the first VAT breakdown's taxable amount (BT-116) only."""
+
+    def edit(root):
+        node = _first(root, "ApplicableHeaderTradeSettlement", "ApplicableTradeTax", "BasisAmount")
+        node.text = f"{float(node.text) + delta:.2f}"
+
+    return edit
+
+
+def _no_exemption_reason(root):
+    """Remove the exemption reason (BT-120) of every VAT breakdown."""
+    for tax in _first(root, "ApplicableHeaderTradeSettlement").iterfind(_ram("ApplicableTradeTax")):
+        for node in tax.findall(_ram("ExemptionReason")):
+            tax.remove(node)
+
+
 NOTES = cii.FRENCH["notes"]
 BAR_B2B = ("BAR", "B2B")
 SELLER, BUYER = cii.FRENCH["seller"], cii.FRENCH["buyer"]
@@ -989,6 +1034,57 @@ VARIANTS = (
         "The seller has no identifier at all: no SIRET (BT-29), no SIREN (BT-30), no VAT number (BT-31) (BR-FR-10, which requires the SIREN, and BR-S-02, which requires the VAT number for standard-rated VAT, fail too).",
         "Le vendeur n'a aucun identifiant : ni SIRET (BT-29), ni SIREN (BT-30), ni numéro de TVA (BT-31) (BR-FR-10, qui exige le SIREN, et BR-S-02, qui exige le numéro de TVA pour le taux normal, échouent aussi).",
         edit=_no_seller_identifiers,
+    ),
+    # The core and VAT rules seen failing in public write-ups of real invoices. BR-16 (no line), BR-22 (a line without
+    # quantity) and BR-26 (a line without net price) have no example: the Factur-X EN 16931 schema requires those
+    # elements, and every example here stays schema-valid.
+    Variant(
+        "BR-23",
+        "BR-23",
+        ("BR-23",),
+        "The first line's invoiced quantity (BT-129) has no unit of measure code (BT-130).",
+        "La quantité facturée de la première ligne (BT-129) n'a pas de code d'unité de mesure (BT-130).",
+        edit=_no_unit_code,
+    ),
+    Variant(
+        "BR-27",
+        "BR-27",
+        ("BR-27", "BR-FR-DEC-03_BT-146"),
+        "A discount is typed as a line with a negative net price (BT-146) instead of a document level allowance (BR-FR-DEC-03, which wants a positive price outside the billing frames S9, M9 and B9, fails too).",
+        "Une remise est saisie comme une ligne au prix net négatif (BT-146) au lieu d'une remise au niveau du document (BR-FR-DEC-03, qui exige un prix positif hors des cadres de facturation S9, M9 et B9, échoue aussi).",
+        {"allowances": [("50.00", "95", "Remise fidélité", "S", "20")]},
+        edit=_allowance_as_negative_line,
+    ),
+    Variant(
+        "BR-S-02",
+        "BR-S-02",
+        ("BR-S-02",),
+        "The lines are standard-rated (S) but the seller has no VAT number (BT-31).",
+        "Les lignes sont au taux normal (S), mais le vendeur n'a pas de numéro de TVA (BT-31).",
+        {"seller": {**SELLER, "vat": None}},
+    ),
+    Variant(
+        "BR-S-08",
+        "BR-S-08",
+        ("BR-S-08",),
+        "The taxable amount of the 20 % rate (BT-116) is 1 € more than the net amounts of its lines (BT-131); its VAT amount stays within the tolerance of BR-CO-17.",
+        "La base HT du taux de 20 % (BT-116) dépasse de 1 € la somme des montants nets de ses lignes (BT-131) ; son montant de TVA reste dans la tolérance de BR-CO-17.",
+        edit=_vat_basis(1),
+    ),
+    Variant(
+        "BR-E-10",
+        "BR-E-10",
+        ("BR-E-10",),
+        "The VAT breakdown of the exempt line (category E) gives neither an exemption reason (BT-120) nor a reason code (BT-121).",
+        "La ventilation de TVA de la ligne exonérée (catégorie E) n'indique ni motif d'exonération (BT-120) ni code de motif (BT-121).",
+        {
+            "lines": [
+                ("Atelier de formation", "2", "450.00", "S", "20"),
+                ("Support de cours", "10", "12.50", "S", "20"),
+                ("Formation professionnelle continue", "1", "300.00", "E", "0"),
+            ]
+        },
+        edit=_no_exemption_reason,
     ),
     Variant(
         "BR-FR-03-BT-7",

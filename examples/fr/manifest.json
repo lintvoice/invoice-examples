@@ -1227,6 +1227,95 @@
       }
     },
     {
+      "id": "BR-23",
+      "status": "invalid",
+      "rule": "BR-23",
+      "fires": [
+        "BR-23"
+      ],
+      "files": {
+        "xml": "invalid/BR-23.xml",
+        "pdf": "invalid/BR-23.pdf"
+      },
+      "description": {
+        "en": "The first line's invoiced quantity (BT-129) has no unit of measure code (BT-130).",
+        "fr": "La quantité facturée de la première ligne (BT-129) n'a pas de code d'unité de mesure (BT-130)."
+      }
+    },
+    {
+      "id": "BR-27",
+      "status": "invalid",
+      "rule": "BR-27",
+      "fires": [
+        "BR-27",
+        "BR-FR-DEC-03_BT-146"
+      ],
+      "files": {
+        "xml": "invalid/BR-27.xml",
+        "pdf": "invalid/BR-27.pdf"
+      },
+      "description": {
+        "en": "A discount is typed as a line with a negative net price (BT-146) instead of a document level allowance (BR-FR-DEC-03, which wants a positive price outside the billing frames S9, M9 and B9, fails too).",
+        "fr": "Une remise est saisie comme une ligne au prix net négatif (BT-146) au lieu d'une remise au niveau du document (BR-FR-DEC-03, qui exige un prix positif hors des cadres de facturation S9, M9 et B9, échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-27.xml",
+        "pdf": "fixed/BR-27.pdf"
+      }
+    },
+    {
+      "id": "BR-S-02",
+      "status": "invalid",
+      "rule": "BR-S-02",
+      "fires": [
+        "BR-S-02"
+      ],
+      "files": {
+        "xml": "invalid/BR-S-02.xml",
+        "pdf": "invalid/BR-S-02.pdf"
+      },
+      "description": {
+        "en": "The lines are standard-rated (S) but the seller has no VAT number (BT-31).",
+        "fr": "Les lignes sont au taux normal (S), mais le vendeur n'a pas de numéro de TVA (BT-31)."
+      }
+    },
+    {
+      "id": "BR-S-08",
+      "status": "invalid",
+      "rule": "BR-S-08",
+      "fires": [
+        "BR-S-08"
+      ],
+      "files": {
+        "xml": "invalid/BR-S-08.xml",
+        "pdf": "invalid/BR-S-08.pdf"
+      },
+      "description": {
+        "en": "The taxable amount of the 20 % rate (BT-116) is 1 € more than the net amounts of its lines (BT-131); its VAT amount stays within the tolerance of BR-CO-17.",
+        "fr": "La base HT du taux de 20 % (BT-116) dépasse de 1 € la somme des montants nets de ses lignes (BT-131) ; son montant de TVA reste dans la tolérance de BR-CO-17."
+      }
+    },
+    {
+      "id": "BR-E-10",
+      "status": "invalid",
+      "rule": "BR-E-10",
+      "fires": [
+        "BR-E-10"
+      ],
+      "files": {
+        "xml": "invalid/BR-E-10.xml",
+        "pdf": "invalid/BR-E-10.pdf"
+      },
+      "description": {
+        "en": "The VAT breakdown of the exempt line (category E) gives neither an exemption reason (BT-120) nor a reason code (BT-121).",
+        "fr": "La ventilation de TVA de la ligne exonérée (catégorie E) n'indique ni motif d'exonération (BT-120) ni code de motif (BT-121)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-E-10.xml",
+        "pdf": "fixed/BR-E-10.pdf"
+      }
+    },
+    {
       "id": "BR-FR-03-BT-7",
       "status": "invalid",
       "rule": "BR-FR-03",

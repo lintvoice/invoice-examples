@@ -43,12 +43,18 @@ def main():
     text = SCH.read_text(encoding="utf-8")
     ids = list(dict.fromkeys(re.findall(r'id="(BR-FR-[^"]+)"', text)))
     asserted = [i for i in ids if re.search(rf'<(assert|report)[^>]*id="{re.escape(i)}"', text)]
-    covered = {f: v.id for v in fr.VARIANTS for f in v.fires}
+    # each rule id's example: the one that fails the fewest rules (the first, among equals), so that an example made
+    # for another rule, which fails this one on the side, does not take its place
+    covered = {}
+    for v in fr.VARIANTS:
+        for f in v.fires:
+            if f not in covered or len(v.fires) < len(covered[f].fires):
+                covered[f] = v
     rows, n_cov, n_app = [], 0, 0
     for rule in asserted:
         why = next((w for prefix, w in NOT_APPLICABLE if prefix in rule), None)
         if rule in covered:
-            status, n_cov, n_app = f"`invalid/{covered[rule]}`", n_cov + 1, n_app + 1
+            status, n_cov, n_app = f"`invalid/{covered[rule].id}`", n_cov + 1, n_app + 1
         elif why:
             status = f"not applicable: {why}"
         else:
