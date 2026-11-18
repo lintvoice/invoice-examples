@@ -1,5 +1,5 @@
 {
-  "generator": "invoice-examples 0.3.0",
+  "generator": "invoice-examples 0.4.0",
   "target": "fr",
   "syntax": "CII",
   "profile": "Factur-X EN 16931",
