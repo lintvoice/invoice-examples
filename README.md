@@ -1,9 +1,8 @@
-# Free e-invoice examples: one valid invoice, and one invalid variant per official rule
+<a href="https://lintvoice.com"><picture><source media="(prefers-color-scheme: dark)" srcset="https://lintvoice.com/static/logo/lintvoice-wordmark-dark.svg"><img src="https://lintvoice.com/static/logo/lintvoice-wordmark-light.svg" alt="lintvoice" width="160"></picture></a>
 
-Valid and invalid e-invoice examples, **one invalid example per rule**, checked against the official rules.
-Free to use for anything: the examples are in the public domain ([CC0](examples/LICENSE)).
+# Test your e-invoice generator, rule by rule
 
-> Status: 0.4.0, first target `fr` (Factur-X / CII, French reform rules).
+Example invoices checked against the official rules: each invalid one fails the rules its manifest names, and nothing else, so your tests know exactly what must be caught. Free to use for anything: the examples are in the public domain ([CC0](examples/LICENSE)).
 
 ## Download the examples
 
