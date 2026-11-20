@@ -34,14 +34,14 @@ def test_generate_writes_everything_and_a_manifest(run, tmp_path):
 
 
 def test_generate_one_rule(run, tmp_path):
-    code, _, _ = run("generate", "--rule", "BR-FR-10", "--format", "xml", "--out", tmp_path)
+    code, _, _ = run("generate", "--target", "fr", "--rule", "BR-FR-10", "--format", "xml", "--out", tmp_path)
     assert code == 0
     files = sorted(p.relative_to(tmp_path / "fr").as_posix() for p in (tmp_path / "fr").rglob("*.xml"))
     assert files == ["invalid/BR-FR-10.xml", "valid.xml"]
 
 
 def test_generate_a_rule_group(run, tmp_path):
-    code, _, _ = run("generate", "--rule", "BR-FR-05", "--format", "xml", "--out", tmp_path)
+    code, _, _ = run("generate", "--target", "fr", "--rule", "BR-FR-05", "--format", "xml", "--out", tmp_path)
     assert code == 0
     assert len(list((tmp_path / "fr" / "invalid").glob("BR-FR-05-*.xml"))) == 3
 
@@ -88,9 +88,9 @@ def test_invalid_pdf_states_the_rule_and_shows_the_wrong_value():
 
 
 def test_annotated_pdf_gives_business_term_numbers(run, tmp_path):
-    run("generate", "--out", tmp_path)
-    manifest = json.loads((tmp_path / "fr" / "manifest.json").read_text(encoding="utf-8"))
-    text = PdfReader(tmp_path / "fr" / manifest["annotated"]["pdf"]).pages[0].extract_text()
+    run("generate", "--out", tmp_path)  # the default target is the European one
+    manifest = json.loads((tmp_path / "en16931" / "manifest.json").read_text(encoding="utf-8"))
+    text = PdfReader(tmp_path / "en16931" / manifest["annotated"]["pdf"]).pages[0].extract_text()
     assert "BT-1" in text and "BT-112" in text
 
 

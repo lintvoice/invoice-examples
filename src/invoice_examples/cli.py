@@ -128,10 +128,20 @@ def parser():
     p.add_argument("--version", action="version", version=f"invoice-examples {__version__}")
     sub = p.add_subparsers(dest="command", required=True)
     ls = sub.add_parser("list", help="list the examples of a target")
-    ls.add_argument("--target", choices=sorted(TARGETS), default="fr")
+    ls.add_argument(
+        "--target",
+        choices=sorted(TARGETS),
+        default="en16931",
+        help="en16931: the EN 16931 rules only (default); fr: plus France's BR-FR rules",
+    )
     ls.set_defaults(func=cmd_list)
     gen = sub.add_parser("generate", help="write the valid example and the invalid variants")
-    gen.add_argument("--target", choices=sorted(TARGETS), default="fr")
+    gen.add_argument(
+        "--target",
+        choices=sorted(TARGETS),
+        default="en16931",
+        help="en16931: the EN 16931 rules only (default); fr: plus France's BR-FR rules",
+    )
     gen.add_argument(
         "--rule", help="only these variants (ids or rules, comma-separated); the valid example is always written"
     )
