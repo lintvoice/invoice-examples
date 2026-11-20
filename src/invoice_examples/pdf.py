@@ -61,7 +61,8 @@ LABELS = {
         "absent": "absent",
         "thousands": " ",  # a narrow no-break space
         "decimal": ",",
-        "money": "{} €",
+        "money": "{} €",  # an amount in euros; in another currency, its ISO 4217 code (BT-5) where the € goes
+        "money_code": "{} {code}",
         "percent": " %",
         "date": "{d}/{m}/{y}",
         "watermark": "SPÉCIMEN",
@@ -121,6 +122,7 @@ LABELS = {
         "thousands": ",",
         "decimal": ".",
         "money": "€{}",
+        "money_code": "{code} {}",
         "percent": "%",
         "date": "{y}-{m}-{d}",
         "watermark": "SPECIMEN",
@@ -280,6 +282,7 @@ def read(xml_bytes, t=LABELS["fr"]):
         "prepaid": _text(root, f"{total}TotalPrepaidAmount"),
         "rounding": _text(root, f"{total}RoundingAmount"),
         "payable": _text(root, f"{total}DuePayableAmount"),
+        "currency": _text(root, "//ram:ApplicableHeaderTradeSettlement/ram:InvoiceCurrencyCode"),
     }
 
 
@@ -294,13 +297,15 @@ def _number(value, t, unit=""):
     return ("−" if value.startswith("-") else "") + grouped + (t["decimal"] + decimals if decimals else "") + unit
 
 
-def _money(value, t):
+def _money(value, t, currency="EUR"):
+    """An amount in the invoice's currency (BT-5): the € sign for euros, the currency's code otherwise."""
     if value and NUMBER.match(value) and "." not in value:
         value += ".00"
     if not value or not NUMBER.match(value):
         return _number(value, t)
     sign, number = ("−", _number(value[1:], t)) if value.startswith("-") else ("", _number(value, t))
-    return sign + t["money"].format(number)
+    template = t["money"] if currency == "EUR" else t["money_code"] if currency else "{}"
+    return sign + template.format(number, code=currency)
 
 
 def _date(value, t):
@@ -344,6 +349,9 @@ class _Page:
             self.c.setLineWidth(0.8)
             self.c.line(x0, y - 2, x0 + w, y - 2)
         return w
+
+    def money(self, value):
+        return _money(value, self.t, self.d["currency"])
 
     def code(self, x, y, bt, align="l"):
         if self.annotate:
@@ -454,9 +462,9 @@ class _Page:
             qty, unit = _number(line["qty"], t), line.get("unit")
             changed = self.changed(("lines", i, "qty")) or self.changed(("lines", i, "unit"))
             self.value(330, y, qty if unit else t["no_unit"].format(qty), (), "Plex-Mono", 8.5, "r", bad=changed)
-            self.value(400, y, _money(line["price"], t), ("lines", i, "price"), "Plex-Mono", 8.5, "r")
+            self.value(400, y, self.money(line["price"]), ("lines", i, "price"), "Plex-Mono", 8.5, "r")
             self.value(450, y, _number(line["rate"], t, t["percent"]), ("lines", i, "rate"), "Plex-Mono", 8.5, "r")
-            self.value(W - M, y, _money(line["net"], t), ("lines", i, "net"), "Plex-Mono", 8.5, "r")
+            self.value(W - M, y, self.money(line["net"]), ("lines", i, "net"), "Plex-Mono", 8.5, "r")
             for j, a in enumerate(line.get("adjustments") or []):
                 y -= 13
                 keys = ("lines", i, "adjustments", j)
@@ -464,7 +472,7 @@ class _Page:
                     M + 12, y, _adjustment_label(a, t), (*keys, "reason"), size=8, bad=None if a["reason"] else True
                 )
                 sign = "+ " if a["charge"] else "− "
-                self.value(W - M, y, sign + _money(a["amount"], t), (*keys, "amount"), "Plex-Mono", 8, "r")
+                self.value(W - M, y, sign + self.money(a["amount"]), (*keys, "amount"), "Plex-Mono", 8, "r")
             self.c.setStrokeColor(LINE)
             self.c.setLineWidth(0.5)
             self.c.line(M, y - 6, W - M, y - 6)
@@ -497,7 +505,7 @@ class _Page:
             )  # a missing reason is an error
             w = self.text(x, y, label, font, size, color)
             self.code(x + w + 4, y + 0.5, bt)
-            self.value(W - M, y, _money(_get(d, keys), t), keys, "Plex-Mono", size, "r")
+            self.value(W - M, y, self.money(_get(d, keys)), keys, "Plex-Mono", size, "r")
             if key == "vat":
                 self.c.setStrokeColor(INK)
                 self.c.setLineWidth(0.8)
@@ -523,8 +531,8 @@ class _Page:
             name = t["categories"].get(row["category"])
             rate = _number(row["rate"], t, t["percent"])
             self.value(M, y, f"{rate} · {name}" if name else rate, (*keys, "rate"), "Plex-Mono", 8.5)
-            self.value(M + 190, y, _money(row["basis"], t), (*keys, "basis"), "Plex-Mono", 8.5, "r")
-            self.value(M + 262, y, _money(row["amount"], t), (*keys, "amount"), "Plex-Mono", 8.5, "r")
+            self.value(M + 190, y, self.money(row["basis"]), (*keys, "basis"), "Plex-Mono", 8.5, "r")
+            self.value(M + 262, y, self.money(row["amount"]), (*keys, "amount"), "Plex-Mono", 8.5, "r")
             if row["category"] in NEEDS_REASON:
                 y -= 11
                 reason = row["reason"] or t["no_exemption_reason"]

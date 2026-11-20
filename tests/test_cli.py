@@ -7,6 +7,7 @@ from pathlib import Path
 from pypdf import PdfReader
 
 from invoice_examples import cii, pdf
+from invoice_examples.edits import Variant
 from invoice_examples.targets import TARGETS, en16931, fr
 
 ROOT = Path(__file__).parent.parent
@@ -85,6 +86,17 @@ def test_invalid_pdf_states_the_rule_and_shows_the_wrong_value():
     )
     assert "Erreur · BR-CO-15" in text
     assert pdf.read(xml)["gross"] != pdf.read(valid)["gross"]  # the value the page draws in the error colour
+
+
+def test_pdf_amounts_are_in_the_invoices_own_currency():
+    """BT-5: the € sign for an invoice in euros, the currency's code for any other, in each language's place."""
+    usd = Variant("USD", "BT-5", (), "", "", {"currency": "USD"})
+    pages = {
+        lang: PdfReader(io.BytesIO(pdf.page_pdf(cii.to_bytes(target.build(usd)), lang=lang))).pages[0].extract_text()
+        for lang, target in (("fr", fr), ("en", en16931))
+    }
+    assert "1 230,00 USD" in pages["fr"] and "€" not in pages["fr"]
+    assert "USD 1,219.75" in pages["en"] and "€" not in pages["en"]
 
 
 def test_annotated_pdf_gives_business_term_numbers(run, tmp_path):
