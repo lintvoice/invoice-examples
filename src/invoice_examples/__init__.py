@@ -1,3 +1,5 @@
 """invoice-examples: valid and invalid e-invoice examples, one invalid variant per rule."""
 
-__version__ = "0.5.0"
+from importlib.metadata import version
+
+__version__ = version("invoice-examples")  # pyproject.toml is the one place the version is written

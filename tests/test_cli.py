@@ -2,11 +2,12 @@
 
 import io
 import json
+import tomllib
 from pathlib import Path
 
 from pypdf import PdfReader
 
-from invoice_examples import cii, pdf
+from invoice_examples import __version__, cii, pdf
 from invoice_examples.edits import Variant
 from invoice_examples.targets import TARGETS, en16931, fr
 
@@ -134,6 +135,14 @@ def test_the_european_target_names_no_french_rule_and_writes_english_pages(run, 
     assert "Process" not in valid  # BT-23 is optional outside France: an empty row is left out
     invalid = PdfReader(folder / "invalid" / "BR-CO-15.pdf").pages[0].extract_text()
     assert "Error · BR-CO-15" in invalid and "The invoice total with VAT (BT-112)" in invalid
+
+
+def test_the_version_shown_is_the_packages_own(run):
+    """--version and the manifest's generator name the version in pyproject.toml."""
+    expected = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"]["version"]
+    assert __version__ == expected
+    manifest = json.loads((ROOT / "examples" / "fr" / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest["generator"] == f"invoice-examples {expected}"
 
 
 def test_list_the_european_target(run):
