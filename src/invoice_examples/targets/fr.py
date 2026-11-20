@@ -5,14 +5,35 @@ Each variant changes the baseline as little as possible. Its `fires` lists every
 rules report on it, so a variant documents its side effects too (for example BR-54 next to BR-FR-27).
 """
 
-import copy
-from dataclasses import dataclass, field
+import dataclasses
 
-from lxml import etree
 
-from .. import cii
-from ..cii import BUYER_SIREN, BUYER_SIRET, NS, PAYEE_SIREN, PAYEE_SIRET, SELLER_SIREN, el, gln, luhn_complete
+from .. import cii, edits
+from ..edits import (
+    Variant,
+    add_characteristic,
+    add_documents,
+    add_element,
+    add_global_id,
+    add_invoice_reference,
+    add_payee,
+    add_ship_to,
+    billing_period,
+    drop_scheme,
+    edit_all,
+    gross_price,
+    no_payment_terms,
+    paid_with_due_date,
+    paid_without_due_date,
+    prepaid,
+    rewrite_amount,
+    set_text,
+    tax_point_date,
+)
+from . import en16931
+from ..cii import BUYER_SIREN, BUYER_SIRET, PAYEE_SIREN, PAYEE_SIRET, SELLER_SIREN, gln, luhn_complete
 
+LANG = "fr"
 RULES = {
     "EN 16931": "1.3.17 (CII)",
     "Factur-X": "1.09.2, EN 16931 profile",
@@ -20,409 +41,6 @@ RULES = {
     "EXTENDED-CTC-FR": "1.4.0.04 (France_RFE), with the CII D22B schema, for the examples in that profile",
 }
 EXTENDED_CTC_FR = "urn:cen.eu:en16931:2017#conformant#urn.cpro.gouv.fr:1p0:extended-ctc-fr"
-
-
-@dataclass(frozen=True)
-class Variant:
-    id: str  # file stem, e.g. "BR-FR-10"
-    rule: str  # the rule this variant is about
-    fires: tuple  # every rule id the official rules report on it
-    en: str  # what is wrong, in English
-    fr: str  # the same, in French
-    changes: dict = field(default_factory=dict)  # baseline keys to replace
-    edit: object = None  # optional function(root) applied to the XML tree
-    # the edit that gives the same invoice without the mistake, when that is not simply the variant without its
-    # edit (the variant's edit both sets a context and breaks the rule)
-    fixed: object = None
-
-
-def _ram(tag):
-    return f"{{{NS['ram']}}}{tag}"
-
-
-def _agreement(root):
-    return root.find(f".//{_ram('ApplicableHeaderTradeAgreement')}")
-
-
-def _add_documents(*docs):
-    """Add AdditionalReferencedDocument elements (BG-24, BT-18): (issuer id, type code, name or None, reference type or None)."""
-
-    def edit(root):
-        agreement = _agreement(root)
-        for issuer_id, type_code, name, reference_type in docs:
-            d = el(agreement, "ram:AdditionalReferencedDocument")
-            el(d, "ram:IssuerAssignedID", issuer_id)
-            el(d, "ram:TypeCode", type_code)
-            if name:
-                el(d, "ram:Name", name)
-            if reference_type:
-                el(d, "ram:ReferenceTypeCode", reference_type)
-
-    return edit
-
-
-def _add_characteristic(description, value):
-    """Add an item attribute (BG-32) to the first line."""
-
-    def edit(root):
-        product = root.find(f".//{_ram('SpecifiedTradeProduct')}")
-        ch = el(product, "ram:ApplicableProductCharacteristic")
-        if description is not None:
-            el(ch, "ram:Description", description)
-        if value is not None:
-            el(ch, "ram:Value", value)
-
-    return edit
-
-
-def _add_invoice_reference(issuer_id, date="20260915"):
-    """Reference a preceding invoice (BG-3: BT-25, BT-26), at the end of the header settlement."""
-
-    def edit(root):
-        settlement = root.find(f".//{_ram('ApplicableHeaderTradeSettlement')}")
-        ref = el(settlement, "ram:InvoiceReferencedDocument")
-        el(ref, "ram:IssuerAssignedID", issuer_id)
-        el(el(ref, "ram:FormattedIssueDateTime"), "qdt:DateTimeString", date, format="102")
-
-    return edit
-
-
-def _drop_scheme(party_tag):
-    """Remove the schemeID of a party's GlobalID."""
-
-    def edit(root):
-        for gid in root.iter(_ram("GlobalID")):
-            if gid.getparent().tag == _ram(party_tag):
-                gid.attrib.pop("schemeID", None)
-
-    return edit
-
-
-def _rewrite_amount(tag, text):
-    """Write a header monetary total with another notation (e.g. 3 decimals)."""
-
-    def edit(root):
-        for node in root.iter(_ram(tag)):
-            if node.getparent().tag == _ram("SpecifiedTradeSettlementHeaderMonetarySummation"):
-                node.text = text
-
-    return edit
-
-
-def _set_amount(tag, delta):
-    """Add delta to a header monetary total (e.g. GrandTotalAmount)."""
-
-    def edit(root):
-        for node in root.iter(_ram(tag)):
-            if node.getparent().tag == _ram("SpecifiedTradeSettlementHeaderMonetarySummation"):
-                node.text = f"{float(node.text) + delta:.2f}"
-
-    return edit
-
-
-def _edit_all(*edits):
-    def edit(root):
-        for e in edits:
-            e(root)
-
-    return edit
-
-
-def _new(tag, text=None, **attrs):
-    prefix, name = tag.split(":")
-    node = etree.Element(f"{{{NS[prefix]}}}{name}", attrs)
-    if text is not None:
-        node.text = text
-    return node
-
-
-def _sub(parent, tag, text=None, **attrs):
-    node = _new(tag, text, **attrs)
-    parent.append(node)
-    return node
-
-
-def _first(root, *path):
-    """The first element at the end of a chain of ram: tags."""
-    return root.find(".//" + "/".join(_ram(t) for t in path))
-
-
-def _insert(parent, node, before=None, after=None):
-    """Insert node before the first child named `before`, or after the last child named `after`, else at the end."""
-    if before is not None and parent.find(_ram(before)) is not None:
-        parent.find(_ram(before)).addprevious(node)
-    elif after is not None and parent.findall(_ram(after)):
-        parent.findall(_ram(after))[-1].addnext(node)
-    else:
-        parent.append(node)
-
-
-def _party(tag, name, global_ids, legal_id=None):
-    node = _new(f"ram:{tag}")
-    for value, scheme in global_ids:
-        _sub(node, "ram:GlobalID", value, **({"schemeID": scheme} if scheme else {}))
-    _sub(node, "ram:Name", name)
-    if legal_id:
-        _sub(_sub(node, "ram:SpecifiedLegalOrganization"), "ram:ID", legal_id, schemeID="0002")
-    return node
-
-
-def _add_payee(global_ids, legal_id=None):
-    """Add a payee (BG-10), a factoring company, before the payment means."""
-
-    def edit(root):
-        _insert(
-            _first(root, "ApplicableHeaderTradeSettlement"),
-            _party("PayeeTradeParty", "Affacturage Exemple", global_ids, legal_id),
-            before="SpecifiedTradeSettlementPaymentMeans",
-        )
-
-    return edit
-
-
-def _add_ship_to(global_ids):
-    """Add a deliver-to party (BG-13) with location identifiers (BT-71)."""
-
-    def edit(root):
-        _first(root, "ApplicableHeaderTradeDelivery").insert(
-            0, _party("ShipToTradeParty", "Médiathèque d'Exemple", global_ids)
-        )
-
-    return edit
-
-
-def _add_global_id(party_tag, value, scheme):
-    """Add a second GlobalID to a party, after the first one."""
-
-    def edit(root):
-        _insert(_first(root, party_tag), _new("ram:GlobalID", value, schemeID=scheme), after="GlobalID")
-
-    return edit
-
-
-def _billing_period(start, end):
-    """Add the invoicing period (BG-14: BT-73, BT-74) after the VAT breakdown."""
-
-    def edit(root):
-        period = _new("ram:BillingSpecifiedPeriod")
-        _sub(_sub(period, "ram:StartDateTime"), "udt:DateTimeString", start, format="102")
-        _sub(_sub(period, "ram:EndDateTime"), "udt:DateTimeString", end, format="102")
-        _insert(_first(root, "ApplicableHeaderTradeSettlement"), period, after="ApplicableTradeTax")
-
-    return edit
-
-
-def _tax_point_date(value):
-    """Give each VAT breakdown a VAT point date (BT-7); use with due_date_type None (BT-7 and BT-8 exclude each other)."""
-
-    def edit(root):
-        for tax in _first(root, "ApplicableHeaderTradeSettlement").iterfind(_ram("ApplicableTradeTax")):
-            point = _new("ram:TaxPointDate")
-            _sub(point, "udt:DateString", value, format="102")
-            _insert(tax, point, before="RateApplicablePercent")
-
-    return edit
-
-
-def _set_text(*path, text):
-    """Rewrite the text of the first element at the end of a ram: path."""
-
-    def edit(root):
-        _first(root, *path).text = text
-
-    return edit
-
-
-def _add_element(path, tag, text, before=None, after=None, **attrs):
-    """Add a ram: element inside the first element at the end of path."""
-
-    def edit(root):
-        _insert(_first(root, *path), _new(f"ram:{tag}", text, **attrs), before=before, after=after)
-
-    return edit
-
-
-def _prepaid(amount, due):
-    """Add a paid amount (BT-113) and set the amount due (BT-115)."""
-
-    def edit(root):
-        sums = _first(root, "SpecifiedTradeSettlementHeaderMonetarySummation")
-        _insert(sums, _new("ram:TotalPrepaidAmount", amount), before="DuePayableAmount")
-        sums.find(_ram("DuePayableAmount")).text = due
-
-    return edit
-
-
-def _paid_without_due_date(root):
-    """Already paid: paid amount = total with VAT, nothing due, and no payment due date (BT-9)."""
-    sums = _first(root, "SpecifiedTradeSettlementHeaderMonetarySummation")
-    _prepaid(sums.find(_ram("GrandTotalAmount")).text, "0.00")(root)
-    terms = _first(root, "SpecifiedTradePaymentTerms")
-    terms.remove(terms.find(_ram("DueDateDateTime")))
-
-
-def _paid_with_due_date(root):
-    """Already paid, as in _paid_without_due_date, but the payment due date (BT-9) stays."""
-    sums = _first(root, "SpecifiedTradeSettlementHeaderMonetarySummation")
-    _prepaid(sums.find(_ram("GrandTotalAmount")).text, "0.00")(root)
-
-
-def _gross_price(gross, discount):
-    """Give the first line a gross price (BT-148) and a price discount (BT-147); the net price stays."""
-
-    def edit(root):
-        price = _new("ram:GrossPriceProductTradePrice")
-        _sub(price, "ram:ChargeAmount", gross)
-        ac = _sub(price, "ram:AppliedTradeAllowanceCharge")
-        _sub(_sub(ac, "ram:ChargeIndicator"), "udt:Indicator", "false")
-        _sub(ac, "ram:ActualAmount", discount)
-        _insert(_first(root, "SpecifiedLineTradeAgreement"), price, before="NetPriceProductTradePrice")
-
-    return edit
-
-
-def _shift(delta, *tags):
-    """Add delta to several header monetary totals, so that only the rule under test sees a difference."""
-    return _edit_all(*(_set_amount(tag, delta) for tag in tags))
-
-
-def _tax_point_with_code(value):
-    """Give each VAT breakdown a VAT point date (BT-7) next to its VAT point date code (BT-8), which BR-CO-03 forbids."""
-
-    def edit(root):
-        for tax in _first(root, "ApplicableHeaderTradeSettlement").iterfind(_ram("ApplicableTradeTax")):
-            point = _new("ram:TaxPointDate")
-            _sub(point, "udt:DateString", value, format="102")
-            _insert(tax, point, before="DueDateTypeCode")
-
-    return edit
-
-
-def _empty_period(where):
-    """Add an invoicing period with no dates: at document level (BG-14) or on the first line (BG-26)."""
-
-    def edit(root):
-        _insert(_first(root, where), _new("ram:BillingSpecifiedPeriod"), after="ApplicableTradeTax")
-
-    return edit
-
-
-def _vat_amount(delta):
-    """Add delta to the first VAT breakdown's tax amount (BT-117), and to the totals that follow from it."""
-
-    def edit(root):
-        node = _first(root, "ApplicableHeaderTradeSettlement", "ApplicableTradeTax", "CalculatedAmount")
-        node.text = f"{float(node.text) + delta:.2f}"
-        _shift(delta, "TaxTotalAmount", "GrandTotalAmount", "DuePayableAmount")(root)
-
-    return edit
-
-
-def _no_reasons(where):
-    """Remove the reason (BT-97, BT-104, BT-139, BT-144) and the reason code of every allowance or charge in where:
-    the document level (ApplicableHeaderTradeSettlement) or the first line (SpecifiedLineTradeSettlement)."""
-
-    def edit(root):
-        for ac in _first(root, where).iterfind(_ram("SpecifiedTradeAllowanceCharge")):
-            for tag in ("ReasonCode", "Reason"):
-                for node in ac.findall(_ram(tag)):
-                    ac.remove(node)
-
-    return edit
-
-
-def _line_charge(amount, reason):
-    """Add a charge (BG-28) to the first line, with or without its reason, and carry it into the line net amount, the
-    VAT breakdown (20 %) and every total."""
-
-    def edit(root):
-        settle = _first(root, "SpecifiedLineTradeSettlement")
-        ac = _new("ram:SpecifiedTradeAllowanceCharge")
-        _sub(_sub(ac, "ram:ChargeIndicator"), "udt:Indicator", "true")
-        _sub(ac, "ram:ActualAmount", f"{amount:.2f}")
-        if reason:
-            _sub(ac, "ram:ReasonCode", "ABL")
-            _sub(ac, "ram:Reason", "Emballage")
-        _insert(settle, ac, before="SpecifiedTradeSettlementLineMonetarySummation")
-        net = settle.find(f"{_ram('SpecifiedTradeSettlementLineMonetarySummation')}/{_ram('LineTotalAmount')}")
-        net.text = f"{float(net.text) + amount:.2f}"
-        tax = _first(root, "ApplicableHeaderTradeSettlement", "ApplicableTradeTax")
-        for tag, delta in (("BasisAmount", amount), ("CalculatedAmount", amount * 0.2)):
-            node = tax.find(_ram(tag))
-            node.text = f"{float(node.text) + delta:.2f}"
-        _shift(amount, "LineTotalAmount", "TaxBasisTotalAmount")(root)
-        _shift(amount * 0.2, "TaxTotalAmount")(root)
-        _shift(amount * 1.2, "GrandTotalAmount", "DuePayableAmount")(root)
-
-    return edit
-
-
-def _no_payment_terms(root):
-    """Remove the payment terms block: the payment due date (BT-9) and the payment terms text (BT-20)."""
-    settle = _first(root, "ApplicableHeaderTradeSettlement")
-    settle.remove(settle.find(_ram("SpecifiedTradePaymentTerms")))
-
-
-def _line_tax_type(code):
-    """Declare the first line's tax with another type code than VAT."""
-
-    def edit(root):
-        _first(root, "SpecifiedLineTradeSettlement", "ApplicableTradeTax", "TypeCode").text = code
-
-    return edit
-
-
-def _no_seller_identifiers(root):
-    """Remove every identifier of the seller: SIRET (BT-29), SIREN (BT-30) and VAT number (BT-31)."""
-    seller = _first(root, "SellerTradeParty")
-    for tag in ("GlobalID", "SpecifiedLegalOrganization", "SpecifiedTaxRegistration"):
-        for node in seller.findall(_ram(tag)):
-            seller.remove(node)
-
-
-def _no_unit_code(root):
-    """Remove the unit of measure code (BT-130) of the first line's invoiced quantity."""
-    del _first(root, "SpecifiedLineTradeDelivery", "BilledQuantity").attrib["unitCode"]
-
-
-def _allowance_as_negative_line(root):
-    """Write the document level allowance as a last line of quantity 1 at a negative net price (BT-146): the same
-    amounts and totals, the discount typed as a line."""
-    settle = _first(root, "ApplicableHeaderTradeSettlement")
-    allowance = settle.find(_ram("SpecifiedTradeAllowanceCharge"))
-    amount, reason = allowance.find(_ram("ActualAmount")).text, allowance.find(_ram("Reason")).text
-    settle.remove(allowance)
-    lines = root.findall(f".//{_ram('IncludedSupplyChainTradeLineItem')}")
-    line = copy.deepcopy(lines[-1])
-    for path, text in (
-        (("LineID",), str(len(lines) + 1)),
-        (("SpecifiedTradeProduct", "Name"), reason),
-        (("NetPriceProductTradePrice", "ChargeAmount"), f"-{amount}"),
-        (("BilledQuantity",), "1"),
-        (("SpecifiedTradeSettlementLineMonetarySummation", "LineTotalAmount"), f"-{amount}"),
-    ):
-        _first(line, *path).text = text
-    lines[-1].addnext(line)
-    sums = _first(root, "SpecifiedTradeSettlementHeaderMonetarySummation")
-    sums.remove(sums.find(_ram("AllowanceTotalAmount")))
-    _set_amount("LineTotalAmount", -float(amount))(root)
-
-
-def _vat_basis(delta):
-    """Add delta to the first VAT breakdown's taxable amount (BT-116) only."""
-
-    def edit(root):
-        node = _first(root, "ApplicableHeaderTradeSettlement", "ApplicableTradeTax", "BasisAmount")
-        node.text = f"{float(node.text) + delta:.2f}"
-
-    return edit
-
-
-def _no_exemption_reason(root):
-    """Remove the exemption reason (BT-120) of every VAT breakdown."""
-    for tax in _first(root, "ApplicableHeaderTradeSettlement").iterfind(_ram("ApplicableTradeTax")):
-        for node in tax.findall(_ram("ExemptionReason")):
-            tax.remove(node)
 
 
 NOTES = cii.FRENCH["notes"]
@@ -437,6 +55,31 @@ DISCOUNTED_LINES = [
 SELLER_SIRET_2 = luhn_complete(SELLER_SIREN + "0002")
 BUYER_SIRET_2 = luhn_complete(BUYER_SIREN + "0003")  # also the deliver-to establishment
 SPACED_SIRET = f"{BUYER_SIRET_2[:3]} {BUYER_SIRET_2[3:6]} {BUYER_SIRET_2[6:9]} {BUYER_SIRET_2[9:]}"
+
+
+def _with_french_rules(v):
+    """A shared EN 16931 variant on the French invoice, with the French rules that fail next to it."""
+    if v.id == "BR-CO-26":
+        return dataclasses.replace(
+            v,
+            fires=("BR-CO-26", "BR-FR-10_BT-30", "BR-S-02"),
+            en="The seller has no identifier at all: no SIRET (BT-29), no SIREN (BT-30), no VAT number (BT-31) (BR-FR-10, which requires the SIREN, and BR-S-02, which requires the VAT number for standard-rated VAT, fail too).",
+            fr="Le vendeur n'a aucun identifiant : ni SIRET (BT-29), ni SIREN (BT-30), ni numéro de TVA (BT-31) (BR-FR-10, qui exige le SIREN, et BR-S-02, qui exige le numéro de TVA pour le taux normal, échouent aussi).",
+        )
+    if v.id == "BR-27":
+        return dataclasses.replace(
+            v,
+            fires=("BR-27", "BR-FR-DEC-03_BT-146"),
+            en="A discount is typed as a line with a negative net price (BT-146) instead of a document level allowance (BR-FR-DEC-03, which wants a positive price outside the billing frames S9, M9 and B9, fails too).",
+            fr="Une remise est saisie comme une ligne au prix net négatif (BT-146) au lieu d'une remise au niveau du document (BR-FR-DEC-03, qui exige un prix positif hors des cadres de facturation S9, M9 et B9, échoue aussi).",
+        )
+    return v
+
+
+# The EN 16931 variants, written once in the en16931 target and built here on the French invoice. BR-CO-25 is French
+# only (its example is an EXTENDED-CTC-FR invoice) and keeps its place, before BR-CO-26.
+EN16931 = tuple(_with_french_rules(v) for v in en16931.variants(cii.FRENCH))
+_CO_26 = [v.id for v in EN16931].index("BR-CO-26")
 
 VARIANTS = (
     Variant(
@@ -565,7 +208,7 @@ VARIANTS = (
         ("BR-FR-17_BT-123",),
         "An attachment (BT-123) is qualified with a code outside the French list.",
         "Une pièce jointe (BT-123) est qualifiée par un code hors de la liste française.",
-        edit=_add_documents(("PJ-1", "916", "CONTRAT", None)),
+        edit=add_documents(("PJ-1", "916", "CONTRAT", None)),
     ),
     Variant(
         "BR-FR-18",
@@ -573,7 +216,7 @@ VARIANTS = (
         ("BR-FR-18_BT-123",),
         "Two attachments are described as LISIBLE (BT-123): only one readable copy is allowed.",
         "Deux pièces jointes sont décrites LISIBLE (BT-123) : une seule version lisible est permise.",
-        edit=_add_documents(("PJ-1", "916", "LISIBLE", None), ("PJ-2", "916", "LISIBLE", None)),
+        edit=add_documents(("PJ-1", "916", "LISIBLE", None), ("PJ-2", "916", "LISIBLE", None)),
     ),
     Variant(
         "BR-FR-20",
@@ -613,7 +256,7 @@ VARIANTS = (
         ("BR-FR-27_BT-160",),
         "An item attribute (BG-32) has an empty name (BT-160).",
         "Un attribut d'article (BG-32) a un nom vide (BT-160).",
-        edit=_add_characteristic(" ", "Bleu"),
+        edit=add_characteristic(" ", "Bleu"),
     ),
     Variant(
         "BR-FR-29",
@@ -621,7 +264,7 @@ VARIANTS = (
         ("BR-FR-29_BT-18",),
         "Two invoiced object identifiers (BT-18) use the reference type AFL.",
         "Deux identifiants d'objet facturé (BT-18) utilisent le type de référence AFL.",
-        edit=_add_documents(("OBJ-1", "130", None, "AFL"), ("OBJ-2", "130", None, "AFL")),
+        edit=add_documents(("OBJ-1", "130", None, "AFL"), ("OBJ-2", "130", None, "AFL")),
     ),
     Variant(
         "BR-FR-31",
@@ -717,7 +360,7 @@ VARIANTS = (
         ("BR-FR-01_BT-25",),
         "The preceding invoice reference (BT-25) is longer than 35 characters.",
         "La référence de la facture antérieure (BT-25) dépasse 35 caractères.",
-        edit=_add_invoice_reference("F2026-" + "0" * 30),
+        edit=add_invoice_reference("F2026-" + "0" * 30),
     ),
     Variant(
         "BR-FR-02-BT-25",
@@ -725,7 +368,7 @@ VARIANTS = (
         ("BR-FR-02_BT-25",),
         "The preceding invoice reference (BT-25) contains a character outside letters, digits and + - _ /.",
         "La référence de la facture antérieure (BT-25) contient un caractère autre que lettres, chiffres et + - _ /.",
-        edit=_add_invoice_reference("F2026.0001"),
+        edit=add_invoice_reference("F2026.0001"),
     ),
     Variant(
         "BR-FR-03-BT-9",
@@ -741,7 +384,7 @@ VARIANTS = (
         ("BR-FR-03_BT-26",),
         "The preceding invoice issue date (BT-26) has a year outside 2000-2099.",
         "La date d'émission de la facture antérieure (BT-26) a une année hors de 2000-2099.",
-        edit=_add_invoice_reference("F2026-0001", "19990915"),
+        edit=add_invoice_reference("F2026-0001", "19990915"),
     ),
     Variant(
         "BR-FR-03-BT-72",
@@ -781,7 +424,7 @@ VARIANTS = (
         ("BR-FR-29_AFL", "BR-52"),
         "An invoiced object identifier (BT-18) of type AFL is blank (EN 16931 BR-52 fires too: a document reference is required).",
         "Un identifiant d'objet facturé (BT-18) de type AFL est vide (la règle EN 16931 BR-52 se déclenche aussi : une référence est exigée).",
-        edit=_add_documents((" ", "130", None, "AFL")),
+        edit=add_documents((" ", "130", None, "AFL")),
     ),
     Variant(
         "BR-FR-32-GLOBALID",
@@ -853,7 +496,7 @@ VARIANTS = (
         ("BR-FR-CO-10_BT-29-1", "FX-SCH-A-000440"),
         "The seller's identifier (BT-29) has no scheme identifier (BT-29-1); the Factur-X profile rules reject it too.",
         "L'identifiant du vendeur (BT-29) n'a pas d'identifiant de schéma (BT-29-1) ; les règles du profil Factur-X le refusent aussi.",
-        edit=_drop_scheme("SellerTradeParty"),
+        edit=drop_scheme("SellerTradeParty"),
     ),
     Variant(
         "BR-FR-DEC-01",
@@ -861,163 +504,9 @@ VARIANTS = (
         ("BR-FR-DEC-01_BT-112", "BR-FR-DEC-01_BT-115", "BR-DEC-14", "BR-DEC-18"),
         "The total with VAT (BT-112) and the amount due (BT-115) are written with 3 decimals (EN 16931 BR-DEC-14 and BR-DEC-18 fire too).",
         "Le total TTC (BT-112) et le net à payer (BT-115) sont écrits avec 3 décimales (les règles EN 16931 BR-DEC-14 et BR-DEC-18 se déclenchent aussi).",
-        edit=_edit_all(
-            _rewrite_amount("GrandTotalAmount", "1230.000"), _rewrite_amount("DuePayableAmount", "1230.000")
-        ),
+        edit=edit_all(rewrite_amount("GrandTotalAmount", "1230.000"), rewrite_amount("DuePayableAmount", "1230.000")),
     ),
-    Variant(
-        "BR-CO-15",
-        "BR-CO-15",
-        ("BR-CO-15",),
-        "The invoice total with VAT (BT-112) is not the total without VAT (BT-109) plus the VAT total (BT-110).",
-        "Le total TTC (BT-112) n'est pas égal au total HT (BT-109) plus le total de TVA (BT-110).",
-        edit=_edit_all(_set_amount("GrandTotalAmount", 1), _set_amount("DuePayableAmount", 1)),
-    ),
-    Variant(
-        "BR-CO-03",
-        "BR-CO-03",
-        ("BR-CO-03",),
-        "The VAT breakdown gives both a VAT point date (BT-7) and a VAT point date code (BT-8); only one is allowed.",
-        "La ventilation de TVA indique à la fois une date d'exigibilité de la TVA (BT-7) et un code de date d'exigibilité (BT-8) ; un seul est permis.",
-        edit=_tax_point_with_code("20261015"),
-    ),
-    Variant(
-        "BR-CO-09",
-        "BR-CO-09",
-        ("BR-CO-09",),
-        "The seller's VAT number (BT-31) does not start with a country code (ZZ is not one).",
-        "Le numéro de TVA du vendeur (BT-31) ne commence pas par un code pays (ZZ n'en est pas un).",
-        {"seller": {**SELLER, "vat": "ZZ12345678901"}},
-    ),
-    Variant(
-        "BR-CO-10",
-        "BR-CO-10",
-        ("BR-CO-10",),
-        "The sum of the line net amounts (BT-106) is not the total of the lines (BT-131); the other totals follow it.",
-        "La somme des montants nets des lignes (BT-106) n'est pas égale au total des lignes (BT-131) ; les autres totaux suivent.",
-        edit=_shift(1, "LineTotalAmount", "TaxBasisTotalAmount", "GrandTotalAmount", "DuePayableAmount"),
-    ),
-    Variant(
-        "BR-CO-11",
-        "BR-CO-11",
-        ("BR-CO-11",),
-        "The total of document level allowances (BT-107) is not the sum of the allowances (BT-92).",
-        "Le total des remises au niveau du document (BT-107) n'est pas égal à la somme des remises (BT-92).",
-        {"allowances": [("10.00", "95", "Remise", "S", "20")]},
-        edit=_edit_all(
-            _set_amount("AllowanceTotalAmount", 1),
-            _shift(-1, "TaxBasisTotalAmount", "GrandTotalAmount", "DuePayableAmount"),
-        ),
-    ),
-    Variant(
-        "BR-CO-12",
-        "BR-CO-12",
-        ("BR-CO-12",),
-        "The total of document level charges (BT-108) is not the sum of the charges (BT-99).",
-        "Le total des frais au niveau du document (BT-108) n'est pas égal à la somme des frais (BT-99).",
-        {"charges": [("10.00", "FC", "Frais de port", "S", "20")]},
-        edit=_edit_all(
-            _set_amount("ChargeTotalAmount", 1),
-            _shift(1, "TaxBasisTotalAmount", "GrandTotalAmount", "DuePayableAmount"),
-        ),
-    ),
-    Variant(
-        "BR-CO-13",
-        "BR-CO-13",
-        ("BR-CO-13",),
-        "The total without VAT (BT-109) is not the sum of the lines (BT-106) minus the allowances (BT-107) plus the charges (BT-108).",
-        "Le total HT (BT-109) n'est pas égal à la somme des lignes (BT-106) moins les remises (BT-107) plus les frais (BT-108).",
-        edit=_shift(1, "TaxBasisTotalAmount", "GrandTotalAmount", "DuePayableAmount"),
-    ),
-    Variant(
-        "BR-CO-14",
-        "BR-CO-14",
-        ("BR-CO-14",),
-        "The VAT total (BT-110) is not the sum of the VAT amounts per category (BT-117).",
-        "Le total de TVA (BT-110) n'est pas égal à la somme des montants de TVA par catégorie (BT-117).",
-        edit=_shift(1, "TaxTotalAmount", "GrandTotalAmount", "DuePayableAmount"),
-    ),
-    Variant(
-        "BR-CO-16",
-        "BR-CO-16",
-        ("BR-CO-16",),
-        "The amount due (BT-115) is not the total with VAT (BT-112) minus the paid amount (BT-113) plus the rounding amount (BT-114).",
-        "Le net à payer (BT-115) n'est pas égal au total TTC (BT-112) moins le montant déjà payé (BT-113) plus l'arrondi (BT-114).",
-        edit=_set_amount("DuePayableAmount", 1),
-    ),
-    Variant(
-        "BR-CO-19",
-        "BR-CO-19",
-        ("BR-CO-19",),
-        "The invoicing period (BG-14) has neither a start date (BT-73) nor an end date (BT-74).",
-        "La période de facturation (BG-14) n'a ni date de début (BT-73) ni date de fin (BT-74).",
-        edit=_empty_period("ApplicableHeaderTradeSettlement"),
-    ),
-    Variant(
-        "BR-CO-20",
-        "BR-CO-20",
-        ("BR-CO-20",),
-        "The first line's period (BG-26) has neither a start date (BT-134) nor an end date (BT-135).",
-        "La période de la première ligne (BG-26) n'a ni date de début (BT-134) ni date de fin (BT-135).",
-        edit=_empty_period("SpecifiedLineTradeSettlement"),
-    ),
-    Variant(
-        "BR-CO-04",
-        "BR-CO-04",
-        ("BR-CO-04", "CII-DT-037", "FX-SCH-A-000620"),
-        "The first line's tax is declared with the type GST instead of VAT, so the line has no VAT category (the CII syntax rule CII-DT-037 and a Factur-X profile rule fail too).",
-        "La taxe de la première ligne est déclarée avec le type GST au lieu de VAT : la ligne n'a donc pas de catégorie de TVA (la règle de syntaxe CII-DT-037 et une règle du profil Factur-X échouent aussi).",
-        edit=_line_tax_type("GST"),
-    ),
-    Variant(
-        "BR-CO-17",
-        "BR-CO-17",
-        ("BR-CO-17", "BR-S-09"),
-        "The VAT amount of the 20 % rate (BT-117) is not its taxable amount (BT-116) times the rate (BR-S-09, the same check for the standard rate, fails too).",
-        "Le montant de TVA du taux de 20 % (BT-117) n'est pas sa base (BT-116) multipliée par le taux (BR-S-09, le même contrôle pour le taux normal, échoue aussi).",
-        edit=_vat_amount(2),
-    ),
-    Variant(
-        "BR-CO-21",
-        "BR-CO-21",
-        ("BR-33", "BR-CO-21"),
-        "A document level allowance gives neither a reason (BT-97) nor a reason code (BT-98) (EN 16931 BR-33 says the same and fails too).",
-        "Une remise au niveau du document n'a ni motif (BT-97) ni code de motif (BT-98) (la règle EN 16931 BR-33 dit la même chose et échoue aussi).",
-        {"allowances": [("10.00", "95", "Remise", "S", "20")]},
-        edit=_no_reasons("ApplicableHeaderTradeSettlement"),
-    ),
-    Variant(
-        "BR-CO-22",
-        "BR-CO-22",
-        ("BR-38", "BR-CO-22"),
-        "A document level charge gives neither a reason (BT-104) nor a reason code (BT-105) (EN 16931 BR-38 says the same and fails too).",
-        "Des frais au niveau du document n'ont ni motif (BT-104) ni code de motif (BT-105) (la règle EN 16931 BR-38 dit la même chose et échoue aussi).",
-        {"charges": [("10.00", "FC", "Frais de port", "S", "20")]},
-        edit=_no_reasons("ApplicableHeaderTradeSettlement"),
-    ),
-    Variant(
-        "BR-CO-23",
-        "BR-CO-23",
-        ("BR-42", "BR-CO-23"),
-        "A line allowance gives neither a reason (BT-139) nor a reason code (BT-140) (EN 16931 BR-42 says the same and fails too).",
-        "Une remise sur ligne n'a ni motif (BT-139) ni code de motif (BT-140) (la règle EN 16931 BR-42 dit la même chose et échoue aussi).",
-        {
-            "lines": [
-                ("Atelier de formation", "2", "450.00", "S", "20", "50.00"),
-                ("Support de cours", "10", "12.50", "S", "20"),
-            ]
-        },
-        edit=_no_reasons("SpecifiedLineTradeSettlement"),
-    ),
-    Variant(
-        "BR-CO-24",
-        "BR-CO-24",
-        ("BR-44", "BR-CO-24"),
-        "A line charge gives neither a reason (BT-144) nor a reason code (BT-145) (EN 16931 BR-44 says the same and fails too).",
-        "Des frais sur ligne n'ont ni motif (BT-144) ni code de motif (BT-145) (la règle EN 16931 BR-44 dit la même chose et échoue aussi).",
-        edit=_line_charge(10.0, reason=False),
-        fixed=_line_charge(10.0, reason=True),
-    ),
+    *EN16931[:_CO_26],
     Variant(
         "BR-CO-25",
         "BR-CO-25",
@@ -1025,67 +514,9 @@ VARIANTS = (
         "An EXTENDED-CTC-FR invoice with an amount due (BT-115) gives neither a payment due date (BT-9) nor payment terms (BT-20).",
         "Une facture au profil EXTENDED-CTC-FR, avec un net à payer (BT-115), n'indique ni date d'échéance (BT-9) ni conditions de paiement (BT-20).",
         {"profile": EXTENDED_CTC_FR},
-        edit=_no_payment_terms,
+        edit=no_payment_terms,
     ),
-    Variant(
-        "BR-CO-26",
-        "BR-CO-26",
-        ("BR-CO-26", "BR-FR-10_BT-30", "BR-S-02"),
-        "The seller has no identifier at all: no SIRET (BT-29), no SIREN (BT-30), no VAT number (BT-31) (BR-FR-10, which requires the SIREN, and BR-S-02, which requires the VAT number for standard-rated VAT, fail too).",
-        "Le vendeur n'a aucun identifiant : ni SIRET (BT-29), ni SIREN (BT-30), ni numéro de TVA (BT-31) (BR-FR-10, qui exige le SIREN, et BR-S-02, qui exige le numéro de TVA pour le taux normal, échouent aussi).",
-        edit=_no_seller_identifiers,
-    ),
-    # The core and VAT rules seen failing in public write-ups of real invoices. BR-16 (no line), BR-22 (a line without
-    # quantity) and BR-26 (a line without net price) have no example: the Factur-X EN 16931 schema requires those
-    # elements, and every example here stays schema-valid.
-    Variant(
-        "BR-23",
-        "BR-23",
-        ("BR-23",),
-        "The first line's invoiced quantity (BT-129) has no unit of measure code (BT-130).",
-        "La quantité facturée de la première ligne (BT-129) n'a pas de code d'unité de mesure (BT-130).",
-        edit=_no_unit_code,
-    ),
-    Variant(
-        "BR-27",
-        "BR-27",
-        ("BR-27", "BR-FR-DEC-03_BT-146"),
-        "A discount is typed as a line with a negative net price (BT-146) instead of a document level allowance (BR-FR-DEC-03, which wants a positive price outside the billing frames S9, M9 and B9, fails too).",
-        "Une remise est saisie comme une ligne au prix net négatif (BT-146) au lieu d'une remise au niveau du document (BR-FR-DEC-03, qui exige un prix positif hors des cadres de facturation S9, M9 et B9, échoue aussi).",
-        {"allowances": [("50.00", "95", "Remise fidélité", "S", "20")]},
-        edit=_allowance_as_negative_line,
-    ),
-    Variant(
-        "BR-S-02",
-        "BR-S-02",
-        ("BR-S-02",),
-        "The lines are standard-rated (S) but the seller has no VAT number (BT-31).",
-        "Les lignes sont au taux normal (S), mais le vendeur n'a pas de numéro de TVA (BT-31).",
-        {"seller": {**SELLER, "vat": None}},
-    ),
-    Variant(
-        "BR-S-08",
-        "BR-S-08",
-        ("BR-S-08",),
-        "The taxable amount of the 20 % rate (BT-116) is 1 € more than the net amounts of its lines (BT-131); its VAT amount stays within the tolerance of BR-CO-17.",
-        "La base HT du taux de 20 % (BT-116) dépasse de 1 € la somme des montants nets de ses lignes (BT-131) ; son montant de TVA reste dans la tolérance de BR-CO-17.",
-        edit=_vat_basis(1),
-    ),
-    Variant(
-        "BR-E-10",
-        "BR-E-10",
-        ("BR-E-10",),
-        "The VAT breakdown of the exempt line (category E) gives neither an exemption reason (BT-120) nor a reason code (BT-121).",
-        "La ventilation de TVA de la ligne exonérée (catégorie E) n'indique ni motif d'exonération (BT-120) ni code de motif (BT-121).",
-        {
-            "lines": [
-                ("Atelier de formation", "2", "450.00", "S", "20"),
-                ("Support de cours", "10", "12.50", "S", "20"),
-                ("Formation professionnelle continue", "1", "300.00", "E", "0"),
-            ]
-        },
-        edit=_no_exemption_reason,
-    ),
+    *EN16931[_CO_26:],
     Variant(
         "BR-FR-03-BT-7",
         "BR-FR-03",
@@ -1093,7 +524,7 @@ VARIANTS = (
         "The VAT point date (BT-7) has a year outside 2000-2099.",
         "La date d'exigibilité de la TVA (BT-7) a une année hors de 2000-2099.",
         {"due_date_type": None},
-        edit=_tax_point_date("19991020"),
+        edit=tax_point_date("19991020"),
     ),
     Variant(
         "BR-FR-03-BT-73",
@@ -1101,7 +532,7 @@ VARIANTS = (
         ("BR-FR-03_BT-73",),
         "The invoicing period start date (BT-73) has a year outside 2000-2099.",
         "La date de début de la période de facturation (BT-73) a une année hors de 2000-2099.",
-        edit=_billing_period("19991001", "20261031"),
+        edit=billing_period("19991001", "20261031"),
     ),
     Variant(
         "BR-FR-03-BT-74",
@@ -1109,7 +540,7 @@ VARIANTS = (
         ("BR-FR-03_BT-74",),
         "The invoicing period end date (BT-74) has a year outside 2000-2099.",
         "La date de fin de la période de facturation (BT-74) a une année hors de 2000-2099.",
-        edit=_billing_period("20261001", "21001031"),
+        edit=billing_period("20261001", "21001031"),
     ),
     Variant(
         "BR-FR-06-TXD",
@@ -1125,7 +556,7 @@ VARIANTS = (
         ("BR-FR-09_BT-60",),
         "The payee's SIRET (BT-60) does not start with its SIREN: it is the seller's SIRET.",
         "Le SIRET du bénéficiaire (BT-60) ne commence pas par son SIREN : c'est celui du vendeur.",
-        edit=_add_payee([(SELLER["global_id"][0], "0009")], PAYEE_SIREN),
+        edit=add_payee([(SELLER["global_id"][0], "0009")], PAYEE_SIREN),
     ),
     Variant(
         "BR-FR-09-ship-to",
@@ -1133,7 +564,7 @@ VARIANTS = (
         ("BR-FR-09_BT-71",),
         "The deliver-to location identifier with scheme 0009 (SIRET, BT-71) is not 14 digits: it has spaces.",
         "L'identifiant du lieu de livraison au schéma 0009 (SIRET, BT-71) n'a pas 14 chiffres : il contient des espaces.",
-        edit=_add_ship_to([(SPACED_SIRET, "0009")]),
+        edit=add_ship_to([(SPACED_SIRET, "0009")]),
     ),
     Variant(
         "BR-FR-15-allowance",
@@ -1158,7 +589,7 @@ VARIANTS = (
         "A document level allowance's VAT rate (BT-96) has 3 decimals (20.000); BR-FR-16 rejects it too, as 20.000 is not in its list of rates.",
         "Le taux de TVA d'une remise au niveau du document (BT-96) a 3 décimales (20.000) ; BR-FR-16 le refuse aussi, 20.000 n'étant pas dans sa liste de taux.",
         {"allowances": ALLOWANCE},
-        edit=_set_text("SpecifiedTradeAllowanceCharge", "CategoryTradeTax", "RateApplicablePercent", text="20.000"),
+        edit=set_text("SpecifiedTradeAllowanceCharge", "CategoryTradeTax", "RateApplicablePercent", text="20.000"),
     ),
     Variant(
         "BR-FR-24-buyer",
@@ -1182,7 +613,7 @@ VARIANTS = (
         ("BR-FR-29_AVV", "BR-52"),
         "An invoiced object identifier (BT-18) with reference type AVV is blank (EN 16931 rule BR-52 fires too: a reference is required).",
         "Un identifiant d'objet facturé (BT-18) de type AVV est vide (la règle EN 16931 BR-52 se déclenche aussi : une référence est exigée).",
-        edit=_add_documents((" ", "130", None, "AVV")),
+        edit=add_documents((" ", "130", None, "AVV")),
     ),
     Variant(
         "BR-FR-CO-09-BT-9",
@@ -1191,8 +622,8 @@ VARIANTS = (
         "An already paid invoice (billing frame S2) has no payment due date (BT-9).",
         "Une facture déjà payée (cadre de facturation S2) n'a pas de date d'échéance (BT-9).",
         {"billing_frame": "S2"},
-        edit=_paid_without_due_date,
-        fixed=_paid_with_due_date,
+        edit=paid_without_due_date,
+        fixed=paid_with_due_date,
     ),
     Variant(
         "BR-FR-CO-10-BT-29-2",
@@ -1200,7 +631,7 @@ VARIANTS = (
         ("BR-FR-CO-10_BT-29-2",),
         "The seller has two identifiers (BT-29) with the same scheme 0009.",
         "Le vendeur a deux identifiants (BT-29) au même schéma 0009.",
-        edit=_add_global_id("SellerTradeParty", SELLER_SIRET_2, "0009"),
+        edit=add_global_id("SellerTradeParty", SELLER_SIRET_2, "0009"),
     ),
     Variant(
         "BR-FR-CO-10-BT-46-1",
@@ -1208,7 +639,7 @@ VARIANTS = (
         ("BR-FR-CO-10_BT-46-1", "FX-SCH-A-000420"),
         "The buyer's identifier (BT-46) has no scheme identifier; the Factur-X profile rules reject it too.",
         "L'identifiant de l'acheteur (BT-46) n'a pas d'identifiant de schéma ; les règles du profil Factur-X le refusent aussi.",
-        edit=_drop_scheme("BuyerTradeParty"),
+        edit=drop_scheme("BuyerTradeParty"),
     ),
     Variant(
         "BR-FR-CO-10-BT-46-2",
@@ -1216,7 +647,7 @@ VARIANTS = (
         ("BR-FR-CO-10_BT-46-2", "FX-SCH-A-000164"),
         "The buyer has two identifiers (BT-46) with the same scheme 0009; the Factur-X profile rules reject it too.",
         "L'acheteur a deux identifiants (BT-46) au même schéma 0009 ; les règles du profil Factur-X le refusent aussi.",
-        edit=_add_global_id("BuyerTradeParty", BUYER_SIRET_2, "0009"),
+        edit=add_global_id("BuyerTradeParty", BUYER_SIRET_2, "0009"),
     ),
     Variant(
         "BR-FR-CO-10-BT-60-1",
@@ -1224,7 +655,7 @@ VARIANTS = (
         ("BR-FR-CO-10_BT-60-1", "FX-SCH-A-000470"),
         "The payee's identifier (BT-60) has no scheme identifier; the Factur-X profile rules reject it too.",
         "L'identifiant du bénéficiaire (BT-60) n'a pas d'identifiant de schéma ; les règles du profil Factur-X le refusent aussi.",
-        edit=_add_payee([(PAYEE_SIRET, None)], PAYEE_SIREN),
+        edit=add_payee([(PAYEE_SIRET, None)], PAYEE_SIREN),
     ),
     Variant(
         "BR-FR-CO-10-BT-60-2",
@@ -1232,7 +663,7 @@ VARIANTS = (
         ("BR-FR-CO-10_BT-60-2", "FX-SCH-A-000468"),
         "The payee has two identifiers (BT-60) with the same scheme 0009; the Factur-X profile rules reject it too.",
         "Le bénéficiaire a deux identifiants (BT-60) au même schéma 0009 ; les règles du profil Factur-X le refusent aussi.",
-        edit=_add_payee([(PAYEE_SIRET, "0009"), (luhn_complete(PAYEE_SIREN + "0002"), "0009")], PAYEE_SIREN),
+        edit=add_payee([(PAYEE_SIRET, "0009"), (luhn_complete(PAYEE_SIREN + "0002"), "0009")], PAYEE_SIREN),
     ),
     Variant(
         "BR-FR-CO-10-BT-71-1",
@@ -1240,7 +671,7 @@ VARIANTS = (
         ("BR-FR-CO-10_BT-71-1", "FX-SCH-A-000453"),
         "The deliver-to location identifier (BT-71) has no scheme identifier; the Factur-X profile rules reject it too.",
         "L'identifiant du lieu de livraison (BT-71) n'a pas d'identifiant de schéma ; les règles du profil Factur-X le refusent aussi.",
-        edit=_add_ship_to([(BUYER_SIRET_2, None)]),
+        edit=add_ship_to([(BUYER_SIRET_2, None)]),
     ),
     # Two SIRETs (0009) here would stop France_RFE 1.4.0.04's BR-FR-09 rule with an error (its $siren variable calls
     # substring() on both): two GLNs instead.
@@ -1250,7 +681,7 @@ VARIANTS = (
         ("BR-FR-CO-10_BT-71-2", "FX-SCH-A-000452"),
         "The deliver-to party has two location identifiers (BT-71) with the same scheme 0088 (GLN); the Factur-X profile rules reject it too.",
         "Le lieu de livraison a deux identifiants (BT-71) au même schéma 0088 (GLN) ; les règles du profil Factur-X le refusent aussi.",
-        edit=_add_ship_to([(gln("200000000001"), "0088"), (gln("200000000002"), "0088")]),
+        edit=add_ship_to([(gln("200000000001"), "0088"), (gln("200000000002"), "0088")]),
     ),
     # Amounts with 3 decimals (BR-FR-DEC-01): the value is unchanged, only its notation.
     Variant(
@@ -1260,7 +691,7 @@ VARIANTS = (
         "A document level allowance amount (BT-92) has 3 decimals (EN 16931 BR-DEC-01 fires too).",
         "Le montant d'une remise au niveau du document (BT-92) a 3 décimales (la règle EN 16931 BR-DEC-01 se déclenche aussi).",
         {"allowances": ALLOWANCE},
-        edit=_set_text(
+        edit=set_text(
             "ApplicableHeaderTradeSettlement", "SpecifiedTradeAllowanceCharge", "ActualAmount", text="10.250"
         ),
     ),
@@ -1271,14 +702,14 @@ VARIANTS = (
         "A document level allowance base amount (BT-93) has 3 decimals (EN 16931 BR-DEC-02 fires too).",
         "L'assiette d'une remise au niveau du document (BT-93) a 3 décimales (la règle EN 16931 BR-DEC-02 se déclenche aussi).",
         {"allowances": ALLOWANCE},
-        edit=_edit_all(
-            _add_element(
+        edit=edit_all(
+            add_element(
                 ("ApplicableHeaderTradeSettlement", "SpecifiedTradeAllowanceCharge"),
                 "CalculationPercent",
                 "1.00",
                 before="ActualAmount",
             ),
-            _add_element(
+            add_element(
                 ("ApplicableHeaderTradeSettlement", "SpecifiedTradeAllowanceCharge"),
                 "BasisAmount",
                 "1025.000",
@@ -1292,7 +723,7 @@ VARIANTS = (
         ("BR-FR-DEC-01_BT-106", "BR-DEC-09"),
         "The sum of the invoice line net amounts (BT-106) has 3 decimals (EN 16931 BR-DEC-09 fires too).",
         "La somme des montants nets des lignes (BT-106) a 3 décimales (la règle EN 16931 BR-DEC-09 se déclenche aussi).",
-        edit=_rewrite_amount("LineTotalAmount", "1025.000"),
+        edit=rewrite_amount("LineTotalAmount", "1025.000"),
     ),
     Variant(
         "BR-FR-DEC-01-BT-107",
@@ -1301,7 +732,7 @@ VARIANTS = (
         "The sum of allowances on document level (BT-107) has 3 decimals (EN 16931 BR-DEC-10 fires too).",
         "La somme des remises au niveau du document (BT-107) a 3 décimales (la règle EN 16931 BR-DEC-10 se déclenche aussi).",
         {"allowances": ALLOWANCE},
-        edit=_rewrite_amount("AllowanceTotalAmount", "10.250"),
+        edit=rewrite_amount("AllowanceTotalAmount", "10.250"),
     ),
     Variant(
         "BR-FR-DEC-01-BT-108",
@@ -1310,7 +741,7 @@ VARIANTS = (
         "The sum of charges on document level (BT-108) has 3 decimals (EN 16931 BR-DEC-11 fires too).",
         "La somme des frais au niveau du document (BT-108) a 3 décimales (la règle EN 16931 BR-DEC-11 se déclenche aussi).",
         {"charges": CHARGE},
-        edit=_rewrite_amount("ChargeTotalAmount", "15.000"),
+        edit=rewrite_amount("ChargeTotalAmount", "15.000"),
     ),
     Variant(
         "BR-FR-DEC-01-BT-109",
@@ -1318,7 +749,7 @@ VARIANTS = (
         ("BR-FR-DEC-01_BT-109", "BR-DEC-12"),
         "The total without VAT (BT-109) has 3 decimals (EN 16931 BR-DEC-12 fires too).",
         "Le total HT (BT-109) a 3 décimales (la règle EN 16931 BR-DEC-12 se déclenche aussi).",
-        edit=_rewrite_amount("TaxBasisTotalAmount", "1025.000"),
+        edit=rewrite_amount("TaxBasisTotalAmount", "1025.000"),
     ),
     Variant(
         "BR-FR-DEC-01-BT-110",
@@ -1326,7 +757,7 @@ VARIANTS = (
         ("BR-FR-DEC-01_BT-110",),
         "The VAT total (BT-110) has 3 decimals.",
         "Le total de TVA (BT-110) a 3 décimales.",
-        edit=_rewrite_amount("TaxTotalAmount", "205.000"),
+        edit=rewrite_amount("TaxTotalAmount", "205.000"),
     ),
     Variant(
         "BR-FR-DEC-01-BT-113",
@@ -1334,7 +765,7 @@ VARIANTS = (
         ("BR-FR-DEC-01_BT-113", "BR-DEC-16"),
         "The paid amount (BT-113) has 3 decimals (EN 16931 BR-DEC-16 fires too).",
         "Le montant déjà payé (BT-113) a 3 décimales (la règle EN 16931 BR-DEC-16 se déclenche aussi).",
-        edit=_prepaid("200.000", "1030.00"),
+        edit=prepaid("200.000", "1030.00"),
     ),
     Variant(
         "BR-FR-DEC-01-BT-114",
@@ -1342,7 +773,7 @@ VARIANTS = (
         ("BR-FR-DEC-01_BT-114", "BR-DEC-17"),
         "The rounding amount (BT-114) has 3 decimals (EN 16931 BR-DEC-17 fires too).",
         "Le montant d'arrondi (BT-114) a 3 décimales (la règle EN 16931 BR-DEC-17 se déclenche aussi).",
-        edit=_add_element(
+        edit=add_element(
             ("SpecifiedTradeSettlementHeaderMonetarySummation",), "RoundingAmount", "0.000", before="GrandTotalAmount"
         ),
     ),
@@ -1352,7 +783,7 @@ VARIANTS = (
         ("BR-FR-DEC-01_BT-116", "BR-DEC-19"),
         "A VAT category taxable amount (BT-116) has 3 decimals (EN 16931 BR-DEC-19 fires too).",
         "La base d'imposition d'une catégorie de TVA (BT-116) a 3 décimales (la règle EN 16931 BR-DEC-19 se déclenche aussi).",
-        edit=_set_text("ApplicableHeaderTradeSettlement", "ApplicableTradeTax", "BasisAmount", text="1025.000"),
+        edit=set_text("ApplicableHeaderTradeSettlement", "ApplicableTradeTax", "BasisAmount", text="1025.000"),
     ),
     Variant(
         "BR-FR-DEC-01-BT-117",
@@ -1360,7 +791,7 @@ VARIANTS = (
         ("BR-FR-DEC-01_BT-117", "BR-DEC-20"),
         "A VAT category tax amount (BT-117) has 3 decimals (EN 16931 BR-DEC-20 fires too).",
         "Le montant de TVA d'une catégorie (BT-117) a 3 décimales (la règle EN 16931 BR-DEC-20 se déclenche aussi).",
-        edit=_set_text("ApplicableHeaderTradeSettlement", "ApplicableTradeTax", "CalculatedAmount", text="205.000"),
+        edit=set_text("ApplicableHeaderTradeSettlement", "ApplicableTradeTax", "CalculatedAmount", text="205.000"),
     ),
     Variant(
         "BR-FR-DEC-01-BT-131",
@@ -1368,7 +799,7 @@ VARIANTS = (
         ("BR-FR-DEC-01_BT-131", "BR-DEC-23"),
         "An invoice line net amount (BT-131) has 3 decimals (EN 16931 BR-DEC-23 fires too).",
         "Le montant net d'une ligne (BT-131) a 3 décimales (la règle EN 16931 BR-DEC-23 se déclenche aussi).",
-        edit=_set_text("SpecifiedTradeSettlementLineMonetarySummation", "LineTotalAmount", text="900.000"),
+        edit=set_text("SpecifiedTradeSettlementLineMonetarySummation", "LineTotalAmount", text="900.000"),
     ),
     Variant(
         "BR-FR-DEC-01-BT-136",
@@ -1377,7 +808,7 @@ VARIANTS = (
         "An invoice line allowance amount (BT-136) has 3 decimals (EN 16931 BR-DEC-24 fires too).",
         "Le montant d'une remise de ligne (BT-136) a 3 décimales (la règle EN 16931 BR-DEC-24 se déclenche aussi).",
         {"lines": DISCOUNTED_LINES},
-        edit=_set_text("SpecifiedLineTradeSettlement", "SpecifiedTradeAllowanceCharge", "ActualAmount", text="50.000"),
+        edit=set_text("SpecifiedLineTradeSettlement", "SpecifiedTradeAllowanceCharge", "ActualAmount", text="50.000"),
     ),
     Variant(
         "BR-FR-DEC-01-BT-137",
@@ -1386,7 +817,7 @@ VARIANTS = (
         "An invoice line allowance base amount (BT-137) has 3 decimals (EN 16931 BR-DEC-25 fires too).",
         "L'assiette d'une remise de ligne (BT-137) a 3 décimales (la règle EN 16931 BR-DEC-25 se déclenche aussi).",
         {"lines": DISCOUNTED_LINES},
-        edit=_add_element(
+        edit=add_element(
             ("SpecifiedLineTradeSettlement", "SpecifiedTradeAllowanceCharge"),
             "BasisAmount",
             "900.000",
@@ -1399,7 +830,7 @@ VARIANTS = (
         ("BR-FR-DEC-02_BT-149",),
         "An item price base quantity (BT-149) has 5 decimals.",
         "La quantité de base du prix d'un article (BT-149) a 5 décimales.",
-        edit=_add_element(
+        edit=add_element(
             ("SpecifiedLineTradeAgreement", "NetPriceProductTradePrice"),
             "BasisQuantity",
             "1.00000",
@@ -1413,7 +844,7 @@ VARIANTS = (
         ("BR-FR-DEC-03_BT-147",),
         "An item price discount (BT-147) has 7 decimals.",
         "La remise sur le prix d'un article (BT-147) a 7 décimales.",
-        edit=_gross_price("500.00", "50.0000000"),
+        edit=gross_price("500.00", "50.0000000"),
     ),
     Variant(
         "BR-FR-DEC-03-BT-148",
@@ -1421,21 +852,11 @@ VARIANTS = (
         ("BR-FR-DEC-03_BT-148",),
         "An item gross price (BT-148) has 7 decimals.",
         "Le prix brut d'un article (BT-148) a 7 décimales.",
-        edit=_gross_price("500.0000000", "50.00"),
+        edit=gross_price("500.0000000", "50.00"),
     ),
 )
 
 
-def baseline():
-    return copy.deepcopy(cii.FRENCH)
-
-
 def build(variant=None):
-    """The baseline, or a variant of it, as an lxml root."""
-    conf = baseline()
-    if variant:
-        conf.update(copy.deepcopy(variant.changes))
-    root = cii.build(conf)
-    if variant and variant.edit:
-        variant.edit(root)
-    return root
+    """The French invoice, or a variant of it, as an lxml root."""
+    return edits.build(cii.FRENCH, variant)

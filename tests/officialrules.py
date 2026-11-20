@@ -59,22 +59,22 @@ class Judge:
         compile_ = lambda path: self.proc.new_xslt30_processor().compile_stylesheet(stylesheet_file=str(path))  # noqa: E731
         en16931 = compile_(CACHE / "en16931-1.3.17/xslt/EN16931-CII-validation.xslt")
         # The schema and rule sets lintvoice applies to each profile: Factur-X EN 16931 by default; the CII schema,
-        # BR-FR and the EXTENDED-CTC-FR rules for an EXTENDED-CTC-FR invoice.
+        # BR-FR and the EXTENDED-CTC-FR rules for an EXTENDED-CTC-FR invoice. Each set is named as in a target's RULES.
         self.profiles = {
             "en16931": (
                 etree.XMLSchema(etree.parse(str(fr / "1xsd/Factur-X_EN16931.xsd"))),
                 [
-                    en16931,
-                    compile_(fr / "2xslt/FACTUR-X_EN16931.xslt"),
-                    compile_(fr / "2xslt/BR-FR-Flux2-Schematron-CII.xslt"),
+                    ("EN 16931", en16931),
+                    ("Factur-X", compile_(fr / "2xslt/FACTUR-X_EN16931.xslt")),
+                    ("BR-FR", compile_(fr / "2xslt/BR-FR-Flux2-Schematron-CII.xslt")),
                 ],
             ),
             "extended-ctc-fr": (
                 etree.XMLSchema(etree.parse(str(cii / "1xsd-CII_D22B_uncoupled/CrossIndustryInvoice_100pD22B.xsd"))),
                 [
-                    en16931,
-                    compile_(cii / "EN16931/2xslt/BR-FR-Flux2-Schematron-CII.xslt"),
-                    compile_(cii / "EXTENDED-CTC-FR/2xslt/EXTENDED-CTC-FR-CII.xslt"),
+                    ("EN 16931", en16931),
+                    ("BR-FR", compile_(cii / "EN16931/2xslt/BR-FR-Flux2-Schematron-CII.xslt")),
+                    ("EXTENDED-CTC-FR", compile_(cii / "EXTENDED-CTC-FR/2xslt/EXTENDED-CTC-FR-CII.xslt")),
                 ],
             ),
         }
@@ -89,11 +89,13 @@ class Judge:
         xsd = self._profile(xml)[0]
         return [] if xsd.validate(etree.fromstring(xml)) else [e.message for e in xsd.error_log]
 
-    def fired(self, xml):
-        """Rule ids that fail (fatal or error), across the profile's Schematron sets."""
+    def fired(self, xml, rules):
+        """Rule ids that fail (fatal or error), across the profile's Schematron sets that a target's rules name."""
         node = self.proc.parse_xml(xml_text=xml.decode("utf-8"))
         ids = set()
-        for exe in self._profile(xml)[1]:
+        for name, exe in self._profile(xml)[1]:
+            if name not in rules:
+                continue
             svrl = etree.fromstring(exe.transform_to_string(xdm_node=node).encode("utf-8"))
             ids |= {
                 f.get("id")

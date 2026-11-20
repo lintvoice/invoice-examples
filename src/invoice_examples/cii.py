@@ -45,6 +45,21 @@ def iban_fr(bank, branch, account):
     return f"FR{check:02d}{bban}", bban
 
 
+def vat_de(serial):
+    """A German VAT number (USt-IdNr.): DE, 8 digits and their check digit (ISO 7064, MOD 11,10)."""
+    product = 10
+    for d in serial:
+        total = (int(d) + product) % 10 or 10
+        product = 2 * total % 11
+    check = 11 - product
+    return f"DE{serial}{0 if check == 10 else check}"
+
+
+def iban_de(bank, account):
+    bban = f"{bank}{account}"
+    return f"DE{98 - int(bban + '131400') % 97:02d}{bban}"  # "DE00" moved to the end, D=13 E=14
+
+
 SELLER_SIREN = luhn_complete("01234567")
 SELLER_SIRET = luhn_complete(SELLER_SIREN + "0001")
 BUYER_SIREN = luhn_complete("07654321")
@@ -109,6 +124,17 @@ FRENCH = {
     ],
     "allowances": [],  # (amount, reason code, reason, category, rate)
     "charges": [],  # same shape, document level charges (BG-21)
+    "payment_terms": "Paiement à 30 jours par virement.",  # BT-20
+    "exemption_reason": "Exonération de TVA",  # BT-120, for the categories that need one
+    "line_allowance_reason": "Remise",  # BT-139, for a line with a discount
+    # the texts the EN 16931 variants add to the invoice (targets/en16931.py, variants)
+    "words": {
+        "allowance": "Remise",
+        "charge": "Frais de port",
+        "loyalty_allowance": "Remise fidélité",
+        "line_charge": "Emballage",
+        "exempt_line": ("Formation professionnelle continue", "1", "300.00", "E", "0"),
+    },
 }
 
 
@@ -189,7 +215,7 @@ def build(c):
             el(el(ac, "ram:ChargeIndicator"), "udt:Indicator", "false")
             el(ac, "ram:ActualAmount", amt(d))
             el(ac, "ram:ReasonCode", "95")
-            el(ac, "ram:Reason", "Remise")
+            el(ac, "ram:Reason", c["line_allowance_reason"])
         el(el(settle, "ram:SpecifiedTradeSettlementLineMonetarySummation"), "ram:LineTotalAmount", amt(net))
 
     agree = el(tx, "ram:ApplicableHeaderTradeAgreement")
@@ -234,7 +260,7 @@ def build(c):
         el(tax, "ram:CalculatedAmount", amt(vat))
         el(tax, "ram:TypeCode", c["tax_type"])
         if cat in ("E", "AE", "K", "G", "O"):
-            el(tax, "ram:ExemptionReason", "Exonération de TVA")
+            el(tax, "ram:ExemptionReason", c["exemption_reason"])
         el(tax, "ram:BasisAmount", amt(basis))
         el(tax, "ram:CategoryCode", cat)
         if c["due_date_type"]:
@@ -253,7 +279,7 @@ def build(c):
         el(tax, "ram:CategoryCode", cat)
         el(tax, "ram:RateApplicablePercent", rate)
     terms = el(settle, "ram:SpecifiedTradePaymentTerms")
-    el(terms, "ram:Description", "Paiement à 30 jours par virement.")
+    el(terms, "ram:Description", c["payment_terms"])
     date(terms, "ram:DueDateDateTime", c["due_date"])
 
     basis_total = line_total + charge_total - allowance_total

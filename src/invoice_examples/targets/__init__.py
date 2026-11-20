@@ -1,5 +1,5 @@
-"""Targets: a destination whose rules the examples follow ("fr" first; "chorus-pro", "xrechnung", "peppol" later)."""
+"""Targets: a destination whose rules the examples follow ("fr", "en16931"; "xrechnung", "peppol" later)."""
 
-from . import fr
+from . import en16931, fr
 
-TARGETS = {"fr": fr}
+TARGETS = {"en16931": en16931, "fr": fr}
