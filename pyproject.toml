@@ -1,7 +1,7 @@
 [project]
 name = "invoice-examples"
-version = "0.4.0"
-description = "Valid and invalid e-invoice examples (Factur-X PDF, CII XML), each invalid one failing a named EN 16931 or French BR-FR rule. CC0"
+version = "0.5.0"
+description = "Valid and invalid e-invoice examples (CII XML, Factur-X / ZUGFeRD PDF), each invalid one failing a named rule: EN 16931, then each country's own rules, France first. CC0"
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
