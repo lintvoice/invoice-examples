@@ -46,12 +46,12 @@ No BR-FR rule fires on an `en16931` example: those rules apply to a seller in Fr
 
 **Invalid** means the example fails exactly the rules its manifest entry lists, and nothing else.
 - Most fail one rule.
-- A few fail two or more, because the official rules overlap (for example `BR-FR-DEC-01` and EN 16931 `BR-DEC-14`).
+- A few fail two or more, because the official rules overlap (for example EN 16931 `BR-CO-21` and `BR-33`, which both want a reason for a document level allowance).
 - Every invalid example stays schema-valid: only a business rule is broken.
 
 **Coverage:** [COVERAGE.md](COVERAGE.md) lists, for each target, every rule with its invalid example and what is wrong in it, and says why a rule has none.
 
-**About the PDFs:** each one has a readable page drawn from its own XML, marked SPECIMEN, and carries that XML as `factur-x.xml`. The pages are in English in `en16931`, in French in `fr`. On an invalid example, the page names the rule it fails and shows in red every value that differs from the valid invoice. `annotated.pdf` is the valid invoice with each value's EN 16931 business term number (BT-…), for learning to read an e-invoice. The PDFs are not PDF/A-3: they are for testing XML extraction and the XML rules, not PDF/A-3 validation.
+**About the PDFs:** each one has a readable page drawn from its own XML, marked SPECIMEN, and carries that XML as `factur-x.xml`. The pages are in English in `en16931`, in French in `fr`. On an invalid example, the page names the rule it fails and what is wrong, and shows in red the values it draws that differ from the valid invoice; some mistakes sit in data the page does not draw (a supporting document, a period), named only above the invoice. `annotated.pdf` is the valid invoice with each value's EN 16931 business term number (BT-…), for learning to read an e-invoice. The PDFs are not PDF/A-3: they are for testing XML extraction and the XML rules, not PDF/A-3 validation.
 
 ## Use them in a test suite
 
