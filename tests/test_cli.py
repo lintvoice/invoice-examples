@@ -2,7 +2,7 @@
 
 import io
 import json
-import tomllib
+import re
 from pathlib import Path
 
 from pypdf import PdfReader
@@ -139,7 +139,7 @@ def test_the_european_target_names_no_french_rule_and_writes_english_pages(run, 
 
 def test_the_version_shown_is_the_packages_own(run):
     """--version and the manifest's generator name the version in pyproject.toml."""
-    expected = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"]["version"]
+    expected = re.search(r'^version = "(.+)"$', (ROOT / "pyproject.toml").read_text(encoding="utf-8"), re.M)[1]
     assert __version__ == expected
     manifest = json.loads((ROOT / "examples" / "fr" / "manifest.json").read_text(encoding="utf-8"))
     assert manifest["generator"] == f"invoice-examples {expected}"
