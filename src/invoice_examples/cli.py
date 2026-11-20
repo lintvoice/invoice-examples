@@ -1,7 +1,7 @@
 """Command line: invoice-examples list | generate.
 
-invoice-examples list --target fr
-invoice-examples generate --target fr --out examples/        # the valid invoice and every invalid variant
+invoice-examples list --target en16931
+invoice-examples generate --target en16931 --out examples/    # the valid invoice and every invalid variant
 invoice-examples generate --target fr --rule BR-FR-10 --out . # one variant, plus the valid invoice
 """
 
@@ -59,13 +59,14 @@ def cmd_generate(args, out):
             return 2
     formats = [f.strip() for f in args.format.split(",")]
     root = Path(args.out) / args.target
+    lang = target.LANG  # the language of the PDF pages
     valid = cii.to_bytes(target.build())
     entries = [
         {
             "id": "valid",
             "status": "valid",
             "fires": [],
-            "files": _files(root, "valid", valid, formats),
+            "files": _files(root, "valid", valid, formats, lang=lang),
             "description": {"en": "Passes every rule listed.", "fr": "Passe toutes les règles listées."},
         }
     ]
@@ -89,18 +90,21 @@ def cmd_generate(args, out):
                 formats,
                 reference=fixed or valid,
                 rule=v.rule,
-                description=v.fr,
+                description=getattr(v, lang),
+                lang=lang,
             ),
             "description": {"en": v.en, "fr": v.fr},
         }
         if fixed:
-            entry["fixed"] = _files(root, f"fixed/{v.id}", fixed, formats)
+            entry["fixed"] = _files(root, f"fixed/{v.id}", fixed, formats, lang=lang)
         entries.append(entry)
     annotated = {}
     if "pdf" in formats:
         # the valid invoice again, each value with its EN 16931 business term number: for reading, not for tests
         annotated = {
-            "pdf": _write(root / "annotated.pdf", pdf.facturx_pdf(valid, annotate=True)).relative_to(root).as_posix()
+            "pdf": _write(root / "annotated.pdf", pdf.facturx_pdf(valid, annotate=True, lang=lang))
+            .relative_to(root)
+            .as_posix()
         }
     manifest = {
         "generator": f"invoice-examples {__version__}",

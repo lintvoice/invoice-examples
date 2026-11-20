@@ -1,0 +1,441 @@
+{
+  "generator": "invoice-examples 0.4.0",
+  "target": "en16931",
+  "syntax": "CII",
+  "profile": "Factur-X EN 16931",
+  "rules": {
+    "EN 16931": "1.3.17 (CII)",
+    "Factur-X": "1.09.2, EN 16931 profile"
+  },
+  "licence": "CC0-1.0",
+  "examples": [
+    {
+      "id": "valid",
+      "status": "valid",
+      "fires": [],
+      "files": {
+        "xml": "valid.xml",
+        "pdf": "valid.pdf"
+      },
+      "description": {
+        "en": "Passes every rule listed.",
+        "fr": "Passe toutes les règles listées."
+      }
+    },
+    {
+      "id": "BR-CO-15",
+      "status": "invalid",
+      "rule": "BR-CO-15",
+      "fires": [
+        "BR-CO-15"
+      ],
+      "files": {
+        "xml": "invalid/BR-CO-15.xml",
+        "pdf": "invalid/BR-CO-15.pdf"
+      },
+      "description": {
+        "en": "The invoice total with VAT (BT-112) is not the total without VAT (BT-109) plus the VAT total (BT-110).",
+        "fr": "Le total TTC (BT-112) n'est pas égal au total HT (BT-109) plus le total de TVA (BT-110)."
+      }
+    },
+    {
+      "id": "BR-CO-03",
+      "status": "invalid",
+      "rule": "BR-CO-03",
+      "fires": [
+        "BR-CO-03"
+      ],
+      "files": {
+        "xml": "invalid/BR-CO-03.xml",
+        "pdf": "invalid/BR-CO-03.pdf"
+      },
+      "description": {
+        "en": "The VAT breakdown gives both a VAT point date (BT-7) and a VAT point date code (BT-8); only one is allowed.",
+        "fr": "La ventilation de TVA indique à la fois une date d'exigibilité de la TVA (BT-7) et un code de date d'exigibilité (BT-8) ; un seul est permis."
+      },
+      "fixed": {
+        "xml": "fixed/BR-CO-03.xml",
+        "pdf": "fixed/BR-CO-03.pdf"
+      }
+    },
+    {
+      "id": "BR-CO-09",
+      "status": "invalid",
+      "rule": "BR-CO-09",
+      "fires": [
+        "BR-CO-09"
+      ],
+      "files": {
+        "xml": "invalid/BR-CO-09.xml",
+        "pdf": "invalid/BR-CO-09.pdf"
+      },
+      "description": {
+        "en": "The seller's VAT number (BT-31) does not start with a country code (ZZ is not one).",
+        "fr": "Le numéro de TVA du vendeur (BT-31) ne commence pas par un code pays (ZZ n'en est pas un)."
+      }
+    },
+    {
+      "id": "BR-CO-10",
+      "status": "invalid",
+      "rule": "BR-CO-10",
+      "fires": [
+        "BR-CO-10"
+      ],
+      "files": {
+        "xml": "invalid/BR-CO-10.xml",
+        "pdf": "invalid/BR-CO-10.pdf"
+      },
+      "description": {
+        "en": "The sum of the line net amounts (BT-106) is not the total of the lines (BT-131); the other totals follow it.",
+        "fr": "La somme des montants nets des lignes (BT-106) n'est pas égale au total des lignes (BT-131) ; les autres totaux suivent."
+      }
+    },
+    {
+      "id": "BR-CO-11",
+      "status": "invalid",
+      "rule": "BR-CO-11",
+      "fires": [
+        "BR-CO-11"
+      ],
+      "files": {
+        "xml": "invalid/BR-CO-11.xml",
+        "pdf": "invalid/BR-CO-11.pdf"
+      },
+      "description": {
+        "en": "The total of document level allowances (BT-107) is not the sum of the allowances (BT-92).",
+        "fr": "Le total des remises au niveau du document (BT-107) n'est pas égal à la somme des remises (BT-92)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-CO-11.xml",
+        "pdf": "fixed/BR-CO-11.pdf"
+      }
+    },
+    {
+      "id": "BR-CO-12",
+      "status": "invalid",
+      "rule": "BR-CO-12",
+      "fires": [
+        "BR-CO-12"
+      ],
+      "files": {
+        "xml": "invalid/BR-CO-12.xml",
+        "pdf": "invalid/BR-CO-12.pdf"
+      },
+      "description": {
+        "en": "The total of document level charges (BT-108) is not the sum of the charges (BT-99).",
+        "fr": "Le total des frais au niveau du document (BT-108) n'est pas égal à la somme des frais (BT-99)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-CO-12.xml",
+        "pdf": "fixed/BR-CO-12.pdf"
+      }
+    },
+    {
+      "id": "BR-CO-13",
+      "status": "invalid",
+      "rule": "BR-CO-13",
+      "fires": [
+        "BR-CO-13"
+      ],
+      "files": {
+        "xml": "invalid/BR-CO-13.xml",
+        "pdf": "invalid/BR-CO-13.pdf"
+      },
+      "description": {
+        "en": "The total without VAT (BT-109) is not the sum of the lines (BT-106) minus the allowances (BT-107) plus the charges (BT-108).",
+        "fr": "Le total HT (BT-109) n'est pas égal à la somme des lignes (BT-106) moins les remises (BT-107) plus les frais (BT-108)."
+      }
+    },
+    {
+      "id": "BR-CO-14",
+      "status": "invalid",
+      "rule": "BR-CO-14",
+      "fires": [
+        "BR-CO-14"
+      ],
+      "files": {
+        "xml": "invalid/BR-CO-14.xml",
+        "pdf": "invalid/BR-CO-14.pdf"
+      },
+      "description": {
+        "en": "The VAT total (BT-110) is not the sum of the VAT amounts per category (BT-117).",
+        "fr": "Le total de TVA (BT-110) n'est pas égal à la somme des montants de TVA par catégorie (BT-117)."
+      }
+    },
+    {
+      "id": "BR-CO-16",
+      "status": "invalid",
+      "rule": "BR-CO-16",
+      "fires": [
+        "BR-CO-16"
+      ],
+      "files": {
+        "xml": "invalid/BR-CO-16.xml",
+        "pdf": "invalid/BR-CO-16.pdf"
+      },
+      "description": {
+        "en": "The amount due (BT-115) is not the total with VAT (BT-112) minus the paid amount (BT-113) plus the rounding amount (BT-114).",
+        "fr": "Le net à payer (BT-115) n'est pas égal au total TTC (BT-112) moins le montant déjà payé (BT-113) plus l'arrondi (BT-114)."
+      }
+    },
+    {
+      "id": "BR-CO-19",
+      "status": "invalid",
+      "rule": "BR-CO-19",
+      "fires": [
+        "BR-CO-19"
+      ],
+      "files": {
+        "xml": "invalid/BR-CO-19.xml",
+        "pdf": "invalid/BR-CO-19.pdf"
+      },
+      "description": {
+        "en": "The invoicing period (BG-14) has neither a start date (BT-73) nor an end date (BT-74).",
+        "fr": "La période de facturation (BG-14) n'a ni date de début (BT-73) ni date de fin (BT-74)."
+      }
+    },
+    {
+      "id": "BR-CO-20",
+      "status": "invalid",
+      "rule": "BR-CO-20",
+      "fires": [
+        "BR-CO-20"
+      ],
+      "files": {
+        "xml": "invalid/BR-CO-20.xml",
+        "pdf": "invalid/BR-CO-20.pdf"
+      },
+      "description": {
+        "en": "The first line's period (BG-26) has neither a start date (BT-134) nor an end date (BT-135).",
+        "fr": "La période de la première ligne (BG-26) n'a ni date de début (BT-134) ni date de fin (BT-135)."
+      }
+    },
+    {
+      "id": "BR-CO-04",
+      "status": "invalid",
+      "rule": "BR-CO-04",
+      "fires": [
+        "BR-CO-04",
+        "CII-DT-037",
+        "FX-SCH-A-000620"
+      ],
+      "files": {
+        "xml": "invalid/BR-CO-04.xml",
+        "pdf": "invalid/BR-CO-04.pdf"
+      },
+      "description": {
+        "en": "The first line's tax is declared with the type GST instead of VAT, so the line has no VAT category (the CII syntax rule CII-DT-037 and a Factur-X profile rule fail too).",
+        "fr": "La taxe de la première ligne est déclarée avec le type GST au lieu de VAT : la ligne n'a donc pas de catégorie de TVA (la règle de syntaxe CII-DT-037 et une règle du profil Factur-X échouent aussi)."
+      }
+    },
+    {
+      "id": "BR-CO-17",
+      "status": "invalid",
+      "rule": "BR-CO-17",
+      "fires": [
+        "BR-CO-17",
+        "BR-S-09"
+      ],
+      "files": {
+        "xml": "invalid/BR-CO-17.xml",
+        "pdf": "invalid/BR-CO-17.pdf"
+      },
+      "description": {
+        "en": "The VAT amount of the 19 % rate (BT-117) is not its taxable amount (BT-116) times the rate (BR-S-09, the same check for the standard rate, fails too).",
+        "fr": "Le montant de TVA du taux de 19 % (BT-117) n'est pas sa base (BT-116) multipliée par le taux (BR-S-09, le même contrôle pour le taux normal, échoue aussi)."
+      }
+    },
+    {
+      "id": "BR-CO-21",
+      "status": "invalid",
+      "rule": "BR-CO-21",
+      "fires": [
+        "BR-33",
+        "BR-CO-21"
+      ],
+      "files": {
+        "xml": "invalid/BR-CO-21.xml",
+        "pdf": "invalid/BR-CO-21.pdf"
+      },
+      "description": {
+        "en": "A document level allowance gives neither a reason (BT-97) nor a reason code (BT-98) (EN 16931 BR-33 says the same and fails too).",
+        "fr": "Une remise au niveau du document n'a ni motif (BT-97) ni code de motif (BT-98) (la règle EN 16931 BR-33 dit la même chose et échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-CO-21.xml",
+        "pdf": "fixed/BR-CO-21.pdf"
+      }
+    },
+    {
+      "id": "BR-CO-22",
+      "status": "invalid",
+      "rule": "BR-CO-22",
+      "fires": [
+        "BR-38",
+        "BR-CO-22"
+      ],
+      "files": {
+        "xml": "invalid/BR-CO-22.xml",
+        "pdf": "invalid/BR-CO-22.pdf"
+      },
+      "description": {
+        "en": "A document level charge gives neither a reason (BT-104) nor a reason code (BT-105) (EN 16931 BR-38 says the same and fails too).",
+        "fr": "Des frais au niveau du document n'ont ni motif (BT-104) ni code de motif (BT-105) (la règle EN 16931 BR-38 dit la même chose et échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-CO-22.xml",
+        "pdf": "fixed/BR-CO-22.pdf"
+      }
+    },
+    {
+      "id": "BR-CO-23",
+      "status": "invalid",
+      "rule": "BR-CO-23",
+      "fires": [
+        "BR-42",
+        "BR-CO-23"
+      ],
+      "files": {
+        "xml": "invalid/BR-CO-23.xml",
+        "pdf": "invalid/BR-CO-23.pdf"
+      },
+      "description": {
+        "en": "A line allowance gives neither a reason (BT-139) nor a reason code (BT-140) (EN 16931 BR-42 says the same and fails too).",
+        "fr": "Une remise sur ligne n'a ni motif (BT-139) ni code de motif (BT-140) (la règle EN 16931 BR-42 dit la même chose et échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-CO-23.xml",
+        "pdf": "fixed/BR-CO-23.pdf"
+      }
+    },
+    {
+      "id": "BR-CO-24",
+      "status": "invalid",
+      "rule": "BR-CO-24",
+      "fires": [
+        "BR-44",
+        "BR-CO-24"
+      ],
+      "files": {
+        "xml": "invalid/BR-CO-24.xml",
+        "pdf": "invalid/BR-CO-24.pdf"
+      },
+      "description": {
+        "en": "A line charge gives neither a reason (BT-144) nor a reason code (BT-145) (EN 16931 BR-44 says the same and fails too).",
+        "fr": "Des frais sur ligne n'ont ni motif (BT-144) ni code de motif (BT-145) (la règle EN 16931 BR-44 dit la même chose et échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-CO-24.xml",
+        "pdf": "fixed/BR-CO-24.pdf"
+      }
+    },
+    {
+      "id": "BR-CO-26",
+      "status": "invalid",
+      "rule": "BR-CO-26",
+      "fires": [
+        "BR-CO-26",
+        "BR-S-02"
+      ],
+      "files": {
+        "xml": "invalid/BR-CO-26.xml",
+        "pdf": "invalid/BR-CO-26.pdf"
+      },
+      "description": {
+        "en": "The seller has no identifier at all: no seller identifier (BT-29), no legal registration identifier (BT-30), no VAT number (BT-31) (BR-S-02, which requires the VAT number for standard-rated VAT, fails too).",
+        "fr": "Le vendeur n'a aucun identifiant : ni identifiant du vendeur (BT-29), ni identifiant d'immatriculation légale (BT-30), ni numéro de TVA (BT-31) (BR-S-02, qui exige le numéro de TVA pour le taux normal, échoue aussi)."
+      }
+    },
+    {
+      "id": "BR-23",
+      "status": "invalid",
+      "rule": "BR-23",
+      "fires": [
+        "BR-23"
+      ],
+      "files": {
+        "xml": "invalid/BR-23.xml",
+        "pdf": "invalid/BR-23.pdf"
+      },
+      "description": {
+        "en": "The first line's invoiced quantity (BT-129) has no unit of measure code (BT-130).",
+        "fr": "La quantité facturée de la première ligne (BT-129) n'a pas de code d'unité de mesure (BT-130)."
+      }
+    },
+    {
+      "id": "BR-27",
+      "status": "invalid",
+      "rule": "BR-27",
+      "fires": [
+        "BR-27"
+      ],
+      "files": {
+        "xml": "invalid/BR-27.xml",
+        "pdf": "invalid/BR-27.pdf"
+      },
+      "description": {
+        "en": "A discount is typed as a line with a negative net price (BT-146) instead of a document level allowance.",
+        "fr": "Une remise est saisie comme une ligne au prix net négatif (BT-146) au lieu d'une remise au niveau du document."
+      },
+      "fixed": {
+        "xml": "fixed/BR-27.xml",
+        "pdf": "fixed/BR-27.pdf"
+      }
+    },
+    {
+      "id": "BR-S-02",
+      "status": "invalid",
+      "rule": "BR-S-02",
+      "fires": [
+        "BR-S-02"
+      ],
+      "files": {
+        "xml": "invalid/BR-S-02.xml",
+        "pdf": "invalid/BR-S-02.pdf"
+      },
+      "description": {
+        "en": "The lines are standard-rated (S) but the seller has no VAT number (BT-31).",
+        "fr": "Les lignes sont au taux normal (S), mais le vendeur n'a pas de numéro de TVA (BT-31)."
+      }
+    },
+    {
+      "id": "BR-S-08",
+      "status": "invalid",
+      "rule": "BR-S-08",
+      "fires": [
+        "BR-S-08"
+      ],
+      "files": {
+        "xml": "invalid/BR-S-08.xml",
+        "pdf": "invalid/BR-S-08.pdf"
+      },
+      "description": {
+        "en": "The taxable amount of the 19 % rate (BT-116) is 1 € more than the net amounts of its lines (BT-131); its VAT amount stays within the tolerance of BR-CO-17.",
+        "fr": "La base HT du taux de 19 % (BT-116) dépasse de 1 € la somme des montants nets de ses lignes (BT-131) ; son montant de TVA reste dans la tolérance de BR-CO-17."
+      }
+    },
+    {
+      "id": "BR-E-10",
+      "status": "invalid",
+      "rule": "BR-E-10",
+      "fires": [
+        "BR-E-10"
+      ],
+      "files": {
+        "xml": "invalid/BR-E-10.xml",
+        "pdf": "invalid/BR-E-10.pdf"
+      },
+      "description": {
+        "en": "The VAT breakdown of the exempt line (category E) gives neither an exemption reason (BT-120) nor a reason code (BT-121).",
+        "fr": "La ventilation de TVA de la ligne exonérée (catégorie E) n'indique ni motif d'exonération (BT-120) ni code de motif (BT-121)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-E-10.xml",
+        "pdf": "fixed/BR-E-10.pdf"
+      }
+    }
+  ],
+  "annotated": {
+    "pdf": "annotated.pdf"
+  }
+}
