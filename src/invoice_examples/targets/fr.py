@@ -23,10 +23,9 @@ from ..edits import (
     edit_all,
     gross_price,
     no_payment_terms,
+    one_more_decimal,
     paid_with_due_date,
     paid_without_due_date,
-    prepaid,
-    rewrite_amount,
     set_text,
     tax_point_date,
 )
@@ -46,12 +45,7 @@ EXTENDED_CTC_FR = "urn:cen.eu:en16931:2017#conformant#urn.cpro.gouv.fr:1p0:exten
 NOTES = cii.FRENCH["notes"]
 BAR_B2B = ("BAR", "B2B")
 SELLER, BUYER = cii.FRENCH["seller"], cii.FRENCH["buyer"]
-ALLOWANCE = [("10.25", "95", "Remise commerciale", "S", "20")]  # 1 % of 1025.00
-CHARGE = [("15.00", "FC", "Frais de port", "S", "20")]
-DISCOUNTED_LINES = [
-    ("Atelier de formation", "2", "450.00", "S", "20", "50.00"),
-    ("Support de cours", "10", "12.50", "S", "20"),
-]
+ALLOWANCE = [("10.25", "95", cii.FRENCH["words"]["trade_allowance"], "S", "20")]  # 1 % of 1025.00
 SELLER_SIRET_2 = luhn_complete(SELLER_SIREN + "0002")
 BUYER_SIRET_2 = luhn_complete(BUYER_SIREN + "0003")  # also the deliver-to establishment
 SPACED_SIRET = f"{BUYER_SIRET_2[:3]} {BUYER_SIRET_2[3:6]} {BUYER_SIRET_2[6:9]} {BUYER_SIRET_2[9:]}"
@@ -80,6 +74,42 @@ def _with_french_rules(v):
 # only (its example is an EXTENDED-CTC-FR invoice) and keeps its place, before BR-CO-26.
 EN16931 = tuple(_with_french_rules(v) for v in en16931.variants(cii.FRENCH))
 _CO_26 = [v.id for v in EN16931].index("BR-CO-26")
+
+# The EN 16931 decimals rules (BR-DEC), each with the business terms of the BR-FR-DEC-01 assertion that fails next to
+# it on the French invoice. BR-DEC-14 and BR-DEC-18 (the totals BT-112 and BT-115) share one example, BR-FR-DEC-01.
+FR_DEC_01 = {
+    "BR-DEC-01": "BT-92_BT-99",
+    "BR-DEC-02": "BT-93_BT-100",
+    "BR-DEC-09": "BT-106",
+    "BR-DEC-10": "BT-107",
+    "BR-DEC-11": "BT-108",
+    "BR-DEC-12": "BT-109",
+    "BR-DEC-16": "BT-113",
+    "BR-DEC-17": "BT-114",
+    "BR-DEC-19": "BT-116",
+    "BR-DEC-20": "BT-117",
+    "BR-DEC-23": "BT-131",
+    "BR-DEC-24": "BT-136_BT-141",
+    "BR-DEC-25": "BT-137_BT-142",
+}
+
+
+def _under_br_fr_dec_01(v):
+    """A shared EN 16931 decimals variant on the French invoice, named for BR-FR-DEC-01, which fails next to it."""
+    terms = FR_DEC_01[v.rule]
+    return dataclasses.replace(
+        v,
+        id=f"BR-FR-DEC-01-{terms.split('_')[0]}",
+        rule="BR-FR-DEC-01",
+        fires=(f"BR-FR-DEC-01_{terms}", v.rule),
+        en=f"{v.en[:-1]} (EN 16931 {v.rule} fires too).",
+        fr=f"{v.fr[:-1]} (la règle EN 16931 {v.rule} se déclenche aussi).",
+    )
+
+
+# BR-FR-DEC-01's own example for the VAT total (BT-110), where no EN 16931 rule fails, keeps its place before BT-113.
+DECIMALS = tuple(_under_br_fr_dec_01(v) for v in en16931.decimals(cii.FRENCH) if v.rule in FR_DEC_01)
+_BT_113 = [v.id for v in DECIMALS].index("BR-FR-DEC-01-BT-113")
 
 VARIANTS = (
     Variant(
@@ -504,7 +534,9 @@ VARIANTS = (
         ("BR-FR-DEC-01_BT-112", "BR-FR-DEC-01_BT-115", "BR-DEC-14", "BR-DEC-18"),
         "The total with VAT (BT-112) and the amount due (BT-115) are written with 3 decimals (EN 16931 BR-DEC-14 and BR-DEC-18 fire too).",
         "Le total TTC (BT-112) et le net à payer (BT-115) sont écrits avec 3 décimales (les règles EN 16931 BR-DEC-14 et BR-DEC-18 se déclenchent aussi).",
-        edit=edit_all(rewrite_amount("GrandTotalAmount", "1230.000"), rewrite_amount("DuePayableAmount", "1230.000")),
+        edit=edit_all(
+            one_more_decimal(en16931.SUMS, "GrandTotalAmount"), one_more_decimal(en16931.SUMS, "DuePayableAmount")
+        ),
     ),
     *EN16931[:_CO_26],
     Variant(
@@ -684,146 +716,16 @@ VARIANTS = (
         edit=add_ship_to([(gln("200000000001"), "0088"), (gln("200000000002"), "0088")]),
     ),
     # Amounts with 3 decimals (BR-FR-DEC-01): the value is unchanged, only its notation.
-    Variant(
-        "BR-FR-DEC-01-BT-92",
-        "BR-FR-DEC-01",
-        ("BR-FR-DEC-01_BT-92_BT-99", "BR-DEC-01"),
-        "A document level allowance amount (BT-92) has 3 decimals (EN 16931 BR-DEC-01 fires too).",
-        "Le montant d'une remise au niveau du document (BT-92) a 3 décimales (la règle EN 16931 BR-DEC-01 se déclenche aussi).",
-        {"allowances": ALLOWANCE},
-        edit=set_text(
-            "ApplicableHeaderTradeSettlement", "SpecifiedTradeAllowanceCharge", "ActualAmount", text="10.250"
-        ),
-    ),
-    Variant(
-        "BR-FR-DEC-01-BT-93",
-        "BR-FR-DEC-01",
-        ("BR-FR-DEC-01_BT-93_BT-100", "BR-DEC-02"),
-        "A document level allowance base amount (BT-93) has 3 decimals (EN 16931 BR-DEC-02 fires too).",
-        "L'assiette d'une remise au niveau du document (BT-93) a 3 décimales (la règle EN 16931 BR-DEC-02 se déclenche aussi).",
-        {"allowances": ALLOWANCE},
-        edit=edit_all(
-            add_element(
-                ("ApplicableHeaderTradeSettlement", "SpecifiedTradeAllowanceCharge"),
-                "CalculationPercent",
-                "1.00",
-                before="ActualAmount",
-            ),
-            add_element(
-                ("ApplicableHeaderTradeSettlement", "SpecifiedTradeAllowanceCharge"),
-                "BasisAmount",
-                "1025.000",
-                before="ActualAmount",
-            ),
-        ),
-    ),
-    Variant(
-        "BR-FR-DEC-01-BT-106",
-        "BR-FR-DEC-01",
-        ("BR-FR-DEC-01_BT-106", "BR-DEC-09"),
-        "The sum of the invoice line net amounts (BT-106) has 3 decimals (EN 16931 BR-DEC-09 fires too).",
-        "La somme des montants nets des lignes (BT-106) a 3 décimales (la règle EN 16931 BR-DEC-09 se déclenche aussi).",
-        edit=rewrite_amount("LineTotalAmount", "1025.000"),
-    ),
-    Variant(
-        "BR-FR-DEC-01-BT-107",
-        "BR-FR-DEC-01",
-        ("BR-FR-DEC-01_BT-107", "BR-DEC-10"),
-        "The sum of allowances on document level (BT-107) has 3 decimals (EN 16931 BR-DEC-10 fires too).",
-        "La somme des remises au niveau du document (BT-107) a 3 décimales (la règle EN 16931 BR-DEC-10 se déclenche aussi).",
-        {"allowances": ALLOWANCE},
-        edit=rewrite_amount("AllowanceTotalAmount", "10.250"),
-    ),
-    Variant(
-        "BR-FR-DEC-01-BT-108",
-        "BR-FR-DEC-01",
-        ("BR-FR-DEC-01_BT-108", "BR-DEC-11"),
-        "The sum of charges on document level (BT-108) has 3 decimals (EN 16931 BR-DEC-11 fires too).",
-        "La somme des frais au niveau du document (BT-108) a 3 décimales (la règle EN 16931 BR-DEC-11 se déclenche aussi).",
-        {"charges": CHARGE},
-        edit=rewrite_amount("ChargeTotalAmount", "15.000"),
-    ),
-    Variant(
-        "BR-FR-DEC-01-BT-109",
-        "BR-FR-DEC-01",
-        ("BR-FR-DEC-01_BT-109", "BR-DEC-12"),
-        "The total without VAT (BT-109) has 3 decimals (EN 16931 BR-DEC-12 fires too).",
-        "Le total HT (BT-109) a 3 décimales (la règle EN 16931 BR-DEC-12 se déclenche aussi).",
-        edit=rewrite_amount("TaxBasisTotalAmount", "1025.000"),
-    ),
+    *DECIMALS[:_BT_113],
     Variant(
         "BR-FR-DEC-01-BT-110",
         "BR-FR-DEC-01",
         ("BR-FR-DEC-01_BT-110",),
         "The VAT total (BT-110) has 3 decimals.",
         "Le total de TVA (BT-110) a 3 décimales.",
-        edit=rewrite_amount("TaxTotalAmount", "205.000"),
+        edit=one_more_decimal(en16931.SUMS, "TaxTotalAmount"),
     ),
-    Variant(
-        "BR-FR-DEC-01-BT-113",
-        "BR-FR-DEC-01",
-        ("BR-FR-DEC-01_BT-113", "BR-DEC-16"),
-        "The paid amount (BT-113) has 3 decimals (EN 16931 BR-DEC-16 fires too).",
-        "Le montant déjà payé (BT-113) a 3 décimales (la règle EN 16931 BR-DEC-16 se déclenche aussi).",
-        edit=prepaid("200.000", "1030.00"),
-    ),
-    Variant(
-        "BR-FR-DEC-01-BT-114",
-        "BR-FR-DEC-01",
-        ("BR-FR-DEC-01_BT-114", "BR-DEC-17"),
-        "The rounding amount (BT-114) has 3 decimals (EN 16931 BR-DEC-17 fires too).",
-        "Le montant d'arrondi (BT-114) a 3 décimales (la règle EN 16931 BR-DEC-17 se déclenche aussi).",
-        edit=add_element(
-            ("SpecifiedTradeSettlementHeaderMonetarySummation",), "RoundingAmount", "0.000", before="GrandTotalAmount"
-        ),
-    ),
-    Variant(
-        "BR-FR-DEC-01-BT-116",
-        "BR-FR-DEC-01",
-        ("BR-FR-DEC-01_BT-116", "BR-DEC-19"),
-        "A VAT category taxable amount (BT-116) has 3 decimals (EN 16931 BR-DEC-19 fires too).",
-        "La base d'imposition d'une catégorie de TVA (BT-116) a 3 décimales (la règle EN 16931 BR-DEC-19 se déclenche aussi).",
-        edit=set_text("ApplicableHeaderTradeSettlement", "ApplicableTradeTax", "BasisAmount", text="1025.000"),
-    ),
-    Variant(
-        "BR-FR-DEC-01-BT-117",
-        "BR-FR-DEC-01",
-        ("BR-FR-DEC-01_BT-117", "BR-DEC-20"),
-        "A VAT category tax amount (BT-117) has 3 decimals (EN 16931 BR-DEC-20 fires too).",
-        "Le montant de TVA d'une catégorie (BT-117) a 3 décimales (la règle EN 16931 BR-DEC-20 se déclenche aussi).",
-        edit=set_text("ApplicableHeaderTradeSettlement", "ApplicableTradeTax", "CalculatedAmount", text="205.000"),
-    ),
-    Variant(
-        "BR-FR-DEC-01-BT-131",
-        "BR-FR-DEC-01",
-        ("BR-FR-DEC-01_BT-131", "BR-DEC-23"),
-        "An invoice line net amount (BT-131) has 3 decimals (EN 16931 BR-DEC-23 fires too).",
-        "Le montant net d'une ligne (BT-131) a 3 décimales (la règle EN 16931 BR-DEC-23 se déclenche aussi).",
-        edit=set_text("SpecifiedTradeSettlementLineMonetarySummation", "LineTotalAmount", text="900.000"),
-    ),
-    Variant(
-        "BR-FR-DEC-01-BT-136",
-        "BR-FR-DEC-01",
-        ("BR-FR-DEC-01_BT-136_BT-141", "BR-DEC-24"),
-        "An invoice line allowance amount (BT-136) has 3 decimals (EN 16931 BR-DEC-24 fires too).",
-        "Le montant d'une remise de ligne (BT-136) a 3 décimales (la règle EN 16931 BR-DEC-24 se déclenche aussi).",
-        {"lines": DISCOUNTED_LINES},
-        edit=set_text("SpecifiedLineTradeSettlement", "SpecifiedTradeAllowanceCharge", "ActualAmount", text="50.000"),
-    ),
-    Variant(
-        "BR-FR-DEC-01-BT-137",
-        "BR-FR-DEC-01",
-        ("BR-FR-DEC-01_BT-137_BT-142", "BR-DEC-25"),
-        "An invoice line allowance base amount (BT-137) has 3 decimals (EN 16931 BR-DEC-25 fires too).",
-        "L'assiette d'une remise de ligne (BT-137) a 3 décimales (la règle EN 16931 BR-DEC-25 se déclenche aussi).",
-        {"lines": DISCOUNTED_LINES},
-        edit=add_element(
-            ("SpecifiedLineTradeSettlement", "SpecifiedTradeAllowanceCharge"),
-            "BasisAmount",
-            "900.000",
-            before="ActualAmount",
-        ),
-    ),
+    *DECIMALS[_BT_113:],
     Variant(
         "BR-FR-DEC-02-BT-149",
         "BR-FR-DEC-02",

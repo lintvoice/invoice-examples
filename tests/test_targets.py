@@ -59,5 +59,7 @@ def test_no_french_rule_in_the_european_target():
     assert "BR-FR" not in en16931.RULES
 
 
-def test_every_european_variant_is_also_built_on_the_french_invoice():
-    assert {v.id for v in en16931.VARIANTS} <= {v.id for v in fr.VARIANTS}
+def test_every_european_rule_also_has_an_example_on_the_french_invoice():
+    """Under the same id, or under the name of a French rule that fails next to it (BR-DEC under BR-FR-DEC-01, BR-52
+    under BR-FR-29)."""
+    assert {v.rule for v in en16931.VARIANTS} <= {f for v in fr.VARIANTS for f in v.fires}

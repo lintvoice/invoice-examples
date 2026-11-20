@@ -433,6 +433,290 @@
         "xml": "fixed/BR-E-10.xml",
         "pdf": "fixed/BR-E-10.pdf"
       }
+    },
+    {
+      "id": "BR-52",
+      "status": "invalid",
+      "rule": "BR-52",
+      "fires": [
+        "BR-52"
+      ],
+      "files": {
+        "xml": "invalid/BR-52.xml",
+        "pdf": "invalid/BR-52.pdf"
+      },
+      "description": {
+        "en": "An additional supporting document (BG-24) has a blank reference (BT-122).",
+        "fr": "Un justificatif additionnel (BG-24) a une référence vide (BT-122)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-52.xml",
+        "pdf": "fixed/BR-52.pdf"
+      }
+    },
+    {
+      "id": "BR-DEC-01",
+      "status": "invalid",
+      "rule": "BR-DEC-01",
+      "fires": [
+        "BR-DEC-01"
+      ],
+      "files": {
+        "xml": "invalid/BR-DEC-01.xml",
+        "pdf": "invalid/BR-DEC-01.pdf"
+      },
+      "description": {
+        "en": "A document level allowance amount (BT-92) has 3 decimals.",
+        "fr": "Le montant d'une remise au niveau du document (BT-92) a 3 décimales."
+      },
+      "fixed": {
+        "xml": "fixed/BR-DEC-01.xml",
+        "pdf": "fixed/BR-DEC-01.pdf"
+      }
+    },
+    {
+      "id": "BR-DEC-02",
+      "status": "invalid",
+      "rule": "BR-DEC-02",
+      "fires": [
+        "BR-DEC-02"
+      ],
+      "files": {
+        "xml": "invalid/BR-DEC-02.xml",
+        "pdf": "invalid/BR-DEC-02.pdf"
+      },
+      "description": {
+        "en": "A document level allowance base amount (BT-93) has 3 decimals.",
+        "fr": "L'assiette d'une remise au niveau du document (BT-93) a 3 décimales."
+      },
+      "fixed": {
+        "xml": "fixed/BR-DEC-02.xml",
+        "pdf": "fixed/BR-DEC-02.pdf"
+      }
+    },
+    {
+      "id": "BR-DEC-09",
+      "status": "invalid",
+      "rule": "BR-DEC-09",
+      "fires": [
+        "BR-DEC-09"
+      ],
+      "files": {
+        "xml": "invalid/BR-DEC-09.xml",
+        "pdf": "invalid/BR-DEC-09.pdf"
+      },
+      "description": {
+        "en": "The sum of the invoice line net amounts (BT-106) has 3 decimals.",
+        "fr": "La somme des montants nets des lignes (BT-106) a 3 décimales."
+      }
+    },
+    {
+      "id": "BR-DEC-10",
+      "status": "invalid",
+      "rule": "BR-DEC-10",
+      "fires": [
+        "BR-DEC-10"
+      ],
+      "files": {
+        "xml": "invalid/BR-DEC-10.xml",
+        "pdf": "invalid/BR-DEC-10.pdf"
+      },
+      "description": {
+        "en": "The sum of allowances on document level (BT-107) has 3 decimals.",
+        "fr": "La somme des remises au niveau du document (BT-107) a 3 décimales."
+      },
+      "fixed": {
+        "xml": "fixed/BR-DEC-10.xml",
+        "pdf": "fixed/BR-DEC-10.pdf"
+      }
+    },
+    {
+      "id": "BR-DEC-11",
+      "status": "invalid",
+      "rule": "BR-DEC-11",
+      "fires": [
+        "BR-DEC-11"
+      ],
+      "files": {
+        "xml": "invalid/BR-DEC-11.xml",
+        "pdf": "invalid/BR-DEC-11.pdf"
+      },
+      "description": {
+        "en": "The sum of charges on document level (BT-108) has 3 decimals.",
+        "fr": "La somme des frais au niveau du document (BT-108) a 3 décimales."
+      },
+      "fixed": {
+        "xml": "fixed/BR-DEC-11.xml",
+        "pdf": "fixed/BR-DEC-11.pdf"
+      }
+    },
+    {
+      "id": "BR-DEC-12",
+      "status": "invalid",
+      "rule": "BR-DEC-12",
+      "fires": [
+        "BR-DEC-12"
+      ],
+      "files": {
+        "xml": "invalid/BR-DEC-12.xml",
+        "pdf": "invalid/BR-DEC-12.pdf"
+      },
+      "description": {
+        "en": "The total without VAT (BT-109) has 3 decimals.",
+        "fr": "Le total HT (BT-109) a 3 décimales."
+      }
+    },
+    {
+      "id": "BR-DEC-14",
+      "status": "invalid",
+      "rule": "BR-DEC-14",
+      "fires": [
+        "BR-DEC-14"
+      ],
+      "files": {
+        "xml": "invalid/BR-DEC-14.xml",
+        "pdf": "invalid/BR-DEC-14.pdf"
+      },
+      "description": {
+        "en": "The total with VAT (BT-112) has 3 decimals.",
+        "fr": "Le total TTC (BT-112) a 3 décimales."
+      }
+    },
+    {
+      "id": "BR-DEC-16",
+      "status": "invalid",
+      "rule": "BR-DEC-16",
+      "fires": [
+        "BR-DEC-16"
+      ],
+      "files": {
+        "xml": "invalid/BR-DEC-16.xml",
+        "pdf": "invalid/BR-DEC-16.pdf"
+      },
+      "description": {
+        "en": "The paid amount (BT-113) has 3 decimals.",
+        "fr": "Le montant déjà payé (BT-113) a 3 décimales."
+      }
+    },
+    {
+      "id": "BR-DEC-17",
+      "status": "invalid",
+      "rule": "BR-DEC-17",
+      "fires": [
+        "BR-DEC-17"
+      ],
+      "files": {
+        "xml": "invalid/BR-DEC-17.xml",
+        "pdf": "invalid/BR-DEC-17.pdf"
+      },
+      "description": {
+        "en": "The rounding amount (BT-114) has 3 decimals.",
+        "fr": "Le montant d'arrondi (BT-114) a 3 décimales."
+      }
+    },
+    {
+      "id": "BR-DEC-18",
+      "status": "invalid",
+      "rule": "BR-DEC-18",
+      "fires": [
+        "BR-DEC-18"
+      ],
+      "files": {
+        "xml": "invalid/BR-DEC-18.xml",
+        "pdf": "invalid/BR-DEC-18.pdf"
+      },
+      "description": {
+        "en": "The amount due (BT-115) has 3 decimals.",
+        "fr": "Le net à payer (BT-115) a 3 décimales."
+      }
+    },
+    {
+      "id": "BR-DEC-19",
+      "status": "invalid",
+      "rule": "BR-DEC-19",
+      "fires": [
+        "BR-DEC-19"
+      ],
+      "files": {
+        "xml": "invalid/BR-DEC-19.xml",
+        "pdf": "invalid/BR-DEC-19.pdf"
+      },
+      "description": {
+        "en": "A VAT category taxable amount (BT-116) has 3 decimals.",
+        "fr": "La base d'imposition d'une catégorie de TVA (BT-116) a 3 décimales."
+      }
+    },
+    {
+      "id": "BR-DEC-20",
+      "status": "invalid",
+      "rule": "BR-DEC-20",
+      "fires": [
+        "BR-DEC-20"
+      ],
+      "files": {
+        "xml": "invalid/BR-DEC-20.xml",
+        "pdf": "invalid/BR-DEC-20.pdf"
+      },
+      "description": {
+        "en": "A VAT category tax amount (BT-117) has 3 decimals.",
+        "fr": "Le montant de TVA d'une catégorie (BT-117) a 3 décimales."
+      }
+    },
+    {
+      "id": "BR-DEC-23",
+      "status": "invalid",
+      "rule": "BR-DEC-23",
+      "fires": [
+        "BR-DEC-23"
+      ],
+      "files": {
+        "xml": "invalid/BR-DEC-23.xml",
+        "pdf": "invalid/BR-DEC-23.pdf"
+      },
+      "description": {
+        "en": "An invoice line net amount (BT-131) has 3 decimals.",
+        "fr": "Le montant net d'une ligne (BT-131) a 3 décimales."
+      }
+    },
+    {
+      "id": "BR-DEC-24",
+      "status": "invalid",
+      "rule": "BR-DEC-24",
+      "fires": [
+        "BR-DEC-24"
+      ],
+      "files": {
+        "xml": "invalid/BR-DEC-24.xml",
+        "pdf": "invalid/BR-DEC-24.pdf"
+      },
+      "description": {
+        "en": "An invoice line allowance amount (BT-136) has 3 decimals.",
+        "fr": "Le montant d'une remise de ligne (BT-136) a 3 décimales."
+      },
+      "fixed": {
+        "xml": "fixed/BR-DEC-24.xml",
+        "pdf": "fixed/BR-DEC-24.pdf"
+      }
+    },
+    {
+      "id": "BR-DEC-25",
+      "status": "invalid",
+      "rule": "BR-DEC-25",
+      "fires": [
+        "BR-DEC-25"
+      ],
+      "files": {
+        "xml": "invalid/BR-DEC-25.xml",
+        "pdf": "invalid/BR-DEC-25.pdf"
+      },
+      "description": {
+        "en": "An invoice line allowance base amount (BT-137) has 3 decimals.",
+        "fr": "L'assiette d'une remise de ligne (BT-137) a 3 décimales."
+      },
+      "fixed": {
+        "xml": "fixed/BR-DEC-25.xml",
+        "pdf": "fixed/BR-DEC-25.pdf"
+      }
     }
   ],
   "annotated": {

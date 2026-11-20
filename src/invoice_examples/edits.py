@@ -89,13 +89,12 @@ def drop_scheme(party_tag):
     return edit
 
 
-def rewrite_amount(tag, text):
-    """Write a header monetary total with another notation (e.g. 3 decimals)."""
+def one_more_decimal(*path):
+    """Write the first element at the end of a ram: path with one more decimal, a trailing 0: the same value, only
+    its notation changes (2 decimals become 3)."""
 
     def edit(root):
-        for node in root.iter(ram(tag)):
-            if node.getparent().tag == ram("SpecifiedTradeSettlementHeaderMonetarySummation"):
-                node.text = text
+        first(root, *path).text += "0"
 
     return edit
 
@@ -240,6 +239,16 @@ def prepaid(amount, due):
         sums = first(root, "SpecifiedTradeSettlementHeaderMonetarySummation")
         insert(sums, new("ram:TotalPrepaidAmount", amount), before="DuePayableAmount")
         sums.find(ram("DuePayableAmount")).text = due
+
+    return edit
+
+
+def paid_amount(text):
+    """Add a paid amount (BT-113) written as text, and set the amount due (BT-115) to the total with VAT minus it."""
+
+    def edit(root):
+        grand = first(root, "SpecifiedTradeSettlementHeaderMonetarySummation", "GrandTotalAmount").text
+        prepaid(text, f"{float(grand) - float(text):.2f}")(root)
 
     return edit
 

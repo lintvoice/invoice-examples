@@ -130,6 +130,7 @@ FRENCH = {
     # the texts the EN 16931 variants add to the invoice (targets/en16931.py, variants)
     "words": {
         "allowance": "Remise",
+        "trade_allowance": "Remise commerciale",
         "charge": "Frais de port",
         "loyalty_allowance": "Remise fidélité",
         "line_charge": "Emballage",

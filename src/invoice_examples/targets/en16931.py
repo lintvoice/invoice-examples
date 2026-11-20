@@ -6,9 +6,13 @@ The variants are written once, here, as a function of a base: this target builds
 "fr" target on its French one, where the French rules sometimes fail next to them.
 """
 
+from decimal import Decimal
+
 from .. import cii, edits
 from ..edits import (
     Variant,
+    add_documents,
+    add_element,
     allowance_as_negative_line,
     edit_all,
     empty_period,
@@ -18,6 +22,8 @@ from ..edits import (
     no_reasons,
     no_seller_identifiers,
     no_unit_code,
+    one_more_decimal,
+    paid_amount,
     set_amount,
     shift,
     tax_point_with_code,
@@ -77,6 +83,7 @@ GERMAN = {
     "line_allowance_reason": "Discount",
     "words": {
         "allowance": "Discount",
+        "trade_allowance": "Trade discount",
         "charge": "Shipping",
         "loyalty_allowance": "Loyalty discount",
         "line_charge": "Packaging",
@@ -294,7 +301,168 @@ def variants(base):
     )
 
 
-VARIANTS = variants(GERMAN)
+SUMS = "SpecifiedTradeSettlementHeaderMonetarySummation"
+
+
+def decimals(base):
+    """One invalid variant per EN 16931 rule on an amount's decimals (BR-DEC), built on base: the amount keeps its
+    value, written with 3 decimals. The fr target builds them on its invoice under the name of France's rule on the
+    same amounts, BR-FR-DEC-01, which fails next to them there."""
+    words, lines, rate = base["words"], base["lines"], base["lines"][0][4]
+    first_line = Decimal(lines[0][1]) * Decimal(lines[0][2])
+    all_lines = sum(Decimal(q) * Decimal(p) for _, q, p, *_ in lines)
+    allowance = {"allowances": [(f"{all_lines / 100:.2f}", "95", words["trade_allowance"], "S", rate)]}  # 1 %
+    charge = {"charges": [("15.00", "FC", words["charge"], "S", rate)]}
+    discounted = {"lines": [(*lines[0], "50.00"), *lines[1:]]}
+    doc_allowance = ("ApplicableHeaderTradeSettlement", "SpecifiedTradeAllowanceCharge")
+    line_allowance = ("SpecifiedLineTradeSettlement", "SpecifiedTradeAllowanceCharge")
+    vat = ("ApplicableHeaderTradeSettlement", "ApplicableTradeTax")
+    return (
+        Variant(
+            "BR-DEC-01",
+            "BR-DEC-01",
+            ("BR-DEC-01",),
+            "A document level allowance amount (BT-92) has 3 decimals.",
+            "Le montant d'une remise au niveau du document (BT-92) a 3 décimales.",
+            allowance,
+            edit=one_more_decimal(*doc_allowance, "ActualAmount"),
+        ),
+        Variant(
+            "BR-DEC-02",
+            "BR-DEC-02",
+            ("BR-DEC-02",),
+            "A document level allowance base amount (BT-93) has 3 decimals.",
+            "L'assiette d'une remise au niveau du document (BT-93) a 3 décimales.",
+            allowance,
+            edit=edit_all(
+                add_element(doc_allowance, "CalculationPercent", "1.00", before="ActualAmount"),
+                add_element(doc_allowance, "BasisAmount", f"{all_lines:.3f}", before="ActualAmount"),
+            ),
+        ),
+        Variant(
+            "BR-DEC-09",
+            "BR-DEC-09",
+            ("BR-DEC-09",),
+            "The sum of the invoice line net amounts (BT-106) has 3 decimals.",
+            "La somme des montants nets des lignes (BT-106) a 3 décimales.",
+            edit=one_more_decimal(SUMS, "LineTotalAmount"),
+        ),
+        Variant(
+            "BR-DEC-10",
+            "BR-DEC-10",
+            ("BR-DEC-10",),
+            "The sum of allowances on document level (BT-107) has 3 decimals.",
+            "La somme des remises au niveau du document (BT-107) a 3 décimales.",
+            allowance,
+            edit=one_more_decimal(SUMS, "AllowanceTotalAmount"),
+        ),
+        Variant(
+            "BR-DEC-11",
+            "BR-DEC-11",
+            ("BR-DEC-11",),
+            "The sum of charges on document level (BT-108) has 3 decimals.",
+            "La somme des frais au niveau du document (BT-108) a 3 décimales.",
+            charge,
+            edit=one_more_decimal(SUMS, "ChargeTotalAmount"),
+        ),
+        Variant(
+            "BR-DEC-12",
+            "BR-DEC-12",
+            ("BR-DEC-12",),
+            "The total without VAT (BT-109) has 3 decimals.",
+            "Le total HT (BT-109) a 3 décimales.",
+            edit=one_more_decimal(SUMS, "TaxBasisTotalAmount"),
+        ),
+        Variant(
+            "BR-DEC-14",
+            "BR-DEC-14",
+            ("BR-DEC-14",),
+            "The total with VAT (BT-112) has 3 decimals.",
+            "Le total TTC (BT-112) a 3 décimales.",
+            edit=one_more_decimal(SUMS, "GrandTotalAmount"),
+        ),
+        Variant(
+            "BR-DEC-16",
+            "BR-DEC-16",
+            ("BR-DEC-16",),
+            "The paid amount (BT-113) has 3 decimals.",
+            "Le montant déjà payé (BT-113) a 3 décimales.",
+            edit=paid_amount("200.000"),
+        ),
+        Variant(
+            "BR-DEC-17",
+            "BR-DEC-17",
+            ("BR-DEC-17",),
+            "The rounding amount (BT-114) has 3 decimals.",
+            "Le montant d'arrondi (BT-114) a 3 décimales.",
+            edit=add_element((SUMS,), "RoundingAmount", "0.000", before="GrandTotalAmount"),
+        ),
+        Variant(
+            "BR-DEC-18",
+            "BR-DEC-18",
+            ("BR-DEC-18",),
+            "The amount due (BT-115) has 3 decimals.",
+            "Le net à payer (BT-115) a 3 décimales.",
+            edit=one_more_decimal(SUMS, "DuePayableAmount"),
+        ),
+        Variant(
+            "BR-DEC-19",
+            "BR-DEC-19",
+            ("BR-DEC-19",),
+            "A VAT category taxable amount (BT-116) has 3 decimals.",
+            "La base d'imposition d'une catégorie de TVA (BT-116) a 3 décimales.",
+            edit=one_more_decimal(*vat, "BasisAmount"),
+        ),
+        Variant(
+            "BR-DEC-20",
+            "BR-DEC-20",
+            ("BR-DEC-20",),
+            "A VAT category tax amount (BT-117) has 3 decimals.",
+            "Le montant de TVA d'une catégorie (BT-117) a 3 décimales.",
+            edit=one_more_decimal(*vat, "CalculatedAmount"),
+        ),
+        Variant(
+            "BR-DEC-23",
+            "BR-DEC-23",
+            ("BR-DEC-23",),
+            "An invoice line net amount (BT-131) has 3 decimals.",
+            "Le montant net d'une ligne (BT-131) a 3 décimales.",
+            edit=one_more_decimal("SpecifiedTradeSettlementLineMonetarySummation", "LineTotalAmount"),
+        ),
+        Variant(
+            "BR-DEC-24",
+            "BR-DEC-24",
+            ("BR-DEC-24",),
+            "An invoice line allowance amount (BT-136) has 3 decimals.",
+            "Le montant d'une remise de ligne (BT-136) a 3 décimales.",
+            discounted,
+            edit=one_more_decimal(*line_allowance, "ActualAmount"),
+        ),
+        Variant(
+            "BR-DEC-25",
+            "BR-DEC-25",
+            ("BR-DEC-25",),
+            "An invoice line allowance base amount (BT-137) has 3 decimals.",
+            "L'assiette d'une remise de ligne (BT-137) a 3 décimales.",
+            discounted,
+            edit=add_element(line_allowance, "BasisAmount", f"{first_line:.3f}", before="ActualAmount"),
+        ),
+    )
+
+
+# The fr target's example of BR-52 is an invoiced object identifier (BT-18) under a French rule's name, BR-FR-29: this
+# one is the case any invoice can have, a supporting document. Its fixed counterpart gives the reference.
+BR_52 = Variant(
+    "BR-52",
+    "BR-52",
+    ("BR-52",),
+    "An additional supporting document (BG-24) has a blank reference (BT-122).",
+    "Un justificatif additionnel (BG-24) a une référence vide (BT-122).",
+    edit=add_documents((" ", "916", "Timesheet", None)),
+    fixed=add_documents(("TS-2026-10", "916", "Timesheet", None)),
+)
+
+VARIANTS = (*variants(GERMAN), BR_52, *decimals(GERMAN))
 
 
 def build(variant=None):
