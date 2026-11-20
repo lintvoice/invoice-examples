@@ -31,8 +31,10 @@ RULES = {
     "Factur-X": "1.09.2, EN 16931 profile",
 }
 
-# Fictitious companies. The seller's GLN is in GS1's restricted circulation range (no company's number), its VAT
-# number passes its check digit, the IBAN is the Bundesbank's bank code (10000000) with an all-zero account.
+# Fictitious companies. The seller's GLN is in GS1's restricted circulation range (no company's number); its VAT
+# number passes its check digit, and VIES answers that no company holds it (ec.europa.eu/taxation_customs/vies,
+# checked 2026-11-20); the IBAN is the Bundesbank's bank code in Berlin (10000000, BIC MARKDEF1100) with an all-zero
+# account.
 GERMAN = {
     "profile": "urn:cen.eu:en16931:2017",
     "billing_frame": None,
