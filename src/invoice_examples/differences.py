@@ -133,6 +133,12 @@ TERMS = {
         "Montant total de TVA",
         "amount",
     ),
+    "SpecifiedTradeSettlementHeaderMonetarySummation/TaxTotalAmount:accounting": (
+        "BT-111",
+        "Invoice total VAT amount in accounting currency",
+        "Montant total de TVA en devise de comptabilisation",
+        "amount",
+    ),
     "AdditionalReferencedDocument:916/IssuerAssignedID": (
         "BT-122",
         "Supporting document reference",
@@ -205,9 +211,15 @@ class Difference:
 
 
 def _name(e):
-    """The element's local name; a reference document with its type code, an allowance or charge with its kind, as
-    they stand for different business terms."""
+    """The element's local name; a reference document with its type code, an allowance or charge with its kind, a VAT
+    total in another currency than the invoice's (BT-111, in the VAT accounting currency) apart from the VAT total
+    (BT-110), as they stand for different business terms."""
     name = etree.QName(e).localname
+    if name == "TaxTotalAmount":
+        invoice = e.getroottree().find(".//{*}InvoiceCurrencyCode")
+        currency = e.get("currencyID")
+        accounting = invoice is not None and currency is not None and currency != (invoice.text or "").strip()
+        return f"{name}:accounting" if accounting else name
     if name == "AdditionalReferencedDocument":
         code = e.find("{*}TypeCode")
         return f"{name}:{(code.text or '').strip() if code is not None else ''}"

@@ -1702,6 +1702,48 @@
       }
     },
     {
+      "id": "BR-FR-DEC-01-BT-99",
+      "status": "invalid",
+      "rule": "BR-FR-DEC-01",
+      "fires": [
+        "BR-FR-DEC-01_BT-92_BT-99",
+        "BR-DEC-05"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-DEC-01-BT-99.xml",
+        "pdf": "invalid/BR-FR-DEC-01-BT-99.pdf"
+      },
+      "description": {
+        "en": "A document level charge amount (BT-99) has 3 decimals (EN 16931 BR-DEC-05 fires too).",
+        "fr": "Le montant de frais au niveau du document (BT-99) a 3 décimales (la règle EN 16931 BR-DEC-05 se déclenche aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-FR-DEC-01-BT-99.xml",
+        "pdf": "fixed/BR-FR-DEC-01-BT-99.pdf"
+      }
+    },
+    {
+      "id": "BR-FR-DEC-01-BT-100",
+      "status": "invalid",
+      "rule": "BR-FR-DEC-01",
+      "fires": [
+        "BR-FR-DEC-01_BT-93_BT-100",
+        "BR-DEC-06"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-DEC-01-BT-100.xml",
+        "pdf": "invalid/BR-FR-DEC-01-BT-100.pdf"
+      },
+      "description": {
+        "en": "A document level charge base amount (BT-100) has 3 decimals (EN 16931 BR-DEC-06 fires too).",
+        "fr": "L'assiette de frais au niveau du document (BT-100) a 3 décimales (la règle EN 16931 BR-DEC-06 se déclenche aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-FR-DEC-01-BT-100.xml",
+        "pdf": "fixed/BR-FR-DEC-01-BT-100.pdf"
+      }
+    },
+    {
       "id": "BR-FR-DEC-01-BT-106",
       "status": "invalid",
       "rule": "BR-FR-DEC-01",
@@ -1791,6 +1833,45 @@
       "description": {
         "en": "The VAT total (BT-110) has 3 decimals.",
         "fr": "Le total de TVA (BT-110) a 3 décimales."
+      }
+    },
+    {
+      "id": "BR-DEC-13",
+      "status": "invalid",
+      "rule": "BR-DEC-13",
+      "fires": [
+        "BR-DEC-13",
+        "BR-CO-14",
+        "BR-FR-DEC-01_BT-110"
+      ],
+      "files": {
+        "xml": "invalid/BR-DEC-13.xml",
+        "pdf": "invalid/BR-DEC-13.pdf"
+      },
+      "description": {
+        "en": "The VAT total (BT-110) is not rounded to the cent: it has 3 decimals, so it is no longer the sum of the VAT breakdown (EN 16931 BR-CO-14 and France's BR-FR-DEC-01 fail too).",
+        "fr": "Le total de TVA (BT-110) n'est pas arrondi au centime : il a 3 décimales, et n'est donc plus la somme de la ventilation de TVA (la règle EN 16931 BR-CO-14 et la règle française BR-FR-DEC-01 échouent aussi)."
+      }
+    },
+    {
+      "id": "BR-FR-DEC-01-BT-111",
+      "status": "invalid",
+      "rule": "BR-FR-DEC-01",
+      "fires": [
+        "BR-FR-DEC-01_BT-110",
+        "BR-DEC-15"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-DEC-01-BT-111.xml",
+        "pdf": "invalid/BR-FR-DEC-01-BT-111.pdf"
+      },
+      "description": {
+        "en": "The invoice is in US dollars; its VAT total in euros, the VAT accounting currency (BT-111), is converted but not rounded to the cent: it has 3 decimals (EN 16931 BR-DEC-15 fires too).",
+        "fr": "La facture est en dollars américains ; son total de TVA en euros, la devise de comptabilisation de la TVA (BT-111), est converti mais pas arrondi au centime : il a 3 décimales (la règle EN 16931 BR-DEC-15 se déclenche aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-FR-DEC-01-BT-111.xml",
+        "pdf": "fixed/BR-FR-DEC-01-BT-111.pdf"
       }
     },
     {
@@ -1918,6 +1999,48 @@
       "fixed": {
         "xml": "fixed/BR-FR-DEC-01-BT-137.xml",
         "pdf": "fixed/BR-FR-DEC-01-BT-137.pdf"
+      }
+    },
+    {
+      "id": "BR-FR-DEC-01-BT-141",
+      "status": "invalid",
+      "rule": "BR-FR-DEC-01",
+      "fires": [
+        "BR-FR-DEC-01_BT-136_BT-141",
+        "BR-DEC-27"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-DEC-01-BT-141.xml",
+        "pdf": "invalid/BR-FR-DEC-01-BT-141.pdf"
+      },
+      "description": {
+        "en": "An invoice line charge amount (BT-141) has 3 decimals (EN 16931 BR-DEC-27 fires too).",
+        "fr": "Le montant de frais sur une ligne (BT-141) a 3 décimales (la règle EN 16931 BR-DEC-27 se déclenche aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-FR-DEC-01-BT-141.xml",
+        "pdf": "fixed/BR-FR-DEC-01-BT-141.pdf"
+      }
+    },
+    {
+      "id": "BR-FR-DEC-01-BT-142",
+      "status": "invalid",
+      "rule": "BR-FR-DEC-01",
+      "fires": [
+        "BR-FR-DEC-01_BT-137_BT-142",
+        "BR-DEC-28"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-DEC-01-BT-142.xml",
+        "pdf": "invalid/BR-FR-DEC-01-BT-142.pdf"
+      },
+      "description": {
+        "en": "An invoice line charge base amount (BT-142) has 3 decimals (EN 16931 BR-DEC-28 fires too).",
+        "fr": "L'assiette de frais sur une ligne (BT-142) a 3 décimales (la règle EN 16931 BR-DEC-28 se déclenche aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-FR-DEC-01-BT-142.xml",
+        "pdf": "fixed/BR-FR-DEC-01-BT-142.pdf"
       }
     },
     {

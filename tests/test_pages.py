@@ -66,6 +66,9 @@ def test_the_box_lists_each_element_with_its_business_term_and_value():
     assert "Devise de la facture" in usd and "205,00 USD" in usd
     payee = _page("fr", "BR-FR-CO-10-BT-60-1")
     assert "03456789100014 · sans schéma" in payee and "034567891 · schéma 0002" in payee
+    accounting = _page("en16931", "BR-DEC-15")  # the VAT total in euros, on an invoice in US dollars
+    assert "BT-111 Invoice total VAT amount in accounting currency €179.482" in accounting
+    assert "BT-110" not in accounting.split("Compared with")[1]
 
 
 def test_a_page_that_draws_its_mistake_has_no_box():

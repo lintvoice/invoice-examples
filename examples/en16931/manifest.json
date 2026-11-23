@@ -495,6 +495,46 @@
       }
     },
     {
+      "id": "BR-DEC-05",
+      "status": "invalid",
+      "rule": "BR-DEC-05",
+      "fires": [
+        "BR-DEC-05"
+      ],
+      "files": {
+        "xml": "invalid/BR-DEC-05.xml",
+        "pdf": "invalid/BR-DEC-05.pdf"
+      },
+      "description": {
+        "en": "A document level charge amount (BT-99) has 3 decimals.",
+        "fr": "Le montant de frais au niveau du document (BT-99) a 3 décimales."
+      },
+      "fixed": {
+        "xml": "fixed/BR-DEC-05.xml",
+        "pdf": "fixed/BR-DEC-05.pdf"
+      }
+    },
+    {
+      "id": "BR-DEC-06",
+      "status": "invalid",
+      "rule": "BR-DEC-06",
+      "fires": [
+        "BR-DEC-06"
+      ],
+      "files": {
+        "xml": "invalid/BR-DEC-06.xml",
+        "pdf": "invalid/BR-DEC-06.pdf"
+      },
+      "description": {
+        "en": "A document level charge base amount (BT-100) has 3 decimals.",
+        "fr": "L'assiette de frais au niveau du document (BT-100) a 3 décimales."
+      },
+      "fixed": {
+        "xml": "fixed/BR-DEC-06.xml",
+        "pdf": "fixed/BR-DEC-06.pdf"
+      }
+    },
+    {
       "id": "BR-DEC-09",
       "status": "invalid",
       "rule": "BR-DEC-09",
@@ -567,6 +607,23 @@
       }
     },
     {
+      "id": "BR-DEC-13",
+      "status": "invalid",
+      "rule": "BR-DEC-13",
+      "fires": [
+        "BR-DEC-13",
+        "BR-CO-14"
+      ],
+      "files": {
+        "xml": "invalid/BR-DEC-13.xml",
+        "pdf": "invalid/BR-DEC-13.pdf"
+      },
+      "description": {
+        "en": "The VAT total (BT-110) is not rounded to the cent: it has 3 decimals, so it is no longer the sum of the VAT breakdown (EN 16931 BR-CO-14 fails too).",
+        "fr": "Le total de TVA (BT-110) n'est pas arrondi au centime : il a 3 décimales, et n'est donc plus la somme de la ventilation de TVA (la règle EN 16931 BR-CO-14 échoue aussi)."
+      }
+    },
+    {
       "id": "BR-DEC-14",
       "status": "invalid",
       "rule": "BR-DEC-14",
@@ -580,6 +637,26 @@
       "description": {
         "en": "The total with VAT (BT-112) has 3 decimals.",
         "fr": "Le total TTC (BT-112) a 3 décimales."
+      }
+    },
+    {
+      "id": "BR-DEC-15",
+      "status": "invalid",
+      "rule": "BR-DEC-15",
+      "fires": [
+        "BR-DEC-15"
+      ],
+      "files": {
+        "xml": "invalid/BR-DEC-15.xml",
+        "pdf": "invalid/BR-DEC-15.pdf"
+      },
+      "description": {
+        "en": "The invoice is in US dollars; its VAT total in euros, the VAT accounting currency (BT-111), is converted but not rounded to the cent: it has 3 decimals.",
+        "fr": "La facture est en dollars américains ; son total de TVA en euros, la devise de comptabilisation de la TVA (BT-111), est converti mais pas arrondi au centime : il a 3 décimales."
+      },
+      "fixed": {
+        "xml": "fixed/BR-DEC-15.xml",
+        "pdf": "fixed/BR-DEC-15.pdf"
       }
     },
     {
@@ -716,6 +793,46 @@
       "fixed": {
         "xml": "fixed/BR-DEC-25.xml",
         "pdf": "fixed/BR-DEC-25.pdf"
+      }
+    },
+    {
+      "id": "BR-DEC-27",
+      "status": "invalid",
+      "rule": "BR-DEC-27",
+      "fires": [
+        "BR-DEC-27"
+      ],
+      "files": {
+        "xml": "invalid/BR-DEC-27.xml",
+        "pdf": "invalid/BR-DEC-27.pdf"
+      },
+      "description": {
+        "en": "An invoice line charge amount (BT-141) has 3 decimals.",
+        "fr": "Le montant de frais sur une ligne (BT-141) a 3 décimales."
+      },
+      "fixed": {
+        "xml": "fixed/BR-DEC-27.xml",
+        "pdf": "fixed/BR-DEC-27.pdf"
+      }
+    },
+    {
+      "id": "BR-DEC-28",
+      "status": "invalid",
+      "rule": "BR-DEC-28",
+      "fires": [
+        "BR-DEC-28"
+      ],
+      "files": {
+        "xml": "invalid/BR-DEC-28.xml",
+        "pdf": "invalid/BR-DEC-28.pdf"
+      },
+      "description": {
+        "en": "An invoice line charge base amount (BT-142) has 3 decimals.",
+        "fr": "L'assiette de frais sur une ligne (BT-142) a 3 décimales."
+      },
+      "fixed": {
+        "xml": "fixed/BR-DEC-28.xml",
+        "pdf": "fixed/BR-DEC-28.pdf"
       }
     }
   ],

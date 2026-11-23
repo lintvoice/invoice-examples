@@ -75,31 +75,39 @@ def _with_french_rules(v):
 EN16931 = tuple(_with_french_rules(v) for v in en16931.variants(cii.FRENCH))
 _CO_26 = [v.id for v in EN16931].index("BR-CO-26")
 
-# The EN 16931 decimals rules (BR-DEC), each with the business terms of the BR-FR-DEC-01 assertion that fails next to
-# it on the French invoice. BR-DEC-14 and BR-DEC-18 (the totals BT-112 and BT-115) share one example, BR-FR-DEC-01.
+# The EN 16931 decimals rules (BR-DEC) on the French invoice: each with the business term of its amount, which names
+# the file, and the terms of the BR-FR-DEC-01 assertion that fails next to it. BR-DEC-14 and BR-DEC-18 (the totals
+# BT-112 and BT-115) share one example, BR-FR-DEC-01; BR-DEC-13 keeps its own name (below).
 FR_DEC_01 = {
-    "BR-DEC-01": "BT-92_BT-99",
-    "BR-DEC-02": "BT-93_BT-100",
-    "BR-DEC-09": "BT-106",
-    "BR-DEC-10": "BT-107",
-    "BR-DEC-11": "BT-108",
-    "BR-DEC-12": "BT-109",
-    "BR-DEC-16": "BT-113",
-    "BR-DEC-17": "BT-114",
-    "BR-DEC-19": "BT-116",
-    "BR-DEC-20": "BT-117",
-    "BR-DEC-23": "BT-131",
-    "BR-DEC-24": "BT-136_BT-141",
-    "BR-DEC-25": "BT-137_BT-142",
+    "BR-DEC-01": ("BT-92", "BT-92_BT-99"),
+    "BR-DEC-02": ("BT-93", "BT-93_BT-100"),
+    "BR-DEC-05": ("BT-99", "BT-92_BT-99"),
+    "BR-DEC-06": ("BT-100", "BT-93_BT-100"),
+    "BR-DEC-09": ("BT-106", "BT-106"),
+    "BR-DEC-10": ("BT-107", "BT-107"),
+    "BR-DEC-11": ("BT-108", "BT-108"),
+    "BR-DEC-12": ("BT-109", "BT-109"),
+    # France_RFE's CII file checks BT-110 and BT-111 in two rules with the same context, every VAT total: the first,
+    # BT-110's, takes both, so a VAT total in the accounting currency fails under BT-110's assertion id.
+    "BR-DEC-15": ("BT-111", "BT-110"),
+    "BR-DEC-16": ("BT-113", "BT-113"),
+    "BR-DEC-17": ("BT-114", "BT-114"),
+    "BR-DEC-19": ("BT-116", "BT-116"),
+    "BR-DEC-20": ("BT-117", "BT-117"),
+    "BR-DEC-23": ("BT-131", "BT-131"),
+    "BR-DEC-24": ("BT-136", "BT-136_BT-141"),
+    "BR-DEC-25": ("BT-137", "BT-137_BT-142"),
+    "BR-DEC-27": ("BT-141", "BT-136_BT-141"),
+    "BR-DEC-28": ("BT-142", "BT-137_BT-142"),
 }
 
 
 def _under_br_fr_dec_01(v):
     """A shared EN 16931 decimals variant on the French invoice, named for BR-FR-DEC-01, which fails next to it."""
-    terms = FR_DEC_01[v.rule]
+    term, terms = FR_DEC_01[v.rule]
     return dataclasses.replace(
         v,
-        id=f"BR-FR-DEC-01-{terms.split('_')[0]}",
+        id=f"BR-FR-DEC-01-{term}",
         rule="BR-FR-DEC-01",
         fires=(f"BR-FR-DEC-01_{terms}", v.rule),
         en=f"{v.en[:-1]} (EN 16931 {v.rule} fires too).",
@@ -107,9 +115,17 @@ def _under_br_fr_dec_01(v):
     )
 
 
-# BR-FR-DEC-01's own example for the VAT total (BT-110), where no EN 16931 rule fails, keeps its place before BT-113.
-DECIMALS = tuple(_under_br_fr_dec_01(v) for v in en16931.decimals(cii.FRENCH) if v.rule in FR_DEC_01)
-_BT_113 = [v.id for v in DECIMALS].index("BR-FR-DEC-01-BT-113")
+_FRENCH_DECIMALS = en16931.decimals(cii.FRENCH)
+DECIMALS = tuple(_under_br_fr_dec_01(v) for v in _FRENCH_DECIMALS if v.rule in FR_DEC_01)
+# BR-FR-DEC-01's own example for the VAT total (BT-110), where no EN 16931 rule fails, and BR-DEC-13's, where the VAT
+# total is not rounded to the cent, take their place before BT-111.
+_BT_111 = [v.id for v in DECIMALS].index("BR-FR-DEC-01-BT-111")
+BR_DEC_13 = dataclasses.replace(
+    next(v for v in _FRENCH_DECIMALS if v.rule == "BR-DEC-13"),
+    fires=("BR-DEC-13", "BR-CO-14", "BR-FR-DEC-01_BT-110"),
+    en="The VAT total (BT-110) is not rounded to the cent: it has 3 decimals, so it is no longer the sum of the VAT breakdown (EN 16931 BR-CO-14 and France's BR-FR-DEC-01 fail too).",
+    fr="Le total de TVA (BT-110) n'est pas arrondi au centime : il a 3 décimales, et n'est donc plus la somme de la ventilation de TVA (la règle EN 16931 BR-CO-14 et la règle française BR-FR-DEC-01 échouent aussi).",
+)
 
 VARIANTS = (
     Variant(
@@ -715,8 +731,8 @@ VARIANTS = (
         "Le lieu de livraison a deux identifiants (BT-71) au même schéma 0088 (GLN) ; les règles du profil Factur-X le refusent aussi.",
         edit=add_ship_to([(gln("200000000001"), "0088"), (gln("200000000002"), "0088")]),
     ),
-    # Amounts with 3 decimals (BR-FR-DEC-01): the value is unchanged, only its notation.
-    *DECIMALS[:_BT_113],
+    # Amounts with 3 decimals (BR-FR-DEC-01): the value is unchanged, only its notation, but for BR-DEC-13 and BT-111.
+    *DECIMALS[:_BT_111],
     Variant(
         "BR-FR-DEC-01-BT-110",
         "BR-FR-DEC-01",
@@ -725,7 +741,8 @@ VARIANTS = (
         "Le total de TVA (BT-110) a 3 décimales.",
         edit=one_more_decimal(en16931.SUMS, "TaxTotalAmount"),
     ),
-    *DECIMALS[_BT_113:],
+    BR_DEC_13,
+    *DECIMALS[_BT_111:],
     Variant(
         "BR-FR-DEC-02-BT-149",
         "BR-FR-DEC-02",

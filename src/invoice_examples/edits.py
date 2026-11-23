@@ -6,6 +6,7 @@ return such functions, or are one.
 
 import copy
 from dataclasses import dataclass, field
+from decimal import Decimal
 
 from lxml import etree
 
@@ -89,12 +90,25 @@ def drop_scheme(party_tag):
     return edit
 
 
-def one_more_decimal(*path):
-    """Write the first element at the end of a ram: path with one more decimal, a trailing 0: the same value, only
-    its notation changes (2 decimals become 3)."""
+def one_more_decimal(*path, digit="0"):
+    """Write the first element at the end of a ram: path with one more decimal (2 decimals become 3). The default
+    digit, a trailing 0, keeps the value and changes only its notation; another digit changes the value."""
 
     def edit(root):
-        first(root, *path).text += "0"
+        first(root, *path).text += digit
+
+    return edit
+
+
+def accounting_vat_total(factor):
+    """Write the VAT total in the VAT accounting currency (BT-111) as the VAT total (BT-110) times factor, kept with
+    3 decimals instead of rounded to the cent."""
+
+    def edit(root):
+        invoice, accounting = first(root, "SpecifiedTradeSettlementHeaderMonetarySummation").findall(
+            ram("TaxTotalAmount")
+        )
+        accounting.text = f"{(Decimal(invoice.text) * Decimal(factor)).quantize(Decimal('0.001'))}"
 
     return edit
 

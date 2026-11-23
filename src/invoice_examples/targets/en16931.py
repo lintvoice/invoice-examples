@@ -12,6 +12,7 @@ from .. import cii, edits
 from ..edits import (
     Variant,
     add_documents,
+    accounting_vat_total,
     add_element,
     allowance_as_negative_line,
     edit_all,
@@ -306,13 +307,17 @@ SUMS = "SpecifiedTradeSettlementHeaderMonetarySummation"
 
 def decimals(base):
     """One invalid variant per EN 16931 rule on an amount's decimals (BR-DEC), built on base: the amount keeps its
-    value, written with 3 decimals. The fr target builds them on its invoice under the name of France's rule on the
-    same amounts, BR-FR-DEC-01, which fails next to them there."""
+    value, written with 3 decimals. The two VAT totals are the exception: their rules (BR-DEC-13, BR-DEC-15) read the
+    value in CII, not its notation, so their amount is not rounded to the cent. The fr target builds them on its
+    invoice under the name of France's rule on the same amounts, BR-FR-DEC-01, which fails next to them there."""
     words, lines, rate = base["words"], base["lines"], base["lines"][0][4]
     first_line = Decimal(lines[0][1]) * Decimal(lines[0][2])
     all_lines = sum(Decimal(q) * Decimal(p) for _, q, p, *_ in lines)
     allowance = {"allowances": [(f"{all_lines / 100:.2f}", "95", words["trade_allowance"], "S", rate)]}  # 1 %
     charge = {"charges": [("15.00", "FC", words["charge"], "S", rate)]}
+    charge_percent = {"charges": [(f"{all_lines / 100:.2f}", "FC", words["charge"], "S", rate)]}  # 1 %
+    # an invoice in US dollars whose VAT is accounted in euros, at a fictitious exchange rate
+    dollars = {"currency": "USD", "tax_currency": ("EUR", "0.9216")}
     discounted = {"lines": [(*lines[0], "50.00"), *lines[1:]]}
     doc_allowance = ("ApplicableHeaderTradeSettlement", "SpecifiedTradeAllowanceCharge")
     line_allowance = ("SpecifiedLineTradeSettlement", "SpecifiedTradeAllowanceCharge")
@@ -334,6 +339,27 @@ def decimals(base):
             "A document level allowance base amount (BT-93) has 3 decimals.",
             "L'assiette d'une remise au niveau du document (BT-93) a 3 décimales.",
             allowance,
+            edit=edit_all(
+                add_element(doc_allowance, "CalculationPercent", "1.00", before="ActualAmount"),
+                add_element(doc_allowance, "BasisAmount", f"{all_lines:.3f}", before="ActualAmount"),
+            ),
+        ),
+        Variant(
+            "BR-DEC-05",
+            "BR-DEC-05",
+            ("BR-DEC-05",),
+            "A document level charge amount (BT-99) has 3 decimals.",
+            "Le montant de frais au niveau du document (BT-99) a 3 décimales.",
+            charge,
+            edit=one_more_decimal(*doc_allowance, "ActualAmount"),
+        ),
+        Variant(
+            "BR-DEC-06",
+            "BR-DEC-06",
+            ("BR-DEC-06",),
+            "A document level charge base amount (BT-100) has 3 decimals.",
+            "L'assiette de frais au niveau du document (BT-100) a 3 décimales.",
+            charge_percent,
             edit=edit_all(
                 add_element(doc_allowance, "CalculationPercent", "1.00", before="ActualAmount"),
                 add_element(doc_allowance, "BasisAmount", f"{all_lines:.3f}", before="ActualAmount"),
@@ -374,12 +400,29 @@ def decimals(base):
             edit=one_more_decimal(SUMS, "TaxBasisTotalAmount"),
         ),
         Variant(
+            "BR-DEC-13",
+            "BR-DEC-13",
+            ("BR-DEC-13", "BR-CO-14"),
+            "The VAT total (BT-110) is not rounded to the cent: it has 3 decimals, so it is no longer the sum of the VAT breakdown (EN 16931 BR-CO-14 fails too).",
+            "Le total de TVA (BT-110) n'est pas arrondi au centime : il a 3 décimales, et n'est donc plus la somme de la ventilation de TVA (la règle EN 16931 BR-CO-14 échoue aussi).",
+            edit=one_more_decimal(SUMS, "TaxTotalAmount", digit="4"),
+        ),
+        Variant(
             "BR-DEC-14",
             "BR-DEC-14",
             ("BR-DEC-14",),
             "The total with VAT (BT-112) has 3 decimals.",
             "Le total TTC (BT-112) a 3 décimales.",
             edit=one_more_decimal(SUMS, "GrandTotalAmount"),
+        ),
+        Variant(
+            "BR-DEC-15",
+            "BR-DEC-15",
+            ("BR-DEC-15",),
+            "The invoice is in US dollars; its VAT total in euros, the VAT accounting currency (BT-111), is converted but not rounded to the cent: it has 3 decimals.",
+            "La facture est en dollars américains ; son total de TVA en euros, la devise de comptabilisation de la TVA (BT-111), est converti mais pas arrondi au centime : il a 3 décimales.",
+            dollars,
+            edit=accounting_vat_total(dollars["tax_currency"][1]),
         ),
         Variant(
             "BR-DEC-16",
@@ -446,6 +489,27 @@ def decimals(base):
             "L'assiette d'une remise de ligne (BT-137) a 3 décimales.",
             discounted,
             edit=add_element(line_allowance, "BasisAmount", f"{first_line:.3f}", before="ActualAmount"),
+        ),
+        Variant(
+            "BR-DEC-27",
+            "BR-DEC-27",
+            ("BR-DEC-27",),
+            "An invoice line charge amount (BT-141) has 3 decimals.",
+            "Le montant de frais sur une ligne (BT-141) a 3 décimales.",
+            edit=edit_all(line_charge(10.0, words["line_charge"]), one_more_decimal(*line_allowance, "ActualAmount")),
+            fixed=line_charge(10.0, words["line_charge"]),
+        ),
+        Variant(
+            "BR-DEC-28",
+            "BR-DEC-28",
+            ("BR-DEC-28",),
+            "An invoice line charge base amount (BT-142) has 3 decimals.",
+            "L'assiette de frais sur une ligne (BT-142) a 3 décimales.",
+            edit=edit_all(
+                line_charge(10.0, words["line_charge"]),
+                add_element(line_allowance, "BasisAmount", f"{first_line:.3f}", before="ActualAmount"),
+            ),
+            fixed=line_charge(10.0, words["line_charge"]),
         ),
     )
 
