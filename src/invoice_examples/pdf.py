@@ -2,7 +2,9 @@
 
 The page is drawn from the XML itself, so it shows exactly what the XML says, mistakes included. It is
 marked SPECIMEN and says at the top that the invoice is fictitious. For an invalid variant, the top of the page
-also states the rule it fails, and every value that differs from the valid invoice is drawn in the error colour.
+also states the rule it fails, and every value it draws that differs from the invoice it is compared with (the valid
+one, or the same invoice without the mistake) is in the error colour. When the mistake sits in data the page does not
+draw, a box under the totals lists what differs, each element with its business term and its value.
 The annotated page adds each value's business term number (BT-…) from EN 16931, for people learning to read an
 e-invoice.
 
@@ -24,6 +26,8 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
 
+from .differences import differences
+
 FILE_ID = ByteStringObject(b"invoice-examples")
 FONTS = Path(__file__).parent / "fonts"
 W, H, M = 595.28, 841.89, 42  # A4, in points; page margin
@@ -41,6 +45,7 @@ LABELS = {
     "fr": {
         "titles": {
             "380": "Facture",
+            "326": "Facture partielle",
             "381": "Avoir",
             "384": "Facture rectificative",
             "386": "Facture d'acompte",
@@ -97,10 +102,17 @@ LABELS = {
         "notes": "CONDITIONS ET MENTIONS",
         "no_terms": "Conditions de paiement absentes",
         "missing_note": "Mention absente : {}",
+        "differs": "Ce qui diffère de ",
+        "the_reference": "la facture valide",
+        "blank": "vide",
+        "no_dates": "sans dates",
+        "scheme": "schéma {}",
+        "no_scheme": "sans schéma",
     },
     "en": {
         "titles": {
             "380": "Invoice",
+            "326": "Partial invoice",
             "381": "Credit note",
             "384": "Corrected invoice",
             "386": "Prepayment invoice",
@@ -156,6 +168,12 @@ LABELS = {
         "notes": "TERMS AND NOTES",
         "no_terms": "Payment terms missing",
         "missing_note": "Note missing: {}",
+        "differs": "What differs from ",
+        "the_reference": "the valid invoice",
+        "blank": "blank",
+        "no_dates": "no dates",
+        "scheme": "scheme {}",
+        "no_scheme": "no scheme",
     },
 }
 _registered = []
@@ -326,8 +344,10 @@ def _get(data, keys):
 
 
 class _Page:
-    def __init__(self, c, data, reference, annotate, t):
+    def __init__(self, c, data, reference, annotate, t, box=None, reference_name=None):
         self.c, self.d, self.ref, self.annotate, self.t = c, data, reference, annotate, t
+        self.box, self.reference_name = box, reference_name  # box: what differs, read only when the page needs it
+        self.marked = False  # a value drawn in the error colour so far
 
     def changed(self, keys):
         """True when this value differs from the valid invoice's."""
@@ -344,6 +364,7 @@ class _Page:
         bad = self.changed(keys) if bad is None else bad
         w = self.text(x, y, s, font, size, ERROR if bad else INK, align)
         if bad:
+            self.marked = True
             x0 = x if align == "l" else x - w
             self.c.setStrokeColor(ERROR)
             self.c.setLineWidth(0.8)
@@ -419,7 +440,7 @@ class _Page:
         c.line(M, H - 40, W - M, H - 40)
         self.party(M, H - 60, t["seller"], "seller", ("BT-30", "BT-29", "BT-31", "BT-34"))
         title = t["titles"].get(d["type"], t["titles"]["380"])
-        self.text(W - M, H - 66, title.upper(), "Plex-SemiBold", 24, align="r")
+        self.value(W - M, H - 66, title.upper(), ("type",), "Plex-SemiBold", 24, "r")
         w = self.value(W - M, H - 84, d["number"] or t["absent"], ("number",), "Plex-Mono", 10, "r")
         self.code(W - M - w - 4, H - 84, "BT-1", "r")
         values = (
@@ -438,7 +459,10 @@ class _Page:
         y = min(self.party(340, H - 170, t["buyer"], "buyer", ("BT-47", "BT-46", "BT-48", "BT-49")), H - 250) - 14
         y = self.lines(y)
         y = min(self.totals(y - 14), self.breakdown(y - 14))
-        self.notes(y - 24)
+        notes = self.note_rows()
+        if self.box is not None and not self.marked and not any(bad for *_, bad in notes):
+            y = self.what_differs(y - 8)
+        self.notes(y - 24, notes)
         c.restoreState()
 
     def lines(self, y):
@@ -503,6 +527,7 @@ class _Page:
             color = (
                 ERROR if label.endswith(t["no_reason"]) else INK if strong else MUTED
             )  # a missing reason is an error
+            self.marked |= color == ERROR
             w = self.text(x, y, label, font, size, color)
             self.code(x + w + 4, y + 0.5, bt)
             self.value(W - M, y, self.money(_get(d, keys)), keys, "Plex-Mono", size, "r")
@@ -541,44 +566,113 @@ class _Page:
             y -= 13
         return y
 
-    def notes(self, y):
+    def note_rows(self):
+        """The lines of the terms and notes: (text, font, size, in the error colour)."""
         d, ref, t = self.d, self.ref, self.t
+        rows = []
+        if d["terms"] or self.changed(("terms",)):
+            rows.append((d["terms"] or t["no_terms"], "Plex", 8, self.changed(("terms",))))
+        if d["iban"] or self.changed(("iban",)):
+            iban, bic = d["iban"] or t["absent"], d["bic"] or t["absent"]
+            rows.append((f"IBAN {iban}   BIC {bic}", "Plex-Mono", 7.5, self.changed(("iban",))))
+        for note in d["notes"]:
+            rows.append((note, "Plex", 8, ref is not None and note not in ref["notes"]))
+        for note in ref["notes"] if ref else ():
+            if note not in d["notes"]:
+                rows.append((t["missing_note"].format(note), "Plex", 8, True))
+        return rows
+
+    def notes(self, y, rows):
+        t = self.t
         self.text(M, y, t["notes"], "Plex-SemiBold", 7.5, ACCENT)
         self.code(M + self.c.stringWidth(t["notes"], "Plex-SemiBold", 7.5) + 4, y, "BT-20, BT-22, BT-84")
         y -= 13
-        if d["terms"] or self.changed(("terms",)):
-            self.value(M, y, d["terms"] or t["no_terms"], ("terms",), size=8)
+        for text, font, size, bad in rows:
+            self.value(M, y, text, (), font, size, bad=bad)
             y -= 11
-        if d["iban"] or self.changed(("iban",)):
-            iban, bic = d["iban"] or t["absent"], d["bic"] or t["absent"]
-            self.value(M, y, f"IBAN {iban}   BIC {bic}", ("iban",), "Plex-Mono", 7.5)
-            y -= 11
-        for note in d["notes"]:
-            self.value(M, y, note, (), size=8, bad=ref is not None and note not in ref["notes"])
-            y -= 11
-        for note in ref["notes"] if ref else ():
-            if note not in d["notes"]:
-                self.value(M, y, t["missing_note"].format(note), (), size=8, bad=True)
-                y -= 11
+
+    def what_differs(self, y):
+        """For a page that would show no value in the error colour, the mistake sitting in data it does not draw:
+        a box that names the file it compares with and lists each element that differs, with its business term and
+        its value in the error colour. Returns the y under the box."""
+        t, rows = self.t, self.box()
+        height = 28 + 12 * len(rows)
+        self.c.setStrokeColor(ERROR)
+        self.c.setLineWidth(0.8)
+        self.c.roundRect(M, y - height, W - 2 * M, height, 4, stroke=1, fill=0)
+        w = self.text(M + 10, y - 14, t["differs"], "Plex-SemiBold", 8.5)
+        self.text(M + 10 + w, y - 14, self.reference_name or t["the_reference"], "Plex-Mono", 8.5)
+        for i, (term, label, kind, value, attributes) in enumerate(rows):
+            row = y - 30 - 12 * i
+            self.text(M + 10, row, term or "", "Plex-Mono", 7, MUTED)
+            self.text(M + 56, row, label, size=8, color=MUTED)
+            self.value(M + 250, row, self.difference(kind, value, attributes), (), "Plex-Mono", 8.5, bad=True)
+        return y - height
+
+    def difference(self, kind, value, attributes):
+        """An element's value as the box writes it."""
+        t = self.t
+        if value is None:
+            return t["absent"]
+        if kind == "period" and not value:
+            return t["no_dates"]
+        if not value:
+            return t["blank"]
+        if kind == "date":
+            return _date(value, t)
+        if kind == "amount":
+            return _money(value, t, attributes.get("currencyID") or self.d["currency"])
+        if kind == "percent":
+            return _number(value, t, t["percent"])
+        if kind == "quantity":
+            unit = attributes.get("unitCode")
+            return _number(value, t) + (f" {unit}" if unit else "")
+        if kind == "id":
+            scheme = attributes.get("schemeID")
+            return f"{value} · " + (t["scheme"].format(scheme) if scheme else t["no_scheme"])
+        return value
 
 
-def page_pdf(xml_bytes, reference=None, rule=None, description=None, annotate=False, lang="fr"):
-    """The readable page alone, as PDF bytes, its words in lang ("fr" or "en")."""
+def page_pdf(xml_bytes, reference=None, rule=None, description=None, annotate=False, lang="fr", reference_name=None):
+    """The readable page alone, as PDF bytes, its words in lang ("fr" or "en"). reference_name is the file the reader
+    can open to compare, named on the page when the mistake sits in data the page does not draw."""
     _fonts()
     t = LABELS[lang]
     buf = io.BytesIO()
     c = canvas.Canvas(buf, pagesize=(W, H), invariant=1, pageCompression=1)
-    _Page(c, read(xml_bytes, t), read(reference, t) if reference else None, annotate, t).draw(rule, description)
+
+    def box():
+        return [(d.term, getattr(d, lang), d.kind, d.value, d.attributes) for d in differences(xml_bytes, reference)]
+
+    _Page(
+        c,
+        read(xml_bytes, t),
+        read(reference, t) if reference else None,
+        annotate,
+        t,
+        box if reference else None,
+        reference_name,
+    ).draw(rule, description)
     c.showPage()
     c.save()
     return buf.getvalue()
 
 
-def facturx_pdf(xml_bytes, name="factur-x.xml", reference=None, rule=None, description=None, annotate=False, lang="fr"):
-    """A Factur-X-style PDF: the readable page, with the XML attached. For an invalid variant, pass the valid
-    invoice as reference, and the rule with what is wrong, so the page shows where the mistake is."""
+def facturx_pdf(
+    xml_bytes,
+    name="factur-x.xml",
+    reference=None,
+    rule=None,
+    description=None,
+    annotate=False,
+    lang="fr",
+    reference_name=None,
+):
+    """A Factur-X-style PDF: the readable page, with the XML attached. For an invalid variant, pass the invoice it is
+    compared with as reference (and its file's name), and the rule with what is wrong, so the page shows where the
+    mistake is."""
     writer = PdfWriter()
-    page = page_pdf(xml_bytes, reference, rule, description, annotate, lang)
+    page = page_pdf(xml_bytes, reference, rule, description, annotate, lang, reference_name)
     writer.add_page(PdfReader(io.BytesIO(page)).pages[0])
     writer.add_attachment(name, xml_bytes)
     writer._info = None  # no /Producer, no dates

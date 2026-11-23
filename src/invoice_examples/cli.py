@@ -34,6 +34,15 @@ def _files(out, stem, xml, formats, **page):
     return written
 
 
+def fixed_counterpart(target, v):
+    """A variant that first sets a context (an allowance, a charge, lines…) and then breaks a rule also gets the same
+    invoice before the break, which passes every rule: its page compares with it, and so can the reader. None for the
+    others, which compare with the valid invoice."""
+    if (v.changes and v.edit) or v.fixed:
+        return cii.to_bytes(target.build(dataclasses.replace(v, edit=v.fixed)))
+    return None
+
+
 def cmd_list(args, out):
     target = TARGETS[args.target]
     print(f"Target {args.target}: rules {', '.join(f'{k} {v}' for k, v in target.RULES.items())}", file=out)
@@ -71,13 +80,7 @@ def cmd_generate(args, out):
         }
     ]
     for v in variants:
-        # A variant that first sets a context (an allowance, a charge, lines…) and then breaks a rule also gets the
-        # same invoice before the break, which passes every rule: its page compares with it, and so can the reader.
-        fixed = (
-            cii.to_bytes(target.build(dataclasses.replace(v, edit=v.fixed)))
-            if (v.changes and v.edit) or v.fixed
-            else None
-        )
+        fixed = fixed_counterpart(target, v)
         entry = {
             "id": v.id,
             "status": "invalid",
@@ -89,6 +92,7 @@ def cmd_generate(args, out):
                 cii.to_bytes(target.build(v)),
                 formats,
                 reference=fixed or valid,
+                reference_name=f"fixed/{v.id}.pdf" if fixed else "valid.pdf",
                 rule=v.rule,
                 description=getattr(v, lang),
                 lang=lang,
