@@ -1,5 +1,6 @@
 """The PDF page of every invalid example shows its mistake in the error colour: in place when the page draws the
-value, else in a box under the totals that names the file it compares with and lists what differs."""
+value, else in a box under the totals that says the mistake is in the electronic data only, names the file it compares
+with and lists what differs."""
 
 from pathlib import Path
 
@@ -42,15 +43,21 @@ def _page(target, stem):
     return " ".join(PdfReader(EXAMPLES / target / "invalid" / f"{stem}.pdf").pages[0].extract_text().split())
 
 
-def test_the_box_names_the_file_it_compares_with():
-    assert "What differs from fixed/BR-52.pdf" in _page("en16931", "BR-52")
-    assert "What differs from valid.pdf" in _page("en16931", "BR-CO-19")
-    assert "Ce qui diffère de valid.pdf" in _page("fr", "BR-FR-17")
+def test_the_box_says_the_mistake_is_in_the_electronic_data_and_names_the_file_it_compares_with():
+    page = _page("en16931", "BR-52")
+    assert "Mistake in the electronic data only: this page does not show it" in page
+    assert "It sits in the factur-x.xml file attached to this PDF. Compared with fixed/BR-52.pdf" in page
+    assert "Compared with valid.pdf" in _page("en16931", "BR-CO-19")
+    page = _page("fr", "BR-FR-17")
+    assert "Erreur dans les données électroniques seulement : cette page ne la montre pas" in page
+    assert "Par rapport à valid.pdf" in page
 
 
 def test_the_box_lists_each_element_with_its_business_term_and_value():
     page = _page("en16931", "BR-52")
     assert "BT-122" in page and "Supporting document reference" in page and "blank" in page
+    assert "AdditionalReferencedDocument/IssuerAssignedID · in fixed/BR-52.pdf: TS-2026-10" in page
+    assert "AdditionalReferencedDocument/IssuerAssignedID · absent de valid.pdf" in _page("fr", "BR-FR-17")
     assert "BG-14" in _page("en16931", "BR-CO-19") and "no dates" in _page("en16931", "BR-CO-19")
     usd = _page("fr", "BR-FR-CO-12")
     assert "Devise de la facture" in usd and "205,00 USD" in usd
@@ -59,14 +66,14 @@ def test_the_box_lists_each_element_with_its_business_term_and_value():
 
 
 def test_a_page_that_draws_its_mistake_has_no_box():
-    assert "What differs" not in _page("en16931", "BR-CO-15")
-    assert "Ce qui diffère" not in _page("fr", "BR-FR-05-PMT")
+    assert "electronic data only" not in _page("en16931", "BR-CO-15")
+    assert "données électroniques seulement" not in _page("fr", "BR-FR-05-PMT")
 
 
 def test_the_document_type_title_shows_the_changed_type():
     """BT-3 has no value drawn as such: its title stands for it, in the error colour when it differs."""
     assert "FACTURE PARTIELLE" in _page("fr", "BR-FR-04")
-    assert "What differs" not in _page("fr", "BR-FR-04") and "Ce qui diffère" not in _page("fr", "BR-FR-04")
+    assert "données électroniques seulement" not in _page("fr", "BR-FR-04")
 
 
 def test_an_element_without_a_business_term_stops_the_page():

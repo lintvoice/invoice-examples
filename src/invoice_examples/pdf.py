@@ -4,7 +4,8 @@ The page is drawn from the XML itself, so it shows exactly what the XML says, mi
 marked SPECIMEN and says at the top that the invoice is fictitious. For an invalid variant, the top of the page
 also states the rule it fails, and every value it draws that differs from the invoice it is compared with (the valid
 one, or the same invoice without the mistake) is in the error colour. When the mistake sits in data the page does not
-draw, a box under the totals lists what differs, each element with its business term and its value.
+draw, in the electronic data only, a box under the totals says so and lists what differs: each element with its
+business term, its value, its place in the XML and its value in the file it is compared with.
 The annotated page adds each value's business term number (BT-…) from EN 16931, for people learning to read an
 e-invoice.
 
@@ -102,7 +103,10 @@ LABELS = {
         "notes": "CONDITIONS ET MENTIONS",
         "no_terms": "Conditions de paiement absentes",
         "missing_note": "Mention absente : {}",
-        "differs": "Ce qui diffère de ",
+        "electronic": "Erreur dans les données électroniques seulement : cette page ne la montre pas",
+        "attached": "Elle se trouve dans le fichier factur-x.xml joint à ce PDF. Par rapport à {} :",
+        "in_reference": "dans {} : ",
+        "not_in_reference": "absent de {}",
         "the_reference": "la facture valide",
         "blank": "vide",
         "no_dates": "sans dates",
@@ -168,7 +172,10 @@ LABELS = {
         "notes": "TERMS AND NOTES",
         "no_terms": "Payment terms missing",
         "missing_note": "Note missing: {}",
-        "differs": "What differs from ",
+        "electronic": "Mistake in the electronic data only: this page does not show it",
+        "attached": "It sits in the factur-x.xml file attached to this PDF. Compared with {}:",
+        "in_reference": "in {}: ",
+        "not_in_reference": "not in {}",
         "the_reference": "the valid invoice",
         "blank": "blank",
         "no_dates": "no dates",
@@ -592,21 +599,47 @@ class _Page:
             y -= 11
 
     def what_differs(self, y):
-        """For a page that would show no value in the error colour, the mistake sitting in data it does not draw:
-        a box that names the file it compares with and lists each element that differs, with its business term and
-        its value in the error colour. Returns the y under the box."""
-        t, rows = self.t, self.box()
-        height = 28 + 12 * len(rows)
-        self.c.setStrokeColor(ERROR)
-        self.c.setLineWidth(0.8)
-        self.c.roundRect(M, y - height, W - 2 * M, height, 4, stroke=1, fill=0)
-        w = self.text(M + 10, y - 14, t["differs"], "Plex-SemiBold", 8.5)
-        self.text(M + 10 + w, y - 14, self.reference_name or t["the_reference"], "Plex-Mono", 8.5)
-        for i, (term, label, kind, value, attributes) in enumerate(rows):
-            row = y - 30 - 12 * i
-            self.text(M + 10, row, term or "", "Plex-Mono", 7, MUTED)
+        """For a page that would show no value in the error colour, the mistake sitting in data it does not draw: a
+        box that says the mistake is in the electronic data only, names the file it compares with, and lists each
+        element that differs: its business term and its value in the error colour, then its place in the XML and its
+        value in that file. Returns the y under the box."""
+        c, t = self.c, self.t
+        name = self.reference_name or t["the_reference"]
+        right = W - M - 10
+        rows = []  # each element's lines: the term, label and value; its place and the file's value, side by side
+        for d, label in self.box():
+            place = c.stringWidth(d.path, "Plex-Mono", 6.5)
+            if d.reference_value is None:
+                there = (t["not_in_reference"].format(name), "")
+            else:
+                there = (
+                    t["in_reference"].format(name),
+                    self.difference(d.kind, d.reference_value, d.reference_attributes),
+                )
+            width = c.stringWidth(" · " + there[0], "Plex", 7) + c.stringWidth(there[1], "Plex-Mono", 7)
+            rows.append((d, label, there, M + 56 + place + width <= right))
+        height = 44 + sum(24 if inline else 34 for *_, inline in rows) - 6
+        c.setStrokeColor(ERROR)
+        c.setLineWidth(0.8)
+        c.roundRect(M, y - height, W - 2 * M, height, 4, stroke=1, fill=0)
+        self.text(M + 10, y - 14, t["electronic"], "Plex-SemiBold", 8.5)
+        before, after = t["attached"].split("{}")
+        x = M + 10 + self.text(M + 10, y - 27, before, size=8, color=MUTED)
+        x += self.text(x, y - 27, name, "Plex-Mono", 8)
+        self.text(x, y - 27, after, size=8, color=MUTED)
+        row = y - 44
+        for d, label, (said, value), inline in rows:
+            self.text(M + 10, row, d.term or "", "Plex-Mono", 7, MUTED)
             self.text(M + 56, row, label, size=8, color=MUTED)
-            self.value(M + 250, row, self.difference(kind, value, attributes), (), "Plex-Mono", 8.5, bad=True)
+            self.value(M + 250, row, self.difference(d.kind, d.value, d.attributes), (), "Plex-Mono", 8.5, bad=True)
+            x = M + 56 + self.text(M + 56, row - 11, d.path, "Plex-Mono", 6.5, MUTED)
+            if inline:
+                x += self.text(x, row - 11, " · " + said, size=7, color=MUTED)
+                self.text(x, row - 11, value, "Plex-Mono", 7)
+            else:
+                x = M + 56 + self.text(M + 56, row - 21, said, size=7, color=MUTED)
+                self.text(x, row - 21, value, "Plex-Mono", 7)
+            row -= 24 if inline else 34
         return y - height
 
     def difference(self, kind, value, attributes):
@@ -642,7 +675,7 @@ def page_pdf(xml_bytes, reference=None, rule=None, description=None, annotate=Fa
     c = canvas.Canvas(buf, pagesize=(W, H), invariant=1, pageCompression=1)
 
     def box():
-        return [(d.term, getattr(d, lang), d.kind, d.value, d.attributes) for d in differences(xml_bytes, reference)]
+        return [(d, getattr(d, lang)) for d in differences(xml_bytes, reference)]
 
     _Page(
         c,

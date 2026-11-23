@@ -1,8 +1,9 @@
 """What differs between an invalid example's XML and the invoice it is compared with, element by element.
 
 The PDF page draws the main values of an invoice: parties, lines, totals, VAT breakdown, notes. Some mistakes sit in
-data it does not draw (a supporting document, a period, the payee, a price's base quantity…). For those, the page
-lists the elements that differ, each with its EN 16931 business term and its value, so the mistake still shows.
+data it does not draw (a supporting document, a period, the payee, a price's base quantity…): in the electronic data
+only. For those, the page says so and lists the elements that differ, each with its EN 16931 business term, its place
+in the XML and its value in both files, so the mistake still shows.
 
 TERMS names those elements: the end of their path in the CII syntax, their business term, their label in each language
 and how their value reads. A difference in an element TERMS does not name stops the page, so that a new example cannot
@@ -196,8 +197,11 @@ class Difference:
     en: str
     fr: str
     kind: str
+    path: str  # where it sits in the XML: its name and its parents', as many as tell it apart in the file
     value: str | None  # the element's text in the invalid example; None when it is not there
     attributes: dict  # its attributes, the date format aside (a currency, a scheme, a unit)
+    reference_value: str | None  # the same in the invoice it is compared with
+    reference_attributes: dict
 
 
 def _name(e):
@@ -234,6 +238,22 @@ def _leaves(xml_bytes):
     return found
 
 
+def _bare(plain):
+    """The path as the XML writes it, without the type codes and kinds _name adds."""
+    return re.sub(r":[\w-]*", "", plain).strip("/")
+
+
+def _place(plain, others):
+    """The element's name and its parent's, and more parents while another element of the files ends the same way:
+    enough to find it in the XML by a search."""
+    parts = _bare(plain).split("/")
+    for k in range(2, len(parts)):
+        suffix = "/".join(parts[-k:])
+        if not any(("/" + o).endswith("/" + suffix) for o in others if o != "/".join(parts)):
+            return suffix
+    return "/".join(parts)
+
+
 def _term(plain):
     """The TERMS entry whose path ends this one, the longest if several do; else the one that ends it once the type
     codes and kinds are left out (an element that means the same whatever they are)."""
@@ -248,15 +268,19 @@ def differences(xml_bytes, reference_bytes):
     """The elements whose text or attributes differ from the reference, in the order of the invalid example's XML
     (an element only in the reference comes after, with no value)."""
     mine, theirs = _leaves(xml_bytes), _leaves(reference_bytes)
+    others = {_bare(leaf[0]) for leaf in (*mine.values(), *theirs.values())}
     found = []
     for path in [*mine, *(p for p in theirs if p not in mine)]:
         a, b = mine.get(path), theirs.get(path)
         if a and b and a[1:] == b[1:]:
             continue
-        plain, value, attributes = a or (b[0], None, {})
+        plain = (a or b)[0]
         term = _term(plain)
         if term is None:
             raise ValueError(f"no business term for {plain}: name it in differences.TERMS")
         if term[3] != "syntax":
-            found.append(Difference(*term, value, attributes))
+            mine_value, mine_attributes = a[1:] if a else (None, {})
+            their_value, their_attributes = b[1:] if b else (None, {})
+            place = _place(plain, others)
+            found.append(Difference(*term, place, mine_value, mine_attributes, their_value, their_attributes))
     return found
