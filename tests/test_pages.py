@@ -52,7 +52,7 @@ def test_the_box_says_the_mistake_is_in_the_electronic_data_and_names_the_file_i
     assert "Compared with fixed/BR-52.pdf" in page
     assert "Compared with valid.pdf" in _page("en16931", "BR-CO-19")
     page = _page("fr", "BR-FR-17")
-    assert "Erreur dans les données électroniques seulement : la vue de ce PDF ne la montre pas" in page
+    assert "Erreur dans les données électroniques seulement : le rendu de ce PDF ne la montre pas" in page
     assert "Par rapport à valid.pdf" in page
 
 
