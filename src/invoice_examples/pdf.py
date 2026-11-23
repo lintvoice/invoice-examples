@@ -104,7 +104,9 @@ LABELS = {
         "no_terms": "Conditions de paiement absentes",
         "missing_note": "Mention absente : {}",
         "electronic": "Erreur dans les données électroniques seulement : cette page ne la montre pas",
-        "attached": "Elle se trouve dans le fichier factur-x.xml joint à ce PDF. Par rapport à {} :",
+        "attached": "Les données électroniques sont le fichier XML joint à ce PDF sous le nom factur-x.xml (voir les pièces "
+        "jointes du PDF), aussi fourni à part, en fichier .xml, à côté de ce PDF.",
+        "compared": "Par rapport à {} :",
         "in_reference": "dans {} : ",
         "not_in_reference": "absent de {}",
         "the_reference": "la facture valide",
@@ -173,7 +175,9 @@ LABELS = {
         "no_terms": "Payment terms missing",
         "missing_note": "Note missing: {}",
         "electronic": "Mistake in the electronic data only: this page does not show it",
-        "attached": "It sits in the factur-x.xml file attached to this PDF. Compared with {}:",
+        "attached": "The electronic data is the XML file attached to this PDF as factur-x.xml (see the PDF's attachments), "
+        "also given on its own as an .xml file next to this PDF.",
+        "compared": "Compared with {}:",
         "in_reference": "in {}: ",
         "not_in_reference": "not in {}",
         "the_reference": "the valid invoice",
@@ -618,16 +622,21 @@ class _Page:
                 )
             width = c.stringWidth(" · " + there[0], "Plex", 7) + c.stringWidth(there[1], "Plex-Mono", 7)
             rows.append((d, label, there, M + 56 + place + width <= right))
-        height = 44 + sum(24 if inline else 34 for *_, inline in rows) - 6
+        explained = simpleSplit(t["attached"], "Plex", 8, right - M - 10)
+        top = 44 + 11 * len(explained)  # from the box's top to the first element's line
+        height = top + sum(24 if inline else 34 for *_, inline in rows) - 6
         c.setStrokeColor(ERROR)
         c.setLineWidth(0.8)
         c.roundRect(M, y - height, W - 2 * M, height, 4, stroke=1, fill=0)
         self.text(M + 10, y - 14, t["electronic"], "Plex-SemiBold", 8.5)
-        before, after = t["attached"].split("{}")
-        x = M + 10 + self.text(M + 10, y - 27, before, size=8, color=MUTED)
-        x += self.text(x, y - 27, name, "Plex-Mono", 8)
-        self.text(x, y - 27, after, size=8, color=MUTED)
-        row = y - 44
+        for i, line in enumerate(explained):
+            self.text(M + 10, y - 27 - 11 * i, line, size=8, color=MUTED)
+        before, after = t["compared"].split("{}")
+        compared = y - 27 - 11 * len(explained)
+        x = M + 10 + self.text(M + 10, compared, before, size=8, color=MUTED)
+        x += self.text(x, compared, name, "Plex-Mono", 8)
+        self.text(x, compared, after, size=8, color=MUTED)
+        row = y - top
         for d, label, (said, value), inline in rows:
             self.text(M + 10, row, d.term or "", "Plex-Mono", 7, MUTED)
             self.text(M + 56, row, label, size=8, color=MUTED)

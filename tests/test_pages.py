@@ -46,7 +46,10 @@ def _page(target, stem):
 def test_the_box_says_the_mistake_is_in_the_electronic_data_and_names_the_file_it_compares_with():
     page = _page("en16931", "BR-52")
     assert "Mistake in the electronic data only: this page does not show it" in page
-    assert "It sits in the factur-x.xml file attached to this PDF. Compared with fixed/BR-52.pdf" in page
+    assert (
+        "The electronic data is the XML file attached to this PDF as factur-x.xml (see the PDF's attachments)" in page
+    )
+    assert "Compared with fixed/BR-52.pdf" in page
     assert "Compared with valid.pdf" in _page("en16931", "BR-CO-19")
     page = _page("fr", "BR-FR-17")
     assert "Erreur dans les données électroniques seulement : cette page ne la montre pas" in page
