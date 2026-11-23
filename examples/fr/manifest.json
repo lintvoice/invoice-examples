@@ -378,6 +378,27 @@
       }
     },
     {
+      "id": "BR-FR-28",
+      "status": "invalid",
+      "rule": "BR-FR-28",
+      "fires": [
+        "BR-FR-28-Value",
+        "BR-FREXT-54-2"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-28.xml",
+        "pdf": "invalid/BR-FR-28.pdf"
+      },
+      "description": {
+        "en": "An EXTENDED-CTC-FR invoice: an item attribute (BG-32) gives its value both as text (BT-161) and as a measure with its unit; only one is allowed (the EXTENDED-CTC-FR profile rule BR-FREXT-54-2 says the same and fails too).",
+        "fr": "Une facture au profil EXTENDED-CTC-FR : un attribut d'article (BG-32) donne sa valeur à la fois en texte (BT-161) et en mesure avec son unité ; une seule est permise (la règle du profil EXTENDED-CTC-FR BR-FREXT-54-2 dit la même chose et échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-FR-28.xml",
+        "pdf": "fixed/BR-FR-28.pdf"
+      }
+    },
+    {
       "id": "BR-FR-29",
       "status": "invalid",
       "rule": "BR-FR-29",
@@ -439,6 +460,46 @@
       "description": {
         "en": "The payment due date (BT-9) is before the issue date (BT-2).",
         "fr": "La date d'échéance (BT-9) est antérieure à la date d'émission (BT-2)."
+      }
+    },
+    {
+      "id": "BR-FR-CO-14",
+      "status": "invalid",
+      "rule": "BR-FR-CO-14",
+      "fires": [
+        "BR-FR-CO-14_BT-29-1"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-CO-14.xml",
+        "pdf": "invalid/BR-FR-CO-14.pdf"
+      },
+      "description": {
+        "en": "The seller is a member of a single VAT taxable person (an identifier with scheme 0231, BT-29-1) but the invoice has no note TXD saying MEMBRE_ASSUJETTI_UNIQUE.",
+        "fr": "Le vendeur est membre d'un assujetti unique (un identifiant au schéma 0231, BT-29-1) mais la facture n'a pas de mention TXD « MEMBRE_ASSUJETTI_UNIQUE »."
+      },
+      "fixed": {
+        "xml": "fixed/BR-FR-CO-14.xml",
+        "pdf": "fixed/BR-FR-CO-14.pdf"
+      }
+    },
+    {
+      "id": "BR-FR-CO-15",
+      "status": "invalid",
+      "rule": "BR-FR-CO-15",
+      "fires": [
+        "BR-FR-CO-15_BT-29-1"
+      ],
+      "files": {
+        "xml": "invalid/BR-FR-CO-15.xml",
+        "pdf": "invalid/BR-FR-CO-15.pdf"
+      },
+      "description": {
+        "en": "The seller is a member of a single VAT taxable person (an identifier with scheme 0231, BT-29-1) but the invoice gives no tax representative (BG-11) with the single taxable person's VAT number (BT-63).",
+        "fr": "Le vendeur est membre d'un assujetti unique (un identifiant au schéma 0231, BT-29-1) mais la facture n'indique pas de représentant fiscal (BG-11) avec le numéro de TVA de l'assujetti unique (BT-63)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-FR-CO-15.xml",
+        "pdf": "fixed/BR-FR-CO-15.pdf"
       }
     },
     {

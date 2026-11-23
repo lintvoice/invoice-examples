@@ -466,7 +466,7 @@ Also `invalid/BR-CO-25`: a rule these files no longer hold, in a profile that ke
 
 ## Target `fr`: BR-FR rules
 
-France_RFE 1.4.0.04, CII Schematron: 170 rule ids. **98 of the 98 that apply to a Factur-X EN 16931 invoice have an invalid example.**
+France_RFE 1.4.0.04, CII Schematron: 170 rule ids. **101 of the 101 that apply to a Factur-X EN 16931 invoice have an invalid example.**
 
 | Rule id | Example | What is wrong |
 | --- | --- | --- |
@@ -549,13 +549,13 @@ France_RFE 1.4.0.04, CII Schematron: 170 rule ids. **98 of the 98 that apply to 
 | BR-FR-27_BG-32 | not applicable: unreachable in the EN 16931 profile: the Factur-X schema requires ram:Description in every item attribute | |
 | BR-FR-27_BT-160 | `invalid/BR-FR-27` | An item attribute (BG-32) has an empty name (BT-160). |
 | BR-FR-27_EXT-FR-FE-159 | not applicable: Factur-X EXTENDED elements; the fr target is the EN 16931 profile | |
-| BR-FR-28-Value | not applicable: unreachable in the EN 16931 profile: the Factur-X schema requires exactly one ram:Value and has no ram:ValueMeasure | |
+| BR-FR-28-Value | `invalid/BR-FR-28` | An EXTENDED-CTC-FR invoice: an item attribute (BG-32) gives its value both as text (BT-161) and as a measure with its unit; only one is allowed (the EXTENDED-CTC-FR profile rule BR-FREXT-54-2 says the same and fails too). |
 | BR-FR-29_BT-18 | `invalid/BR-FR-29` | Two invoiced object identifiers (BT-18) use the reference type AFL. |
 | BR-FR-29_AFL | `invalid/BR-FR-29-AFL` | An invoiced object identifier (BT-18) of type AFL is blank (EN 16931 BR-52 fires too: a document reference is required). |
 | BR-FR-29_AVV | `invalid/BR-FR-29-AVV` | An invoiced object identifier (BT-18) with reference type AVV is blank (EN 16931 rule BR-52 fires too: a reference is required). |
-| BR-FR-30_BT-128 | not applicable: unreachable: the rule looks for IncludedSupplyChainTradeLineItem/AdditionalReferencedDocument, but the Factur-X 1.09.2 EN 16931 and EXTENDED schemas put BT-128 under SpecifiedLineTradeSettlement (possible France_RFE issue) | |
-| BR-FR-30_AFL | not applicable: unreachable: the rule looks for IncludedSupplyChainTradeLineItem/AdditionalReferencedDocument, but the Factur-X 1.09.2 EN 16931 and EXTENDED schemas put BT-128 under SpecifiedLineTradeSettlement (possible France_RFE issue) | |
-| BR-FR-30_AVV | not applicable: unreachable: the rule looks for IncludedSupplyChainTradeLineItem/AdditionalReferencedDocument, but the Factur-X 1.09.2 EN 16931 and EXTENDED schemas put BT-128 under SpecifiedLineTradeSettlement (possible France_RFE issue) | |
+| BR-FR-30_BT-128 | not applicable: unreachable: the rule looks for IncludedSupplyChainTradeLineItem/AdditionalReferencedDocument, but no CII schema has that element (Factur-X 1.09.2 EN 16931 and EXTENDED, CII D22B): they put BT-128 under SpecifiedLineTradeSettlement (possible France_RFE issue; the UBL rule works) | |
+| BR-FR-30_AFL | not applicable: unreachable: the rule looks for IncludedSupplyChainTradeLineItem/AdditionalReferencedDocument, but no CII schema has that element (Factur-X 1.09.2 EN 16931 and EXTENDED, CII D22B): they put BT-128 under SpecifiedLineTradeSettlement (possible France_RFE issue; the UBL rule works) | |
+| BR-FR-30_AVV | not applicable: unreachable: the rule looks for IncludedSupplyChainTradeLineItem/AdditionalReferencedDocument, but no CII schema has that element (Factur-X 1.09.2 EN 16931 and EXTENDED, CII D22B): they put BT-128 under SpecifiedLineTradeSettlement (possible France_RFE issue; the UBL rule works) | |
 | BR-FR-31_BT-21 | `invalid/BR-FR-31` | Two notes have the subject code BAR. |
 | BR-FR-32-LEGALID | `invalid/BR-FR-32` | The buyer's identifier with scheme 0002 (SIREN, BT-47) does not have 9 digits. |
 | BR-FR-32-GLOBALID | `invalid/BR-FR-32-GLOBALID` | The seller's identifier with scheme 0002 (BT-29) does not have 9 digits. |
@@ -588,8 +588,8 @@ France_RFE 1.4.0.04, CII Schematron: 170 rule ids. **98 of the 98 that apply to 
 | BR-FR-CO-10_EXT-FR-FE-146-1 | not applicable: Factur-X EXTENDED elements; the fr target is the EN 16931 profile | |
 | BR-FR-CO-10_EXT-FR-FE-146-2 | not applicable: Factur-X EXTENDED elements; the fr target is the EN 16931 profile | |
 | BR-FR-CO-12_BT-5 | `invalid/BR-FR-CO-12` | The invoice is in USD but gives no VAT accounting currency EUR (BT-6) and no VAT total in EUR. |
-| BR-FR-CO-14_BT-29-1 | not applicable: single taxable person (assujetti unique) | |
-| BR-FR-CO-15_BT-29-1 | not applicable: single taxable person (assujetti unique) | |
+| BR-FR-CO-14_BT-29-1 | `invalid/BR-FR-CO-14` | The seller is a member of a single VAT taxable person (an identifier with scheme 0231, BT-29-1) but the invoice has no note TXD saying MEMBRE_ASSUJETTI_UNIQUE. |
+| BR-FR-CO-15_BT-29-1 | `invalid/BR-FR-CO-15` | The seller is a member of a single VAT taxable person (an identifier with scheme 0231, BT-29-1) but the invoice gives no tax representative (BG-11) with the single taxable person's VAT number (BT-63). |
 | BR-FR-DEC-01_BT-92_BT-99 | `invalid/BR-FR-DEC-01-BT-92` | A document level allowance amount (BT-92) has 3 decimals (EN 16931 BR-DEC-01 fires too). |
 | BR-FR-DEC-01_BT-93_BT-100 | `invalid/BR-FR-DEC-01-BT-93` | A document level allowance base amount (BT-93) has 3 decimals (EN 16931 BR-DEC-02 fires too). |
 | BR-FR-DEC-01_BT-106 | `invalid/BR-FR-DEC-01-BT-106` | The sum of the invoice line net amounts (BT-106) has 3 decimals (EN 16931 BR-DEC-09 fires too). |

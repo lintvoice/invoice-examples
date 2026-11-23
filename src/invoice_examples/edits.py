@@ -53,16 +53,48 @@ def add_documents(*docs):
     return edit
 
 
-def add_characteristic(description, value):
-    """Add an item attribute (BG-32) to the first line."""
+def add_characteristic(description, value, measure=None):
+    """Add an item attribute (BG-32) to the first line; measure, a (quantity, unit code) pair, adds its value as a
+    measure (ram:ValueMeasure, in the EXTENDED profiles only)."""
 
     def edit(root):
         product = root.find(f".//{ram('SpecifiedTradeProduct')}")
         ch = el(product, "ram:ApplicableProductCharacteristic")
         if description is not None:
             el(ch, "ram:Description", description)
+        if measure is not None:
+            el(ch, "ram:ValueMeasure", measure[0], unitCode=measure[1])
         if value is not None:
             el(ch, "ram:Value", value)
+
+    return edit
+
+
+def add_note(subject, content):
+    """Add a note (BG-1) to the document, after the others."""
+
+    def edit(root):
+        note = new("ram:IncludedNote")
+        sub(note, "ram:Content", content)
+        sub(note, "ram:SubjectCode", subject)
+        document = root.find(f"{{{NS['rsm']}}}ExchangedDocument")
+        insert(document, note, before="EffectiveSpecifiedPeriod", after="IncludedNote")
+
+    return edit
+
+
+def add_tax_representative(name, vat, address):
+    """Add a seller tax representative (BG-11): its name, postal address (postcode, street, city, country) and VAT
+    identifier (BT-63), after the buyer."""
+
+    def edit(root):
+        node = new("ram:SellerTaxRepresentativeTradeParty")
+        sub(node, "ram:Name", name)
+        postal = sub(node, "ram:PostalTradeAddress")
+        for tag, value in zip(("PostcodeCode", "LineOne", "CityName", "CountryID"), address, strict=True):
+            sub(postal, f"ram:{tag}", value)
+        sub(sub(node, "ram:SpecifiedTaxRegistration"), "ram:ID", vat, schemeID="VA")
+        insert(first(root, "ApplicableHeaderTradeAgreement"), node, after="BuyerTradeParty")
 
     return edit
 

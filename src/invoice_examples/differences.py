@@ -58,6 +58,49 @@ TERMS = {
     "SellerTradeParty/GlobalID": ("BT-29", "Seller identifier", "Identifiant du vendeur", "id"),
     "BuyerTradeParty/GlobalID": ("BT-46", "Buyer identifier", "Identifiant de l'acheteur", "id"),
     "PayeeTradeParty/Name": ("BT-59", "Payee name", "Nom du bénéficiaire", "text"),
+    "SellerTaxRepresentativeTradeParty/Name": (
+        "BT-62",
+        "Seller tax representative name",
+        "Nom du représentant fiscal du vendeur",
+        "text",
+    ),
+    "SellerTaxRepresentativeTradeParty/PostalTradeAddress/LineOne": (
+        "BT-64",
+        "Tax representative address line",
+        "Adresse du représentant fiscal",
+        "text",
+    ),
+    "SellerTaxRepresentativeTradeParty/PostalTradeAddress/CityName": (
+        "BT-66",
+        "Tax representative city",
+        "Ville du représentant fiscal",
+        "text",
+    ),
+    "SellerTaxRepresentativeTradeParty/PostalTradeAddress/PostcodeCode": (
+        "BT-67",
+        "Tax representative post code",
+        "Code postal du représentant fiscal",
+        "text",
+    ),
+    "SellerTaxRepresentativeTradeParty/PostalTradeAddress/CountryID": (
+        "BT-69",
+        "Tax representative country code",
+        "Code pays du représentant fiscal",
+        "text",
+    ),
+    "SellerTaxRepresentativeTradeParty/SpecifiedTaxRegistration/ID": (
+        "BT-63",
+        "Seller tax representative VAT identifier",
+        "Numéro de TVA du représentant fiscal du vendeur",
+        "id",
+    ),
+    # an EXTENDED-CTC-FR term: an item attribute's value as a measure, with its unit
+    "ApplicableProductCharacteristic/ValueMeasure": (
+        "EXT-FR-FE-160",
+        "Item attribute value as a measure",
+        "Valeur de l'attribut d'article en mesure",
+        "quantity",
+    ),
     "PayeeTradeParty/GlobalID": ("BT-60", "Payee identifier", "Identifiant du bénéficiaire", "id"),
     "PayeeTradeParty/SpecifiedLegalOrganization/ID": (
         "BT-61",

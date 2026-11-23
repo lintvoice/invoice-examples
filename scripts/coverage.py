@@ -24,21 +24,15 @@ NOT_APPLICABLE = (
     ("EXT-FR-FE", "Factur-X EXTENDED elements; the fr target is the EN 16931 profile"),
     ("BR-FR-MV-", "multi-vendor invoices (special contract)"),
     ("BR-FR-BD-", "special contract BD"),
-    ("BR-FR-CO-14", "single taxable person (assujetti unique)"),
-    ("BR-FR-CO-15", "single taxable person (assujetti unique)"),
     (
         "BR-FR-30",
         "unreachable: the rule looks for IncludedSupplyChainTradeLineItem/AdditionalReferencedDocument, "
-        "but the Factur-X 1.09.2 EN 16931 and EXTENDED schemas put BT-128 under SpecifiedLineTradeSettlement "
-        "(possible France_RFE issue)",
+        "but no CII schema has that element (Factur-X 1.09.2 EN 16931 and EXTENDED, CII D22B): they put BT-128 under "
+        "SpecifiedLineTradeSettlement (possible France_RFE issue; the UBL rule works)",
     ),
     (
         "BR-FR-27_BG-32",
         "unreachable in the EN 16931 profile: the Factur-X schema requires ram:Description in every item attribute",
-    ),
-    (
-        "BR-FR-28-Value",
-        "unreachable in the EN 16931 profile: the Factur-X schema requires exactly one ram:Value and has no ram:ValueMeasure",
     ),
     (
         "BR-FR-DEC-01_BT-111",

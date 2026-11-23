@@ -15,6 +15,8 @@ from ..edits import (
     add_documents,
     add_element,
     add_global_id,
+    add_note,
+    add_tax_representative,
     add_invoice_reference,
     add_payee,
     add_ship_to,
@@ -48,6 +50,15 @@ SELLER, BUYER = cii.FRENCH["seller"], cii.FRENCH["buyer"]
 ALLOWANCE = [("10.25", "95", cii.FRENCH["words"]["trade_allowance"], "S", "20")]  # 1 % of 1025.00
 SELLER_SIRET_2 = luhn_complete(SELLER_SIREN + "0002")
 BUYER_SIRET_2 = luhn_complete(BUYER_SIREN + "0003")  # also the deliver-to establishment
+# A seller that belongs to a single VAT taxable person (assujetti unique): the group's 9-digit number as a seller
+# identifier with scheme 0231 (BR-FR-32), the note TXD that says so (BR-FR-CO-14) and the group's VAT number as the
+# seller's tax representative (BR-FR-CO-15). The number is fictitious, its last digit a Luhn key like a SIREN's.
+SINGLE_TAXABLE_PERSON_ID = luhn_complete("05432109")
+SINGLE_TAXABLE_PERSON = add_global_id("SellerTradeParty", SINGLE_TAXABLE_PERSON_ID, "0231")
+SINGLE_TAXABLE_PERSON_VAT = add_tax_representative(
+    "Groupe TVA Exemple", cii.vat_fr(SINGLE_TAXABLE_PERSON_ID), ("75008", "5 avenue de l'Exemple", "Paris", "FR")
+)
+SINGLE_TAXABLE_PERSON_NOTE = ("TXD", "MEMBRE_ASSUJETTI_UNIQUE")
 SPACED_SIRET = f"{BUYER_SIRET_2[:3]} {BUYER_SIRET_2[3:6]} {BUYER_SIRET_2[6:9]} {BUYER_SIRET_2[9:]}"
 
 
@@ -305,6 +316,16 @@ VARIANTS = (
         edit=add_characteristic(" ", "Bleu"),
     ),
     Variant(
+        "BR-FR-28",
+        "BR-FR-28",
+        ("BR-FR-28-Value", "BR-FREXT-54-2"),
+        "An EXTENDED-CTC-FR invoice: an item attribute (BG-32) gives its value both as text (BT-161) and as a measure with its unit; only one is allowed (the EXTENDED-CTC-FR profile rule BR-FREXT-54-2 says the same and fails too).",
+        "Une facture au profil EXTENDED-CTC-FR : un attribut d'article (BG-32) donne sa valeur à la fois en texte (BT-161) et en mesure avec son unité ; une seule est permise (la règle du profil EXTENDED-CTC-FR BR-FREXT-54-2 dit la même chose et échoue aussi).",
+        {"profile": EXTENDED_CTC_FR},
+        edit=add_characteristic("Durée", "2 jours", measure=("2", "DAY")),
+        fixed=add_characteristic("Durée", "2 jours"),
+    ),
+    Variant(
         "BR-FR-29",
         "BR-FR-29",
         ("BR-FR-29_BT-18",),
@@ -335,6 +356,25 @@ VARIANTS = (
         "The payment due date (BT-9) is before the issue date (BT-2).",
         "La date d'échéance (BT-9) est antérieure à la date d'émission (BT-2).",
         {"due_date": "20261001"},
+    ),
+    Variant(
+        "BR-FR-CO-14",
+        "BR-FR-CO-14",
+        ("BR-FR-CO-14_BT-29-1",),
+        "The seller is a member of a single VAT taxable person (an identifier with scheme 0231, BT-29-1) but the invoice has no note TXD saying MEMBRE_ASSUJETTI_UNIQUE.",
+        "Le vendeur est membre d'un assujetti unique (un identifiant au schéma 0231, BT-29-1) mais la facture n'a pas de mention TXD « MEMBRE_ASSUJETTI_UNIQUE ».",
+        edit=edit_all(SINGLE_TAXABLE_PERSON, SINGLE_TAXABLE_PERSON_VAT),
+        fixed=edit_all(SINGLE_TAXABLE_PERSON, SINGLE_TAXABLE_PERSON_VAT, add_note(*SINGLE_TAXABLE_PERSON_NOTE)),
+    ),
+    Variant(
+        "BR-FR-CO-15",
+        "BR-FR-CO-15",
+        ("BR-FR-CO-15_BT-29-1",),
+        "The seller is a member of a single VAT taxable person (an identifier with scheme 0231, BT-29-1) but the invoice gives no tax representative (BG-11) with the single taxable person's VAT number (BT-63).",
+        "Le vendeur est membre d'un assujetti unique (un identifiant au schéma 0231, BT-29-1) mais la facture n'indique pas de représentant fiscal (BG-11) avec le numéro de TVA de l'assujetti unique (BT-63).",
+        {"notes": [*NOTES, SINGLE_TAXABLE_PERSON_NOTE]},
+        edit=SINGLE_TAXABLE_PERSON,
+        fixed=edit_all(SINGLE_TAXABLE_PERSON, SINGLE_TAXABLE_PERSON_VAT),
     ),
     Variant(
         "BR-FR-CO-12",
