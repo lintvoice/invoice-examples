@@ -105,7 +105,7 @@ LABELS = {
         "missing_note": "Mention absente : {}",
         "electronic": "Erreur dans les données électroniques seulement : le rendu de ce PDF ne la montre pas",
         "attached": "Les données électroniques sont le fichier XML joint à ce PDF sous le nom factur-x.xml (voir les pièces "
-        "jointes du PDF), aussi fourni à part, en fichier .xml, à côté de ce PDF.",
+        "jointes du PDF).",
         "compared": "Par rapport à {} :",
         "in_reference": "dans {} : ",
         "not_in_reference": "absent de {}",
@@ -175,8 +175,7 @@ LABELS = {
         "no_terms": "Payment terms missing",
         "missing_note": "Note missing: {}",
         "electronic": "Mistake in the electronic data only: this PDF view does not show it",
-        "attached": "The electronic data is the XML file attached to this PDF as factur-x.xml (see the PDF's attachments), "
-        "also given on its own as an .xml file next to this PDF.",
+        "attached": "The electronic data is the XML file attached to this PDF as factur-x.xml (see the PDF's attachments).",
         "compared": "Compared with {}:",
         "in_reference": "in {}: ",
         "not_in_reference": "not in {}",
