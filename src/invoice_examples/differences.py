@@ -17,8 +17,8 @@ from dataclasses import dataclass
 from lxml import etree
 
 # (business term, English label, French label, kind of value). The kind tells how the page writes the value: "date",
-# "amount", "percent", "quantity" (with its unit code), "id" (with its scheme), "period" (a container, empty or not),
-# "text"; "syntax" marks an element that only says which business term its siblings are, and is never listed.
+# "amount", "percent", "quantity" (with its unit code), "id" (with its scheme: a schemeID, or a classification's
+# listID), "file" (an attached file: its name and MIME code), "period" (a container, empty or not), "text"; "syntax" marks an element that only says which business term its siblings are, and is never listed.
 # A supporting document, a tender and an invoiced object are the same CII element, told apart by their type code
 # (916, 50, 130); an allowance and a charge, by their indicator.
 TERMS = {
@@ -236,6 +236,140 @@ TERMS = {
     ),
     "ApplicableProductCharacteristic/Description": ("BT-160", "Item attribute name", "Nom de l'attribut", "text"),
     "ApplicableProductCharacteristic/Value": ("BT-161", "Item attribute value", "Valeur de l'attribut", "text"),
+    # the core EN 16931 rules and the code list rules (BR-CL)
+    "GuidelineSpecifiedDocumentContextParameter/ID": (
+        "BT-24",
+        "Specification identifier",
+        "Identifiant de spécification",
+        "text",
+    ),
+    "ApplicableHeaderTradeSettlement/TaxCurrencyCode": (
+        "BT-6",
+        "VAT accounting currency code",
+        "Code de devise de comptabilisation de la TVA",
+        "text",
+    ),
+    "ApplicableHeaderTradeSettlement/ApplicableTradeTax/DueDateTypeCode": (
+        "BT-8",
+        "VAT point date code",
+        "Code de date d'exigibilité de la TVA",
+        "text",
+    ),
+    "ExchangedDocument/IncludedNote/SubjectCode": (
+        "BT-21",
+        "Invoice note subject code",
+        "Code du sujet de la note",
+        "text",
+    ),
+    "SellerTradeParty/SpecifiedLegalOrganization/ID": (
+        "BT-30",
+        "Seller legal registration identifier",
+        "Identifiant d'immatriculation légale du vendeur",
+        "id",
+    ),
+    "SellerTradeParty/URIUniversalCommunication/URIID": (
+        "BT-34",
+        "Seller electronic address",
+        "Adresse électronique du vendeur",
+        "id",
+    ),
+    "SellerTradeParty/PostalTradeAddress/CountryID": ("BT-40", "Seller country code", "Code pays du vendeur", "text"),
+    "BuyerTradeParty/URIUniversalCommunication/URIID": (
+        "BT-49",
+        "Buyer electronic address",
+        "Adresse électronique de l'acheteur",
+        "id",
+    ),
+    "BuyerTradeParty/PostalTradeAddress/CountryID": ("BT-55", "Buyer country code", "Code pays de l'acheteur", "text"),
+    "ShipToTradeParty/PostalTradeAddress/CountryID": (
+        "BT-80",
+        "Deliver to country code",
+        "Code pays de livraison",
+        "text",
+    ),
+    "SpecifiedTradeSettlementPaymentMeans/TypeCode": (
+        "BT-81",
+        "Payment means type code",
+        "Code du moyen de paiement",
+        "text",
+    ),
+    "ApplicableTradeSettlementFinancialCard/ID": (
+        "BT-87",
+        "Payment card primary account number",
+        "Numéro de la carte de paiement",
+        "text",
+    ),
+    "ApplicableHeaderTradeSettlement/SpecifiedTradeAllowanceCharge:allowance/CategoryTradeTax/CategoryCode": (
+        "BT-95",
+        "Document level allowance VAT category code",
+        "Catégorie de TVA de la remise",
+        "text",
+    ),
+    "ApplicableHeaderTradeSettlement/SpecifiedTradeAllowanceCharge:allowance/ReasonCode": (
+        "BT-98",
+        "Document level allowance reason code",
+        "Code motif de la remise",
+        "text",
+    ),
+    "ApplicableHeaderTradeSettlement/SpecifiedTradeAllowanceCharge:charge/CategoryTradeTax/CategoryCode": (
+        "BT-102",
+        "Document level charge VAT category code",
+        "Catégorie de TVA des frais",
+        "text",
+    ),
+    "ApplicableHeaderTradeSettlement/SpecifiedTradeAllowanceCharge:charge/ReasonCode": (
+        "BT-105",
+        "Document level charge reason code",
+        "Code motif des frais",
+        "text",
+    ),
+    # in CII, an allowance's or charge's VAT category also carries a tax type, always VAT: no business term of its own
+    "SpecifiedTradeAllowanceCharge/CategoryTradeTax/TypeCode": (None, "", "", "syntax"),
+    "ApplicableHeaderTradeSettlement/ApplicableTradeTax/CategoryCode": (
+        "BT-118",
+        "VAT category code",
+        "Code de catégorie de TVA",
+        "text",
+    ),
+    "ApplicableHeaderTradeSettlement/ApplicableTradeTax/ExemptionReasonCode": (
+        "BT-121",
+        "VAT exemption reason code",
+        "Code motif d'exonération de TVA",
+        "text",
+    ),
+    "AdditionalReferencedDocument:916/AttachmentBinaryObject": (
+        "BT-125",
+        "Attached document",
+        "Document joint",
+        "file",
+    ),
+    "AssociatedDocumentLineDocument/LineID": ("BT-126", "Invoice line identifier", "Identifiant de la ligne", "text"),
+    "SpecifiedLineTradeSettlement/BillingSpecifiedPeriod/StartDateTime/DateTimeString": (
+        "BT-134",
+        "Invoice line period start date",
+        "Début de la période de la ligne",
+        "date",
+    ),
+    "SpecifiedLineTradeSettlement/BillingSpecifiedPeriod/EndDateTime/DateTimeString": (
+        "BT-135",
+        "Invoice line period end date",
+        "Fin de la période de la ligne",
+        "date",
+    ),
+    "SpecifiedLineTradeSettlement/ApplicableTradeTax/CategoryCode": (
+        "BT-151",
+        "Invoiced item VAT category code",
+        "Catégorie de TVA de la ligne",
+        "text",
+    ),
+    "SpecifiedTradeProduct/GlobalID": ("BT-157", "Item standard identifier", "Identifiant standard de l'article", "id"),
+    "DesignatedProductClassification/ClassCode": (
+        "BT-158",
+        "Item classification identifier",
+        "Identifiant de classification de l'article",
+        "id",
+    ),
+    "OriginTradeCountry/ID": ("BT-159", "Item country of origin", "Pays d'origine de l'article", "text"),
 }
 IGNORED = {"format"}  # a date's format attribute, always 102 here: the date itself is what the page shows
 

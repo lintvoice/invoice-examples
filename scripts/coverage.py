@@ -18,6 +18,19 @@ NO_EXAMPLE = {
     "BR-22": "no example: the Factur-X EN 16931 schema requires each line's invoiced quantity",
     "BR-26": "no example: the Factur-X EN 16931 schema requires each line's net price",
     "BR-CO-18": "no example: the Factur-X EN 16931 schema requires at least one VAT breakdown",
+    "BR-12": "no example: the Factur-X EN 16931 schema requires the sum of the line net amounts (BT-106)",
+    "BR-13": "no example: the Factur-X EN 16931 schema requires the total without VAT (BT-109)",
+    "BR-14": "no example: the Factur-X EN 16931 schema requires the total with VAT (BT-112)",
+    "BR-15": "no example: the Factur-X EN 16931 schema requires the amount due (BT-115)",
+    "BR-24": "no example: the Factur-X EN 16931 schema requires each line's net amount (BT-131)",
+    "BR-31": "no example: the Factur-X EN 16931 schema requires each document level allowance's amount (BT-92)",
+    "BR-36": "no example: the Factur-X EN 16931 schema requires each document level charge's amount (BT-99)",
+    "BR-41": "no example: the Factur-X EN 16931 schema requires each line allowance's amount (BT-136)",
+    "BR-43": "no example: the Factur-X EN 16931 schema requires each line charge's amount (BT-141)",
+    "BR-47": "no example: the Factur-X EN 16931 schema requires each VAT breakdown's category code (BT-118)",
+    "BR-49": "no example: the Factur-X EN 16931 schema requires the payment means type code (BT-81)",
+    "BR-54": "no example: the Factur-X EN 16931 schema requires both the name (BT-160) and the value (BT-161) of an "
+    "item attribute",
 }
 # Rules that an EN 16931 invoice cannot reach, or only through cases we do not generate yet.
 NOT_APPLICABLE = (

@@ -26,7 +26,7 @@ Each target has its folder, `examples/en16931/` and `examples/fr/`, which holds,
   `invalid/BR-CO-15.xml` (the total with VAT is not the total without VAT plus the VAT) or, in `fr`,
   `invalid/BR-FR-10.xml` (the seller's SIREN is missing);
 - `fixed/<rule>.xml`, `fixed/<rule>.pdf`: for an invalid example that first adds something to the invoice (an
-  allowance, a charge, lines), the same invoice without the mistake, which passes every rule;
+  allowance, a charge, a line, a party, a period…), the same invoice without the mistake, which passes every rule;
 - `manifest.json`: for each example, the rules it fails, in English and French, and the rule versions.
 
 | Rules checked | Version | Targets |

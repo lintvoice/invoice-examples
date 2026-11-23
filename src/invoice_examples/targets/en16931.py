@@ -6,15 +6,35 @@ The variants are written once, here, as a function of a base: this target builds
 "fr" target on its French one, where the French rules sometimes fail next to them.
 """
 
+import base64
 from decimal import Decimal
 
 from .. import cii, edits
 from ..edits import (
     Variant,
+    account_name_only,
+    add_attachment,
+    add_card,
+    add_classification,
     add_documents,
+    add_invoice_reference,
+    add_note,
+    add_origin,
+    add_payee,
+    add_product_id,
+    add_ship_to,
+    add_tax_currency,
+    add_tax_representative,
     accounting_vat_total,
     add_element,
     allowance_as_negative_line,
+    billing_period,
+    gross_price,
+    insert,
+    new,
+    remove,
+    set_attribute,
+    set_value,
     edit_all,
     empty_period,
     line_charge,
@@ -89,6 +109,24 @@ GERMAN = {
         "loyalty_allowance": "Loyalty discount",
         "line_charge": "Packaging",
         "exempt_line": ("Vocational training course", "1", "300.00", "E", "0"),
+        # what the core and code list variants add (core, code_lists): a tax representative (name, VAT number,
+        # address), a deliver-to party (name, location, address), the electronic addresses of seller and buyer, a
+        # reduced VAT rate, a supporting document's name and file name, and the wrong values each language's
+        # software tends to write: a country's name, a unit, a scheme's name
+        "tax_representative": (
+            "Fiskalvertretung Beispiel GmbH",
+            cii.vat_de("99999998"),  # DE999999987: VIES answers that no company holds it (checked 2026-11-23)
+            ("10117", "Beispielallee 5", "Berlin", "DE"),
+        ),
+        "deliver_to": ("Musterkunde AG, Lager", cii.gln("299999999902"), ("80331", "Musterweg 7", "München", "DE")),
+        "endpoints": (("rechnung@musterlieferant.example", "EM"), ("einkauf@musterkunde.example", "EM")),
+        "reduced_rate": "7",
+        "timesheet": ("Timesheet", "timesheet.csv"),
+        "legal_id": "HRB 99999",
+        "country_name": "Deutschland",
+        "unit": "Stk",
+        "scheme_names": {"global": "GLN", "legal": "HRB", "endpoint": "EMAIL"},
+        "thanks": "Thank you for your order.",
     },
 }
 
@@ -514,6 +552,589 @@ def decimals(base):
     )
 
 
+SETTLEMENT = "//ram:ApplicableHeaderTradeSettlement"
+DOC_AC = f"{SETTLEMENT}/ram:SpecifiedTradeAllowanceCharge"
+EXEMPT_TAX = f"{SETTLEMENT}/ram:ApplicableTradeTax[ram:CategoryCode='E']"
+TAX_REP = "//ram:SellerTaxRepresentativeTradeParty"
+GTIN = cii.gln("200000000011")  # GS1's restricted circulation range: no product's number
+# A UNSPSC class (scheme TST in UNTDID 7143): "Non scientific vocational training services", in the UNGM UNSPSC
+# export (ungm.org/Public/UNSPSC, read 2026-11-23)
+CLASS_CODE = "86101700"
+TIMESHEET_CSV = base64.b64encode(b"date,hours\n2026-10-14,8\n2026-10-15,8\n").decode("ascii")
+
+
+def _previous(number):
+    """The number of the invoice before this one: its last digits minus one."""
+    head = number.rstrip("0123456789")
+    digits = number[len(head) :]
+    return f"{head}{int(digits) - 1:0{len(digits)}d}"
+
+
+def core(base):
+    """One invalid variant per core EN 16931 rule (BR-01 to BR-65) that a schema-valid Factur-X invoice can fail, built
+    on base. BR-12 to BR-15, BR-24, BR-31, BR-36, BR-41, BR-43, BR-47, BR-49 and BR-54 have none: they ask for an
+    element the Factur-X EN 16931 schema already requires. BR-33, BR-38, BR-42 and BR-44 fail in the examples of
+    BR-CO-21 to BR-CO-24, which say the same; BR-52 has its own (BR_52, below).
+
+    Many of these rules check data that a rule of the Factur-X EN 16931 profile (FX-SCH-A-…) also checks: it fails next
+    to them, and the variant names it."""
+    w, seller, buyer, lines = base["words"], base["seller"], base["buyer"], base["lines"]
+    rate = lines[0][4]
+    allowance = {"allowances": [("10.00", "95", w["allowance"], "S", rate)]}
+    charge = {"charges": [("10.00", "FC", w["charge"], "S", rate)]}
+    exempt = {"lines": [*lines, w["exempt_line"]]}
+    rep = add_tax_representative(*w["tax_representative"])
+    ship_name, ship_id, ship_address = w["deliver_to"]
+    gross = Decimal(lines[0][2]) + 50
+    seller_endpoint = {} if seller.get("endpoint") else {"seller": {**seller, "endpoint": w["endpoints"][0]}}
+    buyer_endpoint = {} if buyer.get("endpoint") else {"buyer": {**buyer, "endpoint": w["endpoints"][1]}}
+    no_country = lambda p: {**p, "address": (*p["address"][:3], "")}  # noqa: E731
+    return (
+        Variant(
+            "BR-01",
+            "BR-01",
+            ("BR-01",),
+            "The specification identifier (BT-24) is empty: the invoice does not say which rules it follows.",
+            "L'identifiant de spécification (BT-24) est vide : la facture ne dit pas quelles règles elle suit.",
+            {"profile": ""},
+        ),
+        Variant(
+            "BR-02",
+            "BR-02",
+            ("BR-02",),
+            "The invoice number (BT-1) is empty.",
+            "Le numéro de facture (BT-1) est vide.",
+            {"number": ""},
+        ),
+        Variant(
+            "BR-03",
+            "BR-03",
+            ("BR-03", "FX-SCH-A-000554"),
+            "The issue date (BT-2) is written as a date and time, in format 203, instead of a date in format 102 (the Factur-X profile rule FX-SCH-A-000554, which allows format 102 only, fails too).",
+            "La date d'émission (BT-2) est écrite comme une date et une heure, au format 203, et non comme une date au format 102 (la règle du profil Factur-X FX-SCH-A-000554, qui n'admet que le format 102, échoue aussi).",
+            {"issue_date": base["issue_date"] + "1430", "issue_date_format": "203"},
+        ),
+        Variant(
+            "BR-04",
+            "BR-04",
+            ("BR-04", "BR-CL-01"),
+            "The invoice type code (BT-3) is empty (BR-CL-01, on the list of type codes, fails too).",
+            "Le code type de document (BT-3) est vide (BR-CL-01, sur la liste des codes types, échoue aussi).",
+            {"type_code": ""},
+        ),
+        Variant(
+            "BR-05",
+            "BR-05",
+            ("BR-05", "BR-CL-03", "BR-CL-04"),
+            "The invoice currency code (BT-5) is empty, and so is the currency of the VAT total (BR-CL-03 and BR-CL-04, on the list of currency codes, fail too).",
+            "Le code de la devise de la facture (BT-5) est vide, comme la devise du total de TVA (BR-CL-03 et BR-CL-04, sur la liste des codes devises, échouent aussi).",
+            {"currency": ""},
+        ),
+        Variant(
+            "BR-06",
+            "BR-06",
+            ("BR-06",),
+            "The seller name (BT-27) is empty.",
+            "Le nom du vendeur (BT-27) est vide.",
+            {"seller": {**seller, "name": ""}},
+        ),
+        Variant(
+            "BR-07",
+            "BR-07",
+            ("BR-07",),
+            "The buyer name (BT-44) is empty.",
+            "Le nom de l'acheteur (BT-44) est vide.",
+            {"buyer": {**buyer, "name": ""}},
+        ),
+        Variant(
+            "BR-08",
+            "BR-08",
+            ("BR-08", "BR-09", "FX-SCH-A-000032"),
+            "The seller has no postal address (BG-5) (BR-09, which asks for its country code, and the Factur-X profile rule FX-SCH-A-000032 fail too).",
+            "Le vendeur n'a pas d'adresse postale (BG-5) (BR-09, qui en exige le code pays, et la règle du profil Factur-X FX-SCH-A-000032 échouent aussi).",
+            {"seller": {**seller, "address": None}},
+        ),
+        Variant(
+            "BR-09",
+            "BR-09",
+            ("BR-09", "BR-CL-14"),
+            "The country code of the seller's address (BT-40) is empty (BR-CL-14, on the list of country codes, fails too).",
+            "Le code pays de l'adresse du vendeur (BT-40) est vide (BR-CL-14, sur la liste des codes pays, échoue aussi).",
+            {"seller": no_country(seller)},
+        ),
+        Variant(
+            "BR-10",
+            "BR-10",
+            ("BR-10", "BR-11", "FX-SCH-A-000419"),
+            "The buyer has no postal address (BG-8) (BR-11, which asks for its country code, and the Factur-X profile rule FX-SCH-A-000419 fail too).",
+            "L'acheteur n'a pas d'adresse postale (BG-8) (BR-11, qui en exige le code pays, et la règle du profil Factur-X FX-SCH-A-000419 échouent aussi).",
+            {"buyer": {**buyer, "address": None}},
+        ),
+        Variant(
+            "BR-11",
+            "BR-11",
+            ("BR-11", "BR-CL-14"),
+            "The country code of the buyer's address (BT-55) is empty (BR-CL-14, on the list of country codes, fails too).",
+            "Le code pays de l'adresse de l'acheteur (BT-55) est vide (BR-CL-14, sur la liste des codes pays, échoue aussi).",
+            {"buyer": no_country(buyer)},
+        ),
+        Variant(
+            "BR-17",
+            "BR-17",
+            ("BR-17",),
+            "The seller is named again as payee (BG-10), with its own name (BT-59): a payee is only given when someone else is paid.",
+            "Le vendeur est repris comme bénéficiaire du paiement (BG-10), avec son propre nom (BT-59) : un bénéficiaire n'est indiqué que si quelqu'un d'autre est payé.",
+            edit=add_payee([], name=seller["name"]),
+        ),
+        Variant(
+            "BR-18",
+            "BR-18",
+            ("BR-18",),
+            "The seller's tax representative (BG-11) has an empty name (BT-62).",
+            "Le représentant fiscal du vendeur (BG-11) a un nom vide (BT-62).",
+            edit=edit_all(rep, set_value(f"{TAX_REP}/ram:Name", "")),
+            fixed=rep,
+        ),
+        Variant(
+            "BR-19",
+            "BR-19",
+            ("BR-19", "BR-20", "FX-SCH-A-000432"),
+            "The seller's tax representative (BG-11) has no postal address (BG-12) (BR-20, which asks for its country code, and the Factur-X profile rule FX-SCH-A-000432 fail too).",
+            "Le représentant fiscal du vendeur (BG-11) n'a pas d'adresse postale (BG-12) (BR-20, qui en exige le code pays, et la règle du profil Factur-X FX-SCH-A-000432 échouent aussi).",
+            edit=edit_all(rep, remove(f"{TAX_REP}/ram:PostalTradeAddress")),
+            fixed=rep,
+        ),
+        Variant(
+            "BR-20",
+            "BR-20",
+            ("BR-20", "BR-CL-14"),
+            "The country code of the tax representative's address (BT-69) is empty (BR-CL-14, on the list of country codes, fails too).",
+            "Le code pays de l'adresse du représentant fiscal (BT-69) est vide (BR-CL-14, sur la liste des codes pays, échoue aussi).",
+            edit=edit_all(rep, set_value(f"{TAX_REP}/ram:PostalTradeAddress/ram:CountryID", "")),
+            fixed=rep,
+        ),
+        Variant(
+            "BR-21",
+            "BR-21",
+            ("BR-21",),
+            "The first line's identifier (BT-126) is empty.",
+            "L'identifiant de la première ligne (BT-126) est vide.",
+            edit=set_value("//ram:AssociatedDocumentLineDocument/ram:LineID", ""),
+        ),
+        Variant(
+            "BR-25",
+            "BR-25",
+            ("BR-25",),
+            "The first line's item name (BT-153) is empty.",
+            "Le nom de l'article de la première ligne (BT-153) est vide.",
+            {"lines": [("", *lines[0][1:]), *lines[1:]]},
+        ),
+        Variant(
+            "BR-28",
+            "BR-28",
+            ("BR-28",),
+            "The first line's gross price (BT-148) is written with a minus sign; its price discount (BT-147) and net price (BT-146) are right.",
+            "Le prix brut de la première ligne (BT-148) est écrit avec un signe moins ; son rabais (BT-147) et son prix net (BT-146) sont justes.",
+            edit=gross_price(f"-{gross:.2f}", "50.00"),
+            fixed=gross_price(f"{gross:.2f}", "50.00"),
+        ),
+        Variant(
+            "BR-29",
+            "BR-29",
+            ("BR-29",),
+            "The invoicing period (BG-14) ends before it starts: its start (BT-73) and end (BT-74) dates are swapped.",
+            "La période de facturation (BG-14) finit avant de commencer : ses dates de début (BT-73) et de fin (BT-74) sont inversées.",
+            edit=billing_period("20261031", "20261001"),
+            fixed=billing_period("20261001", "20261031"),
+        ),
+        Variant(
+            "BR-30",
+            "BR-30",
+            ("BR-30",),
+            "The first line's period (BG-26) ends before it starts: its start (BT-134) and end (BT-135) dates are swapped.",
+            "La période de la première ligne (BG-26) finit avant de commencer : ses dates de début (BT-134) et de fin (BT-135) sont inversées.",
+            edit=billing_period("20261015", "20261014", where="SpecifiedLineTradeSettlement"),
+            fixed=billing_period("20261014", "20261015", where="SpecifiedLineTradeSettlement"),
+        ),
+        Variant(
+            "BR-32",
+            "BR-32",
+            ("BR-32", "BR-S-08", "FX-SCH-A-000185"),
+            "A document level allowance has no VAT category (BT-95), so it lowers no VAT breakdown (BR-S-08, on the standard rate's taxable amount, and the Factur-X profile rule FX-SCH-A-000185 fail too).",
+            "Une remise au niveau du document n'a pas de catégorie de TVA (BT-95) : elle ne réduit donc aucune ventilation de TVA (BR-S-08, sur la base du taux normal, et la règle du profil Factur-X FX-SCH-A-000185 échouent aussi).",
+            allowance,
+            edit=remove(f"{DOC_AC}/ram:CategoryTradeTax"),
+        ),
+        Variant(
+            "BR-37",
+            "BR-37",
+            ("BR-37", "BR-S-08", "FX-SCH-A-000479"),
+            "A document level charge has no VAT category (BT-102), so it adds to no VAT breakdown (BR-S-08, on the standard rate's taxable amount, and the Factur-X profile rule FX-SCH-A-000479 fail too).",
+            "Des frais au niveau du document n'ont pas de catégorie de TVA (BT-102) : ils ne s'ajoutent donc à aucune ventilation de TVA (BR-S-08, sur la base du taux normal, et la règle du profil Factur-X FX-SCH-A-000479 échouent aussi).",
+            charge,
+            edit=remove(f"{DOC_AC}/ram:CategoryTradeTax"),
+        ),
+        Variant(
+            "BR-45",
+            "BR-45",
+            ("BR-45", "BR-E-08", "FX-SCH-A-000177"),
+            "The VAT breakdown of the exempt line (category E) has no taxable amount (BT-116) (BR-E-08, on that amount, and the Factur-X profile rule FX-SCH-A-000177 fail too).",
+            "La ventilation de TVA de la ligne exonérée (catégorie E) n'a pas de base (BT-116) (BR-E-08, sur ce montant, et la règle du profil Factur-X FX-SCH-A-000177 échouent aussi).",
+            exempt,
+            edit=remove(f"{EXEMPT_TAX}/ram:BasisAmount"),
+        ),
+        Variant(
+            "BR-46",
+            "BR-46",
+            ("BR-46", "BR-CO-17", "BR-E-09", "FX-SCH-A-000176"),
+            "The VAT breakdown of the exempt line (category E) has no VAT amount (BT-117), although it is 0 (BR-CO-17 and BR-E-09, on that amount, and the Factur-X profile rule FX-SCH-A-000176 fail too).",
+            "La ventilation de TVA de la ligne exonérée (catégorie E) n'a pas de montant de TVA (BT-117), bien qu'il soit nul (BR-CO-17 et BR-E-09, sur ce montant, et la règle du profil Factur-X FX-SCH-A-000176 échouent aussi).",
+            exempt,
+            edit=remove(f"{EXEMPT_TAX}/ram:CalculatedAmount"),
+        ),
+        Variant(
+            "BR-48",
+            "BR-48",
+            ("BR-48",),
+            "The VAT breakdown of the exempt line (category E) has no VAT rate (BT-119): an exempt category still gives its rate, 0.",
+            "La ventilation de TVA de la ligne exonérée (catégorie E) n'a pas de taux de TVA (BT-119) : une catégorie exonérée indique quand même son taux, 0.",
+            exempt,
+            edit=remove(f"{EXEMPT_TAX}/ram:RateApplicablePercent"),
+        ),
+        Variant(
+            "BR-50",
+            "BR-50",
+            ("BR-50",),
+            "The payment account identifier (BT-84), the IBAN of the credit transfer, is empty.",
+            "L'identifiant du compte de paiement (BT-84), l'IBAN du virement, est vide.",
+            edit=set_value("//ram:PayeePartyCreditorFinancialAccount/ram:IBANID", ""),
+        ),
+        Variant(
+            "BR-51",
+            "BR-51",
+            ("BR-51",),
+            "The invoice gives the payment card's full number (BT-87); the rule allows 10 characters at most, such as the last 4 digits.",
+            "La facture indique le numéro complet de la carte de paiement (BT-87) ; la règle n'admet que 10 caractères au plus, par exemple les 4 derniers chiffres.",
+            {"payment_code": "54", "iban": None, "bic": None},
+            edit=add_card("4111111111111111"),
+            fixed=add_card("1111"),
+        ),
+        Variant(
+            "BR-53",
+            "BR-53",
+            ("BR-53",),
+            f"The invoice names a VAT accounting currency (BT-6), {base['currency']}, which is its own currency (BT-5): the rule wants another currency, and the VAT total in it (BT-111).",
+            f"La facture indique une devise de comptabilisation de la TVA (BT-6), {base['currency']}, qui est sa propre devise (BT-5) : la règle attend une autre devise, et le total de TVA dans cette devise (BT-111).",
+            edit=add_tax_currency(base["currency"]),
+        ),
+        Variant(
+            "BR-55",
+            "BR-55",
+            ("BR-55",),
+            "The invoice refers to a preceding invoice (BG-3) whose reference (BT-25) is empty.",
+            "La facture fait référence à une facture antérieure (BG-3) dont la référence (BT-25) est vide.",
+            edit=add_invoice_reference(""),
+            fixed=add_invoice_reference(_previous(base["number"])),
+        ),
+        Variant(
+            "BR-56",
+            "BR-56",
+            ("BR-56", "FX-SCH-A-000169"),
+            "The seller's tax representative (BG-11) has no VAT identifier (BT-63) (the Factur-X profile rule FX-SCH-A-000169, which asks for it too, fails too).",
+            "Le représentant fiscal du vendeur (BG-11) n'a pas de numéro de TVA (BT-63) (la règle du profil Factur-X FX-SCH-A-000169, qui l'exige aussi, échoue aussi).",
+            edit=edit_all(rep, remove(f"{TAX_REP}/ram:SpecifiedTaxRegistration")),
+            fixed=rep,
+        ),
+        Variant(
+            "BR-57",
+            "BR-57",
+            ("BR-57", "BR-CL-14"),
+            "The country code of the deliver-to address (BT-80) is empty (BR-CL-14, on the list of country codes, fails too).",
+            "Le code pays de l'adresse de livraison (BT-80) est vide (BR-CL-14, sur la liste des codes pays, échoue aussi).",
+            edit=add_ship_to([(ship_id, "0088")], ship_name, (*ship_address[:3], "")),
+            fixed=add_ship_to([(ship_id, "0088")], ship_name, ship_address),
+        ),
+        Variant(
+            "BR-61",
+            "BR-61",
+            ("BR-50", "BR-61", "CII-SR-470"),
+            "The credit transfer's account gives the account name (BT-85) but no IBAN or other account identifier (BT-84) (BR-50 and the CII syntax rule CII-SR-470, on the same identifier, fail too).",
+            "Le compte du virement indique le nom du compte (BT-85) mais ni IBAN ni autre identifiant de compte (BT-84) (BR-50 et la règle de syntaxe CII CII-SR-470, sur le même identifiant, échouent aussi).",
+            edit=account_name_only(seller["name"]),
+        ),
+        Variant(
+            "BR-62",
+            "BR-62",
+            ("BR-62", "FX-SCH-A-000446"),
+            "The seller's electronic address (BT-34) has no scheme identifier (BT-34-1) (the Factur-X profile rule FX-SCH-A-000446, which asks for it too, fails too).",
+            "L'adresse électronique du vendeur (BT-34) n'a pas d'identifiant de schéma (BT-34-1) (la règle du profil Factur-X FX-SCH-A-000446, qui l'exige aussi, échoue aussi).",
+            seller_endpoint,
+            edit=set_attribute("//ram:SellerTradeParty/ram:URIUniversalCommunication/ram:URIID", "schemeID", None),
+        ),
+        Variant(
+            "BR-63",
+            "BR-63",
+            ("BR-63", "FX-SCH-A-000428"),
+            "The buyer's electronic address (BT-49) has no scheme identifier (BT-49-1) (the Factur-X profile rule FX-SCH-A-000428, which asks for it too, fails too).",
+            "L'adresse électronique de l'acheteur (BT-49) n'a pas d'identifiant de schéma (BT-49-1) (la règle du profil Factur-X FX-SCH-A-000428, qui l'exige aussi, échoue aussi).",
+            buyer_endpoint,
+            edit=set_attribute("//ram:BuyerTradeParty/ram:URIUniversalCommunication/ram:URIID", "schemeID", None),
+        ),
+        Variant(
+            "BR-64",
+            "BR-64",
+            ("BR-64", "CII-SR-046", "FX-SCH-A-000551"),
+            "The first line's item standard identifier (BT-157), a GTIN, has no scheme identifier (BT-157-1) (the CII syntax rule CII-SR-046 and the Factur-X profile rule FX-SCH-A-000551, which ask for it too, fail too).",
+            "L'identifiant standard de l'article de la première ligne (BT-157), un GTIN, n'a pas d'identifiant de schéma (BT-157-1) (la règle de syntaxe CII CII-SR-046 et la règle du profil Factur-X FX-SCH-A-000551, qui l'exigent aussi, échouent aussi).",
+            edit=add_product_id(GTIN, None),
+            fixed=add_product_id(GTIN, "0160"),
+        ),
+        Variant(
+            "BR-65",
+            "BR-65",
+            ("BR-65", "FX-SCH-A-000296"),
+            "The first line's item classification identifier (BT-158) has no scheme identifier (BT-158-1) (the Factur-X profile rule FX-SCH-A-000296, which asks for it too, fails too).",
+            "L'identifiant de classification de l'article de la première ligne (BT-158) n'a pas d'identifiant de schéma (BT-158-1) (la règle du profil Factur-X FX-SCH-A-000296, qui l'exige aussi, échoue aussi).",
+            edit=add_classification(CLASS_CODE, None),
+            fixed=add_classification(CLASS_CODE, "TST"),
+        ),
+    )
+
+
+def code_lists(base):
+    """One invalid variant per EN 16931 code list rule (BR-CL), built on base: a value that is not in the rule's list,
+    often a word or a name where the list has a code. The Factur-X EN 16931 profile checks the same lists: its rule
+    (FX-SCH-A-…) fails next to each, and the variant names it. BR-CL-03, on an amount's currency, fails in the examples
+    of BR-CL-04 and BR-CL-05."""
+    w, seller, buyer, lines = base["words"], base["seller"], base["buyer"], base["lines"]
+    rate, names = lines[0][4], w["scheme_names"]
+    allowance = {"allowances": [("10.00", "95", w["allowance"], "S", rate)]}
+    charge = {"charges": [("10.00", "FC", w["charge"], "S", rate)]}
+    dollars = {"currency": "USD", "tax_currency": ("EUR", "0.9216")}
+    reduced = w["reduced_rate"]
+    second = (*lines[1][:3], "S", reduced)
+    ship_name, ship_id, _ = w["deliver_to"]
+    global_scheme = seller["global_id"][1]
+    legal = {} if seller.get("legal_id") else {"seller": {**seller, "legal_id": (w["legal_id"], None)}}
+    endpoint = {} if seller.get("endpoint") else {"seller": {**seller, "endpoint": w["endpoints"][0]}}
+    endpoint_scheme = (seller.get("endpoint") or w["endpoints"][0])[1]
+    buyer_country = buyer["address"][3]
+    due_type = {} if base["due_date_type"] else {"due_date_type": "5"}
+    document, filename = w["timesheet"]
+    return (
+        Variant(
+            "BR-CL-01",
+            "BR-CL-01",
+            ("BR-CL-01", "FX-SCH-A-000555"),
+            f"The invoice type code (BT-3) is INV, a word instead of a code from the UNTDID 1001 list such as {base['type_code']} (the Factur-X profile rule FX-SCH-A-000555, on the same list, fails too).",
+            f"Le code type de document (BT-3) est INV, un mot au lieu d'un code de la liste UNTDID 1001 comme {base['type_code']} (la règle du profil Factur-X FX-SCH-A-000555, sur la même liste, échoue aussi).",
+            {"type_code": "INV"},
+        ),
+        Variant(
+            "BR-CL-04",
+            "BR-CL-04",
+            ("BR-CL-03", "BR-CL-04", "FX-SCH-A-000595", "FX-SCH-A-000606"),
+            f"The invoice currency (BT-5) is written EURO instead of the ISO 4217 code {base['currency']}, and so is the VAT total's currency (BR-CL-03, the same check on an amount's currency, and the Factur-X profile rules FX-SCH-A-000595 and FX-SCH-A-000606 fail too).",
+            f"La devise de la facture (BT-5) est écrite EURO au lieu du code ISO 4217 {base['currency']}, comme la devise du total de TVA (BR-CL-03, le même contrôle sur la devise d'un montant, et les règles du profil Factur-X FX-SCH-A-000595 et FX-SCH-A-000606 échouent aussi).",
+            {"currency": "EURO"},
+        ),
+        Variant(
+            "BR-CL-05",
+            "BR-CL-05",
+            ("BR-CL-03", "BR-CL-05", "FX-SCH-A-000607", "FX-SCH-A-000610"),
+            "The invoice is in US dollars; its VAT accounting currency (BT-6) is written EURO instead of the ISO 4217 code EUR, and so is the currency of its VAT total in that currency (BR-CL-03, the same check on an amount's currency, and the Factur-X profile rules FX-SCH-A-000607 and FX-SCH-A-000610 fail too).",
+            "La facture est en dollars américains ; sa devise de comptabilisation de la TVA (BT-6) est écrite EURO au lieu du code ISO 4217 EUR, comme la devise de son total de TVA dans cette devise (BR-CL-03, le même contrôle sur la devise d'un montant, et les règles du profil Factur-X FX-SCH-A-000607 et FX-SCH-A-000610 échouent aussi).",
+            dollars,
+            edit=edit_all(
+                set_value(f"{SETTLEMENT}/ram:TaxCurrencyCode", "EURO"),
+                set_attribute("//ram:TaxTotalAmount[@currencyID='EUR']", "currencyID", "EURO"),
+            ),
+        ),
+        Variant(
+            "BR-CL-06",
+            "BR-CL-06",
+            ("BR-CL-06", "FX-SCH-A-000588"),
+            "The VAT point date code (BT-8) is 35, a code of the UBL syntax: CII uses 5, 29 or 72 (the Factur-X profile rule FX-SCH-A-000588, on the same list, fails too).",
+            "Le code de date d'exigibilité de la TVA (BT-8) est 35, un code de la syntaxe UBL : CII utilise 5, 29 ou 72 (la règle du profil Factur-X FX-SCH-A-000588, sur la même liste, échoue aussi).",
+            due_type,
+            edit=set_value(f"{SETTLEMENT}/ram:ApplicableTradeTax/ram:DueDateTypeCode", "35"),
+        ),
+        Variant(
+            "BR-CL-07",
+            "BR-CL-07",
+            ("BR-CL-07", "FX-SCH-A-000282"),
+            "The scheme of the invoiced object identifier (BT-18-1) is ORDER, a word instead of a code from the UNTDID 1153 list (the Factur-X profile rule FX-SCH-A-000282, on the same list, fails too).",
+            "Le schéma de l'identifiant de l'objet facturé (BT-18-1) est ORDER, un mot au lieu d'un code de la liste UNTDID 1153 (la règle du profil Factur-X FX-SCH-A-000282, sur la même liste, échoue aussi).",
+            edit=add_documents(("FA-2026-07", "130", None, "ORDER")),
+            fixed=add_documents(("FA-2026-07", "130", None, "AVV")),  # AVV: a framework agreement number
+        ),
+        Variant(
+            "BR-CL-08",
+            "BR-CL-08",
+            ("BR-CL-08", "FX-SCH-A-000553"),
+            "A note's subject code (BT-21) is INFO, a word instead of a code from the UNCL 4451 list (the Factur-X profile rule FX-SCH-A-000553, on the same list, fails too).",
+            "Le code sujet d'une note (BT-21) est INFO, un mot au lieu d'un code de la liste UNCL 4451 (la règle du profil Factur-X FX-SCH-A-000553, sur la même liste, échoue aussi).",
+            edit=add_note("INFO", w["thanks"]),
+            fixed=add_note("AAI", w["thanks"]),
+        ),
+        Variant(
+            "BR-CL-10",
+            "BR-CL-10",
+            ("BR-CL-10", "FX-SCH-A-000579"),
+            f"The scheme of the seller identifier (BT-29-1) is written {names['global']} instead of its ISO 6523 code, {global_scheme} (the Factur-X profile rule FX-SCH-A-000579, on the same list, fails too).",
+            f"Le schéma de l'identifiant du vendeur (BT-29-1) est écrit {names['global']} au lieu de son code ISO 6523, {global_scheme} (la règle du profil Factur-X FX-SCH-A-000579, sur la même liste, échoue aussi).",
+            edit=set_attribute("//ram:SellerTradeParty/ram:GlobalID", "schemeID", names["global"]),
+        ),
+        Variant(
+            "BR-CL-11",
+            "BR-CL-11",
+            ("BR-CL-11", "FX-SCH-A-000581"),
+            f"The scheme of the seller's legal registration identifier (BT-30-1) is written {names['legal']}, a name instead of an ISO 6523 code (the Factur-X profile rule FX-SCH-A-000581, on the same list, fails too).",
+            f"Le schéma de l'identifiant d'immatriculation légale du vendeur (BT-30-1) est écrit {names['legal']}, un nom au lieu d'un code ISO 6523 (la règle du profil Factur-X FX-SCH-A-000581, sur la même liste, échoue aussi).",
+            legal,
+            edit=set_attribute(
+                "//ram:SellerTradeParty/ram:SpecifiedLegalOrganization/ram:ID", "schemeID", names["legal"]
+            ),
+        ),
+        Variant(
+            "BR-CL-13",
+            "BR-CL-13",
+            ("BR-CL-13", "FX-SCH-A-000297"),
+            "The scheme of the first line's item classification (BT-158-1) is written UNSPSC instead of its UNTDID 7143 code, TST (the Factur-X profile rule FX-SCH-A-000297, on the same list, fails too).",
+            "Le schéma de la classification de l'article de la première ligne (BT-158-1) est écrit UNSPSC au lieu de son code UNTDID 7143, TST (la règle du profil Factur-X FX-SCH-A-000297, sur la même liste, échoue aussi).",
+            edit=add_classification(CLASS_CODE, "UNSPSC"),
+            fixed=add_classification(CLASS_CODE, "TST"),
+        ),
+        Variant(
+            "BR-CL-14",
+            "BR-CL-14",
+            ("BR-CL-14", "FX-SCH-A-000568"),
+            f"The buyer's country (BT-55) is written {w['country_name']} instead of the ISO 3166-1 code {buyer_country} (the Factur-X profile rule FX-SCH-A-000568, on the same list, fails too).",
+            f"Le pays de l'acheteur (BT-55) est écrit {w['country_name']} au lieu du code ISO 3166-1 {buyer_country} (la règle du profil Factur-X FX-SCH-A-000568, sur la même liste, échoue aussi).",
+            {"buyer": {**buyer, "address": (*buyer["address"][:3], w["country_name"])}},
+        ),
+        Variant(
+            "BR-CL-15",
+            "BR-CL-15",
+            ("BR-CL-15", "FX-SCH-A-000628"),
+            f"The first line's item country of origin (BT-159) is written {w['country_name']} instead of the ISO 3166-1 code {buyer_country} (the Factur-X profile rule FX-SCH-A-000628, on the same list, fails too).",
+            f"Le pays d'origine de l'article de la première ligne (BT-159) est écrit {w['country_name']} au lieu du code ISO 3166-1 {buyer_country} (la règle du profil Factur-X FX-SCH-A-000628, sur la même liste, échoue aussi).",
+            edit=add_origin(w["country_name"]),
+            fixed=add_origin(buyer_country),
+        ),
+        Variant(
+            "BR-CL-16",
+            "BR-CL-16",
+            ("BR-CL-16", "FX-SCH-A-000609"),
+            f"The payment means code (BT-81) is SEPA, a word instead of a code from the UNCL 4461 list such as {base['payment_code']} (the Factur-X profile rule FX-SCH-A-000609, on the same list, fails too).",
+            f"Le code du moyen de paiement (BT-81) est SEPA, un mot au lieu d'un code de la liste UNCL 4461 comme {base['payment_code']} (la règle du profil Factur-X FX-SCH-A-000609, sur la même liste, échoue aussi).",
+            {"payment_code": "SEPA"},
+        ),
+        Variant(
+            "BR-CL-17",
+            "BR-CL-17",
+            ("BR-CL-17", "BR-S-08", "FX-SCH-A-000599"),
+            "A document level allowance's VAT category code (BT-95) is VAT, the tax type, instead of a category such as S, so the allowance lowers no VAT breakdown (BR-S-08, on the standard rate's taxable amount, and the Factur-X profile rule FX-SCH-A-000599 fail too).",
+            "Le code de catégorie de TVA d'une remise au niveau du document (BT-95) est VAT, le type de taxe, au lieu d'une catégorie comme S : la remise ne réduit donc aucune ventilation de TVA (BR-S-08, sur la base du taux normal, et la règle du profil Factur-X FX-SCH-A-000599 échouent aussi).",
+            allowance,
+            edit=set_value(f"{DOC_AC}/ram:CategoryTradeTax/ram:CategoryCode", "VAT"),
+        ),
+        Variant(
+            "BR-CL-18",
+            "BR-CL-18",
+            ("BR-CL-18", "FX-SCH-A-000587", "FX-SCH-A-000619"),
+            f"The second line, at the reduced rate of {reduced} %, has the VAT category code AA, a UNCL 5305 code for a lower rate that EN 16931 does not use; its category S accepts any rate above zero (the Factur-X profile rules FX-SCH-A-000587 and FX-SCH-A-000619, on the same list, fail too).",
+            f"La deuxième ligne, au taux réduit de {reduced} %, a le code de catégorie de TVA AA, un code de la liste UNCL 5305 pour un taux réduit qu'EN 16931 n'utilise pas ; sa catégorie S admet tout taux supérieur à zéro (les règles du profil Factur-X FX-SCH-A-000587 et FX-SCH-A-000619, sur la même liste, échouent aussi).",
+            {"lines": [lines[0], second]},
+            edit=edit_all(
+                set_value("(//ram:IncludedSupplyChainTradeLineItem)[2]//ram:CategoryCode", "AA"),
+                set_value(
+                    f"{SETTLEMENT}/ram:ApplicableTradeTax[ram:RateApplicablePercent='{reduced}']/ram:CategoryCode", "AA"
+                ),
+            ),
+        ),
+        Variant(
+            "BR-CL-19",
+            "BR-CL-19",
+            ("BR-CL-19", "FX-SCH-A-000601"),
+            f"A document level allowance's reason code (BT-98) is its reason's text, {w['allowance']}, instead of a code from the UNCL 5189 list (the Factur-X profile rule FX-SCH-A-000601, on the same list, fails too).",
+            f"Le code motif d'une remise au niveau du document (BT-98) est le texte de son motif, {w['allowance']}, au lieu d'un code de la liste UNCL 5189 (la règle du profil Factur-X FX-SCH-A-000601, sur la même liste, échoue aussi).",
+            allowance,
+            edit=set_value(f"{DOC_AC}/ram:ReasonCode", w["allowance"]),
+        ),
+        Variant(
+            "BR-CL-20",
+            "BR-CL-20",
+            ("BR-CL-20", "FX-SCH-A-000604"),
+            f"A document level charge's reason code (BT-105) is its reason's text, {w['charge']}, instead of a code from the UNCL 7161 list (the Factur-X profile rule FX-SCH-A-000604, on the same list, fails too).",
+            f"Le code motif de frais au niveau du document (BT-105) est le texte de leur motif, {w['charge']}, au lieu d'un code de la liste UNCL 7161 (la règle du profil Factur-X FX-SCH-A-000604, sur la même liste, échoue aussi).",
+            charge,
+            edit=set_value(f"{DOC_AC}/ram:ReasonCode", w["charge"]),
+        ),
+        Variant(
+            "BR-CL-21",
+            "BR-CL-21",
+            ("BR-CL-21", "FX-SCH-A-000626"),
+            "The scheme of the first line's item standard identifier (BT-157-1), a GTIN, is written EAN instead of its ISO 6523 code, 0160 (the Factur-X profile rule FX-SCH-A-000626, on the same list, fails too).",
+            "Le schéma de l'identifiant standard de l'article de la première ligne (BT-157-1), un GTIN, est écrit EAN au lieu de son code ISO 6523, 0160 (la règle du profil Factur-X FX-SCH-A-000626, sur la même liste, échoue aussi).",
+            edit=add_product_id(GTIN, "EAN"),
+            fixed=add_product_id(GTIN, "0160"),
+        ),
+        Variant(
+            "BR-CL-22",
+            "BR-CL-22",
+            ("BR-CL-22", "FX-SCH-A-000589"),
+            "The exemption reason code of the exempt line's VAT breakdown (BT-121) is VATEX-EU-132-1, cut short: the VATEX list has VATEX-EU-132 and VATEX-EU-132-1A to VATEX-EU-132-1Q (the Factur-X profile rule FX-SCH-A-000589, on the same list, fails too).",
+            "Le code motif d'exonération de la ventilation de TVA de la ligne exonérée (BT-121) est VATEX-EU-132-1, tronqué : la liste VATEX a VATEX-EU-132 et VATEX-EU-132-1A à VATEX-EU-132-1Q (la règle du profil Factur-X FX-SCH-A-000589, sur la même liste, échoue aussi).",
+            {"lines": [*lines, w["exempt_line"]]},
+            edit=lambda root: _exemption_code(root, "VATEX-EU-132-1"),
+        ),
+        Variant(
+            "BR-CL-23",
+            "BR-CL-23",
+            ("BR-CL-23", "FX-SCH-A-000613"),
+            f"The first line's unit of measure code (BT-130) is {w['unit']}, an abbreviation instead of a code from UN/ECE Recommendation 20, such as C62 (the Factur-X profile rule FX-SCH-A-000613, on the same list, fails too).",
+            f"Le code d'unité de mesure de la première ligne (BT-130) est {w['unit']}, une abréviation au lieu d'un code de la recommandation 20 de la CEE-ONU, comme C62 (la règle du profil Factur-X FX-SCH-A-000613, sur la même liste, échoue aussi).",
+            edit=set_attribute("(//ram:BilledQuantity)[1]", "unitCode", w["unit"]),
+        ),
+        Variant(
+            "BR-CL-24",
+            "BR-CL-24",
+            ("BR-CL-24", "FX-SCH-A-000287"),
+            "A supporting document's attached file (BT-125), a CSV file, has the MIME code text/plain, which the rule does not allow; text/csv is allowed (the Factur-X profile rule FX-SCH-A-000287, on the same list, fails too).",
+            "Le fichier joint d'un justificatif (BT-125), un fichier CSV, a le code MIME text/plain, que la règle n'admet pas ; text/csv est admis (la règle du profil Factur-X FX-SCH-A-000287, sur la même liste, échoue aussi).",
+            edit=add_attachment("TS-2026-10", document, filename, "text/plain", TIMESHEET_CSV),
+            fixed=add_attachment("TS-2026-10", document, filename, "text/csv", TIMESHEET_CSV),
+        ),
+        Variant(
+            "BR-CL-25",
+            "BR-CL-25",
+            ("BR-CL-25", "FX-SCH-A-000582"),
+            f"The scheme of the seller's electronic address (BT-34-1) is written {names['endpoint']} instead of its EAS code, {endpoint_scheme} (the Factur-X profile rule FX-SCH-A-000582, on the same list, fails too).",
+            f"Le schéma de l'adresse électronique du vendeur (BT-34-1) est écrit {names['endpoint']} au lieu de son code EAS, {endpoint_scheme} (la règle du profil Factur-X FX-SCH-A-000582, sur la même liste, échoue aussi).",
+            endpoint,
+            edit=set_attribute(
+                "//ram:SellerTradeParty/ram:URIUniversalCommunication/ram:URIID", "schemeID", names["endpoint"]
+            ),
+        ),
+        Variant(
+            "BR-CL-26",
+            "BR-CL-26",
+            ("BR-CL-26", "FX-SCH-A-000585"),
+            "The scheme of the deliver-to location identifier (BT-71-1), a GLN, is written GLN instead of its ISO 6523 code, 0088 (the Factur-X profile rule FX-SCH-A-000585, on the same list, fails too).",
+            "Le schéma de l'identifiant du lieu de livraison (BT-71-1), un GLN, est écrit GLN au lieu de son code ISO 6523, 0088 (la règle du profil Factur-X FX-SCH-A-000585, sur la même liste, échoue aussi).",
+            edit=add_ship_to([(ship_id, "GLN")], ship_name),
+            fixed=add_ship_to([(ship_id, "0088")], ship_name),
+        ),
+    )
+
+
+def _exemption_code(root, code):
+    """Give the exempt category's VAT breakdown an exemption reason code (BT-121), after its category code."""
+    for tax in root.xpath(EXEMPT_TAX, namespaces=cii.NS):
+        insert(tax, new("ram:ExemptionReasonCode", code), after="CategoryCode")
+
+
 # The fr target's example of BR-52 is an invoiced object identifier (BT-18) under a French rule's name, BR-FR-29: this
 # one is the case any invoice can have, a supporting document. Its fixed counterpart gives the reference.
 BR_52 = Variant(
@@ -526,7 +1147,7 @@ BR_52 = Variant(
     fixed=add_documents(("TS-2026-10", "916", "Timesheet", None)),
 )
 
-VARIANTS = (*variants(GERMAN), BR_52, *decimals(GERMAN))
+VARIANTS = (*variants(GERMAN), BR_52, *decimals(GERMAN), *core(GERMAN), *code_lists(GERMAN))
 
 
 def build(variant=None):

@@ -135,6 +135,24 @@ FRENCH = {
         "loyalty_allowance": "Remise fidélité",
         "line_charge": "Emballage",
         "exempt_line": ("Formation professionnelle continue", "1", "300.00", "E", "0"),
+        "tax_representative": (
+            "Représentation Fiscale Exemple",
+            vat_fr(luhn_complete("06543210")),
+            ("75008", "8 rue de l'Exemple", "Paris", "FR"),
+        ),
+        "deliver_to": (
+            "Commune d'Exemple, entrepôt",
+            gln("200000000003"),
+            ("69002", "2 rue de l'Exemple", "Lyon", "FR"),
+        ),
+        "endpoints": ((SELLER_SIREN, "0225"), (BUYER_SIREN, "0225")),
+        "reduced_rate": "5.5",
+        "timesheet": ("DOCUMENT_ANNEXE", "feuille-de-temps.csv"),  # BT-123: a code from the French list (BR-FR-17)
+        "legal_id": SELLER_SIREN,
+        "country_name": "France",
+        "unit": "U",
+        "scheme_names": {"global": "SIRET", "legal": "SIREN", "endpoint": "SIREN"},
+        "thanks": "Merci pour votre commande.",
     },
 }
 
@@ -155,23 +173,29 @@ def date(parent, tag, value, fmt="102", ns="udt"):
     el(el(parent, tag), f"{ns}:DateTimeString", value, format=fmt)
 
 
+def _scheme(scheme):
+    """The schemeID attribute, or none when the scheme is None (an identifier written without its scheme)."""
+    return {"schemeID": scheme} if scheme is not None else {}
+
+
 def party(parent, tag, p):
     node = el(parent, tag)
     if p.get("global_id"):
-        el(node, "ram:GlobalID", p["global_id"][0], schemeID=p["global_id"][1])
+        el(node, "ram:GlobalID", p["global_id"][0], **_scheme(p["global_id"][1]))
     el(node, "ram:Name", p["name"])
     if p.get("legal_id"):
-        el(el(node, "ram:SpecifiedLegalOrganization"), "ram:ID", p["legal_id"][0], schemeID=p["legal_id"][1])
+        el(el(node, "ram:SpecifiedLegalOrganization"), "ram:ID", p["legal_id"][0], **_scheme(p["legal_id"][1]))
     if p.get("department"):
         el(el(node, "ram:DefinedTradeContact"), "ram:DepartmentName", p["department"])
-    addr = el(node, "ram:PostalTradeAddress")
-    postcode, line, city, country = p["address"]
-    el(addr, "ram:PostcodeCode", postcode)
-    el(addr, "ram:LineOne", line)
-    el(addr, "ram:CityName", city)
-    el(addr, "ram:CountryID", country)
+    if p.get("address"):
+        addr = el(node, "ram:PostalTradeAddress")
+        postcode, line, city, country = p["address"]
+        el(addr, "ram:PostcodeCode", postcode)
+        el(addr, "ram:LineOne", line)
+        el(addr, "ram:CityName", city)
+        el(addr, "ram:CountryID", country)
     if p.get("endpoint"):
-        el(el(node, "ram:URIUniversalCommunication"), "ram:URIID", p["endpoint"][0], schemeID=p["endpoint"][1])
+        el(el(node, "ram:URIUniversalCommunication"), "ram:URIID", p["endpoint"][0], **_scheme(p["endpoint"][1]))
     if p.get("vat"):
         el(el(node, "ram:SpecifiedTaxRegistration"), "ram:ID", p["vat"], schemeID="VA")
     return node

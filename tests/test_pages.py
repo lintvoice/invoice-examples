@@ -84,6 +84,8 @@ def test_the_document_type_title_shows_the_changed_type():
 
 def test_an_element_without_a_business_term_stops_the_page():
     """A new example whose mistake sits in an element the table does not name cannot silently show nothing."""
-    variant = next(v for v in en16931.VARIANTS if v.id == "BR-27")  # adds a line: its line identifier has no entry
-    with pytest.raises(ValueError, match="AssociatedDocumentLineDocument/LineID"):
-        differences(cii.to_bytes(en16931.build(variant)), cii.to_bytes(en16931.build()))
+    root = en16931.build()
+    line = root.find(".//{*}AssociatedDocumentLineDocument")
+    cii.el(cii.el(line, "ram:IncludedNote"), "ram:Content", "Delivered in two parts")  # a line note, BT-127: no entry
+    with pytest.raises(ValueError, match="AssociatedDocumentLineDocument/IncludedNote/Content"):
+        differences(cii.to_bytes(root), cii.to_bytes(en16931.build()))

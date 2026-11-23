@@ -78,7 +78,83 @@ def _with_french_rules(v):
             en="A discount is typed as a line with a negative net price (BT-146) instead of a document level allowance (BR-FR-DEC-03, which wants a positive price outside the billing frames S9, M9 and B9, fails too).",
             fr="Une remise est saisie comme une ligne au prix net négatif (BT-146) au lieu d'une remise au niveau du document (BR-FR-DEC-03, qui exige un prix positif hors des cadres de facturation S9, M9 et B9, échoue aussi).",
         )
+    if v.id in FRENCH_ALSO:
+        fires, en, fr = FRENCH_ALSO[v.id]
+        return dataclasses.replace(v, fires=(*v.fires, *fires), en=en, fr=fr)
     return v
+
+
+# The core and code list variants (en16931.core, en16931.code_lists) where a French rule fails next to the EN 16931
+# one, on the same data: the French rules it adds, and the description that names them.
+FR_02 = (
+    "France's BR-FR-02, on the characters of a number",
+    "la règle française BR-FR-02, sur les caractères d'un numéro",
+)
+FR_04 = (
+    "France's BR-FR-04, on its own list of type codes",
+    "la règle française BR-FR-04, sur sa propre liste de codes types",
+)
+FR_CO_12 = (
+    "France's BR-FR-CO-12, which asks an invoice in another currency than EUR for its VAT in euros",
+    "la règle française BR-FR-CO-12, qui demande à une facture dans une autre devise que EUR sa TVA en euros",
+)
+FRENCH_ALSO = {
+    "BR-02": (
+        ("BR-FR-02_BT-1",),
+        f"The invoice number (BT-1) is empty ({FR_02[0]}, fails too).",
+        f"Le numéro de facture (BT-1) est vide ({FR_02[1]}, échoue aussi).",
+    ),
+    "BR-04": (
+        ("BR-FR-04_BT-3",),
+        f"The invoice type code (BT-3) is empty (BR-CL-01, on the list of type codes, and {FR_04[0]}, fail too).",
+        f"Le code type de document (BT-3) est vide (BR-CL-01, sur la liste des codes types, et {FR_04[1]}, échouent aussi).",
+    ),
+    "BR-05": (
+        ("BR-FR-CO-12_BT-5",),
+        f"The invoice currency code (BT-5) is empty, and so is the currency of the VAT total (BR-CL-03 and BR-CL-04, on the list of currency codes, and {FR_CO_12[0]}, fail too).",
+        f"Le code de la devise de la facture (BT-5) est vide, comme la devise du total de TVA (BR-CL-03 et BR-CL-04, sur la liste des codes devises, et {FR_CO_12[1]}, échouent aussi).",
+    ),
+    "BR-28": (
+        ("BR-FR-DEC-03_BT-148",),
+        "The first line's gross price (BT-148) is written with a minus sign; its price discount (BT-147) and net price (BT-146) are right (France's BR-FR-DEC-03, which wants a positive price outside the billing frames S9, M9 and B9, fails too).",
+        "Le prix brut de la première ligne (BT-148) est écrit avec un signe moins ; son rabais (BT-147) et son prix net (BT-146) sont justes (la règle française BR-FR-DEC-03, qui exige un prix positif hors des cadres de facturation S9, M9 et B9, échoue aussi).",
+    ),
+    "BR-55": (
+        ("BR-FR-02_BT-25",),
+        f"The invoice refers to a preceding invoice (BG-3) whose reference (BT-25) is empty ({FR_02[0]}, fails too).",
+        f"La facture fait référence à une facture antérieure (BG-3) dont la référence (BT-25) est vide ({FR_02[1]}, échoue aussi).",
+    ),
+    "BR-CL-01": (
+        ("BR-FR-04_BT-3",),
+        f"The invoice type code (BT-3) is INV, a word instead of a code from the UNTDID 1001 list such as 380 (the Factur-X profile rule FX-SCH-A-000555, on the same list, and {FR_04[0]}, fail too).",
+        f"Le code type de document (BT-3) est INV, un mot au lieu d'un code de la liste UNTDID 1001 comme 380 (la règle du profil Factur-X FX-SCH-A-000555, sur la même liste, et {FR_04[1]}, échouent aussi).",
+    ),
+    "BR-CL-04": (
+        ("BR-FR-CO-12_BT-5",),
+        f"The invoice currency (BT-5) is written EURO instead of the ISO 4217 code EUR, and so is the VAT total's currency (BR-CL-03, the same check on an amount's currency, the Factur-X profile rules FX-SCH-A-000595 and FX-SCH-A-000606, and {FR_CO_12[0]}, fail too).",
+        f"La devise de la facture (BT-5) est écrite EURO au lieu du code ISO 4217 EUR, comme la devise du total de TVA (BR-CL-03, le même contrôle sur la devise d'un montant, les règles du profil Factur-X FX-SCH-A-000595 et FX-SCH-A-000606, et {FR_CO_12[1]}, échouent aussi).",
+    ),
+    "BR-CL-05": (
+        ("BR-FR-CO-12_BT-5",),
+        f"The invoice is in US dollars; its VAT accounting currency (BT-6) is written EURO instead of the ISO 4217 code EUR, and so is the currency of its VAT total in that currency (BR-CL-03, the same check on an amount's currency, the Factur-X profile rules FX-SCH-A-000607 and FX-SCH-A-000610, and {FR_CO_12[0]}, fail too).",
+        f"La facture est en dollars américains ; sa devise de comptabilisation de la TVA (BT-6) est écrite EURO au lieu du code ISO 4217 EUR, comme la devise de son total de TVA dans cette devise (BR-CL-03, le même contrôle sur la devise d'un montant, les règles du profil Factur-X FX-SCH-A-000607 et FX-SCH-A-000610, et {FR_CO_12[1]}, échouent aussi).",
+    ),
+    "BR-CL-11": (
+        ("BR-FR-09_BT-29", "BR-FR-10_BT-30"),
+        "The scheme of the seller's SIREN, its legal registration identifier (BT-30-1), is written SIREN, a name instead of the ISO 6523 code 0002 (the Factur-X profile rule FX-SCH-A-000581, on the same list, and France's BR-FR-10 and BR-FR-09, which read the SIREN under the code 0002 only, fail too).",
+        "Le schéma du SIREN du vendeur, son identifiant d'immatriculation légale (BT-30-1), est écrit SIREN, un nom au lieu du code ISO 6523 0002 (la règle du profil Factur-X FX-SCH-A-000581, sur la même liste, et les règles françaises BR-FR-10 et BR-FR-09, qui ne lisent le SIREN que sous le code 0002, échouent aussi).",
+    ),
+    "BR-CL-17": (
+        ("BR-FR-15_BT-95_BT-102",),
+        "A document level allowance's VAT category code (BT-95) is VAT, the tax type, instead of a category such as S, so the allowance lowers no VAT breakdown (BR-S-08, on the standard rate's taxable amount, the Factur-X profile rule FX-SCH-A-000599, on the same list, and France's BR-FR-15, on the categories allowed in France, fail too).",
+        "Le code de catégorie de TVA d'une remise au niveau du document (BT-95) est VAT, le type de taxe, au lieu d'une catégorie comme S : la remise ne réduit donc aucune ventilation de TVA (BR-S-08, sur la base du taux normal, la règle du profil Factur-X FX-SCH-A-000599, sur la même liste, et la règle française BR-FR-15, sur les catégories admises en France, échouent aussi).",
+    ),
+    "BR-CL-18": (
+        ("BR-FR-15_BT-95_BT-118", "BR-FR-15_BT-95_BT-151"),
+        "The second line, at the reduced rate of 5.5 %, has the VAT category code AA, a UNCL 5305 code for a lower rate that EN 16931 does not use; its category S accepts any rate above zero (the Factur-X profile rules FX-SCH-A-000587 and FX-SCH-A-000619, on the same list, and France's BR-FR-15, on the categories allowed in France, fail too).",
+        "La deuxième ligne, au taux réduit de 5,5 %, a le code de catégorie de TVA AA, un code de la liste UNCL 5305 pour un taux réduit qu'EN 16931 n'utilise pas ; sa catégorie S admet tout taux supérieur à zéro (les règles du profil Factur-X FX-SCH-A-000587 et FX-SCH-A-000619, sur la même liste, et la règle française BR-FR-15, sur les catégories admises en France, échouent aussi).",
+    ),
+}
 
 
 # The EN 16931 variants, written once in the en16931 target and built here on the French invoice. BR-CO-25 is French
@@ -125,6 +201,10 @@ def _under_br_fr_dec_01(v):
         fr=f"{v.fr[:-1]} (la règle EN 16931 {v.rule} se déclenche aussi).",
     )
 
+
+# The core EN 16931 rules (BR-01 to BR-65) and the code list rules (BR-CL) on the French invoice, with the French rules
+# that fail next to them.
+CORE = tuple(_with_french_rules(v) for v in (*en16931.core(cii.FRENCH), *en16931.code_lists(cii.FRENCH)))
 
 _FRENCH_DECIMALS = en16931.decimals(cii.FRENCH)
 DECIMALS = tuple(_under_br_fr_dec_01(v) for v in _FRENCH_DECIMALS if v.rule in FR_DEC_01)
@@ -813,6 +893,8 @@ VARIANTS = (
         "Le prix brut d'un article (BT-148) a 7 décimales.",
         edit=gross_price("500.0000000", "50.00"),
     ),
+    # the core EN 16931 rules and the code list rules (BR-CL), written once in the en16931 target
+    *CORE,
 )
 
 

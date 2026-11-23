@@ -669,8 +669,10 @@ class _Page:
             unit = attributes.get("unitCode")
             return _number(value, t) + (f" {unit}" if unit else "")
         if kind == "id":
-            scheme = attributes.get("schemeID")
+            scheme = attributes.get("schemeID") or attributes.get("listID")
             return f"{value} · " + (t["scheme"].format(scheme) if scheme else t["no_scheme"])
+        if kind == "file":
+            return f"{attributes.get('filename', '')} · {attributes.get('mimeCode', t['absent'])}"
         return value
 
 

@@ -2151,6 +2151,1126 @@
         "en": "An item gross price (BT-148) has 7 decimals.",
         "fr": "Le prix brut d'un article (BT-148) a 7 décimales."
       }
+    },
+    {
+      "id": "BR-01",
+      "status": "invalid",
+      "rule": "BR-01",
+      "fires": [
+        "BR-01"
+      ],
+      "files": {
+        "xml": "invalid/BR-01.xml",
+        "pdf": "invalid/BR-01.pdf"
+      },
+      "description": {
+        "en": "The specification identifier (BT-24) is empty: the invoice does not say which rules it follows.",
+        "fr": "L'identifiant de spécification (BT-24) est vide : la facture ne dit pas quelles règles elle suit."
+      }
+    },
+    {
+      "id": "BR-02",
+      "status": "invalid",
+      "rule": "BR-02",
+      "fires": [
+        "BR-02",
+        "BR-FR-02_BT-1"
+      ],
+      "files": {
+        "xml": "invalid/BR-02.xml",
+        "pdf": "invalid/BR-02.pdf"
+      },
+      "description": {
+        "en": "The invoice number (BT-1) is empty (France's BR-FR-02, on the characters of a number, fails too).",
+        "fr": "Le numéro de facture (BT-1) est vide (la règle française BR-FR-02, sur les caractères d'un numéro, échoue aussi)."
+      }
+    },
+    {
+      "id": "BR-03",
+      "status": "invalid",
+      "rule": "BR-03",
+      "fires": [
+        "BR-03",
+        "FX-SCH-A-000554"
+      ],
+      "files": {
+        "xml": "invalid/BR-03.xml",
+        "pdf": "invalid/BR-03.pdf"
+      },
+      "description": {
+        "en": "The issue date (BT-2) is written as a date and time, in format 203, instead of a date in format 102 (the Factur-X profile rule FX-SCH-A-000554, which allows format 102 only, fails too).",
+        "fr": "La date d'émission (BT-2) est écrite comme une date et une heure, au format 203, et non comme une date au format 102 (la règle du profil Factur-X FX-SCH-A-000554, qui n'admet que le format 102, échoue aussi)."
+      }
+    },
+    {
+      "id": "BR-04",
+      "status": "invalid",
+      "rule": "BR-04",
+      "fires": [
+        "BR-04",
+        "BR-CL-01",
+        "BR-FR-04_BT-3"
+      ],
+      "files": {
+        "xml": "invalid/BR-04.xml",
+        "pdf": "invalid/BR-04.pdf"
+      },
+      "description": {
+        "en": "The invoice type code (BT-3) is empty (BR-CL-01, on the list of type codes, and France's BR-FR-04, on its own list of type codes, fail too).",
+        "fr": "Le code type de document (BT-3) est vide (BR-CL-01, sur la liste des codes types, et la règle française BR-FR-04, sur sa propre liste de codes types, échouent aussi)."
+      }
+    },
+    {
+      "id": "BR-05",
+      "status": "invalid",
+      "rule": "BR-05",
+      "fires": [
+        "BR-05",
+        "BR-CL-03",
+        "BR-CL-04",
+        "BR-FR-CO-12_BT-5"
+      ],
+      "files": {
+        "xml": "invalid/BR-05.xml",
+        "pdf": "invalid/BR-05.pdf"
+      },
+      "description": {
+        "en": "The invoice currency code (BT-5) is empty, and so is the currency of the VAT total (BR-CL-03 and BR-CL-04, on the list of currency codes, and France's BR-FR-CO-12, which asks an invoice in another currency than EUR for its VAT in euros, fail too).",
+        "fr": "Le code de la devise de la facture (BT-5) est vide, comme la devise du total de TVA (BR-CL-03 et BR-CL-04, sur la liste des codes devises, et la règle française BR-FR-CO-12, qui demande à une facture dans une autre devise que EUR sa TVA en euros, échouent aussi)."
+      }
+    },
+    {
+      "id": "BR-06",
+      "status": "invalid",
+      "rule": "BR-06",
+      "fires": [
+        "BR-06"
+      ],
+      "files": {
+        "xml": "invalid/BR-06.xml",
+        "pdf": "invalid/BR-06.pdf"
+      },
+      "description": {
+        "en": "The seller name (BT-27) is empty.",
+        "fr": "Le nom du vendeur (BT-27) est vide."
+      }
+    },
+    {
+      "id": "BR-07",
+      "status": "invalid",
+      "rule": "BR-07",
+      "fires": [
+        "BR-07"
+      ],
+      "files": {
+        "xml": "invalid/BR-07.xml",
+        "pdf": "invalid/BR-07.pdf"
+      },
+      "description": {
+        "en": "The buyer name (BT-44) is empty.",
+        "fr": "Le nom de l'acheteur (BT-44) est vide."
+      }
+    },
+    {
+      "id": "BR-08",
+      "status": "invalid",
+      "rule": "BR-08",
+      "fires": [
+        "BR-08",
+        "BR-09",
+        "FX-SCH-A-000032"
+      ],
+      "files": {
+        "xml": "invalid/BR-08.xml",
+        "pdf": "invalid/BR-08.pdf"
+      },
+      "description": {
+        "en": "The seller has no postal address (BG-5) (BR-09, which asks for its country code, and the Factur-X profile rule FX-SCH-A-000032 fail too).",
+        "fr": "Le vendeur n'a pas d'adresse postale (BG-5) (BR-09, qui en exige le code pays, et la règle du profil Factur-X FX-SCH-A-000032 échouent aussi)."
+      }
+    },
+    {
+      "id": "BR-09",
+      "status": "invalid",
+      "rule": "BR-09",
+      "fires": [
+        "BR-09",
+        "BR-CL-14"
+      ],
+      "files": {
+        "xml": "invalid/BR-09.xml",
+        "pdf": "invalid/BR-09.pdf"
+      },
+      "description": {
+        "en": "The country code of the seller's address (BT-40) is empty (BR-CL-14, on the list of country codes, fails too).",
+        "fr": "Le code pays de l'adresse du vendeur (BT-40) est vide (BR-CL-14, sur la liste des codes pays, échoue aussi)."
+      }
+    },
+    {
+      "id": "BR-10",
+      "status": "invalid",
+      "rule": "BR-10",
+      "fires": [
+        "BR-10",
+        "BR-11",
+        "FX-SCH-A-000419"
+      ],
+      "files": {
+        "xml": "invalid/BR-10.xml",
+        "pdf": "invalid/BR-10.pdf"
+      },
+      "description": {
+        "en": "The buyer has no postal address (BG-8) (BR-11, which asks for its country code, and the Factur-X profile rule FX-SCH-A-000419 fail too).",
+        "fr": "L'acheteur n'a pas d'adresse postale (BG-8) (BR-11, qui en exige le code pays, et la règle du profil Factur-X FX-SCH-A-000419 échouent aussi)."
+      }
+    },
+    {
+      "id": "BR-11",
+      "status": "invalid",
+      "rule": "BR-11",
+      "fires": [
+        "BR-11",
+        "BR-CL-14"
+      ],
+      "files": {
+        "xml": "invalid/BR-11.xml",
+        "pdf": "invalid/BR-11.pdf"
+      },
+      "description": {
+        "en": "The country code of the buyer's address (BT-55) is empty (BR-CL-14, on the list of country codes, fails too).",
+        "fr": "Le code pays de l'adresse de l'acheteur (BT-55) est vide (BR-CL-14, sur la liste des codes pays, échoue aussi)."
+      }
+    },
+    {
+      "id": "BR-17",
+      "status": "invalid",
+      "rule": "BR-17",
+      "fires": [
+        "BR-17"
+      ],
+      "files": {
+        "xml": "invalid/BR-17.xml",
+        "pdf": "invalid/BR-17.pdf"
+      },
+      "description": {
+        "en": "The seller is named again as payee (BG-10), with its own name (BT-59): a payee is only given when someone else is paid.",
+        "fr": "Le vendeur est repris comme bénéficiaire du paiement (BG-10), avec son propre nom (BT-59) : un bénéficiaire n'est indiqué que si quelqu'un d'autre est payé."
+      }
+    },
+    {
+      "id": "BR-18",
+      "status": "invalid",
+      "rule": "BR-18",
+      "fires": [
+        "BR-18"
+      ],
+      "files": {
+        "xml": "invalid/BR-18.xml",
+        "pdf": "invalid/BR-18.pdf"
+      },
+      "description": {
+        "en": "The seller's tax representative (BG-11) has an empty name (BT-62).",
+        "fr": "Le représentant fiscal du vendeur (BG-11) a un nom vide (BT-62)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-18.xml",
+        "pdf": "fixed/BR-18.pdf"
+      }
+    },
+    {
+      "id": "BR-19",
+      "status": "invalid",
+      "rule": "BR-19",
+      "fires": [
+        "BR-19",
+        "BR-20",
+        "FX-SCH-A-000432"
+      ],
+      "files": {
+        "xml": "invalid/BR-19.xml",
+        "pdf": "invalid/BR-19.pdf"
+      },
+      "description": {
+        "en": "The seller's tax representative (BG-11) has no postal address (BG-12) (BR-20, which asks for its country code, and the Factur-X profile rule FX-SCH-A-000432 fail too).",
+        "fr": "Le représentant fiscal du vendeur (BG-11) n'a pas d'adresse postale (BG-12) (BR-20, qui en exige le code pays, et la règle du profil Factur-X FX-SCH-A-000432 échouent aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-19.xml",
+        "pdf": "fixed/BR-19.pdf"
+      }
+    },
+    {
+      "id": "BR-20",
+      "status": "invalid",
+      "rule": "BR-20",
+      "fires": [
+        "BR-20",
+        "BR-CL-14"
+      ],
+      "files": {
+        "xml": "invalid/BR-20.xml",
+        "pdf": "invalid/BR-20.pdf"
+      },
+      "description": {
+        "en": "The country code of the tax representative's address (BT-69) is empty (BR-CL-14, on the list of country codes, fails too).",
+        "fr": "Le code pays de l'adresse du représentant fiscal (BT-69) est vide (BR-CL-14, sur la liste des codes pays, échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-20.xml",
+        "pdf": "fixed/BR-20.pdf"
+      }
+    },
+    {
+      "id": "BR-21",
+      "status": "invalid",
+      "rule": "BR-21",
+      "fires": [
+        "BR-21"
+      ],
+      "files": {
+        "xml": "invalid/BR-21.xml",
+        "pdf": "invalid/BR-21.pdf"
+      },
+      "description": {
+        "en": "The first line's identifier (BT-126) is empty.",
+        "fr": "L'identifiant de la première ligne (BT-126) est vide."
+      }
+    },
+    {
+      "id": "BR-25",
+      "status": "invalid",
+      "rule": "BR-25",
+      "fires": [
+        "BR-25"
+      ],
+      "files": {
+        "xml": "invalid/BR-25.xml",
+        "pdf": "invalid/BR-25.pdf"
+      },
+      "description": {
+        "en": "The first line's item name (BT-153) is empty.",
+        "fr": "Le nom de l'article de la première ligne (BT-153) est vide."
+      }
+    },
+    {
+      "id": "BR-28",
+      "status": "invalid",
+      "rule": "BR-28",
+      "fires": [
+        "BR-28",
+        "BR-FR-DEC-03_BT-148"
+      ],
+      "files": {
+        "xml": "invalid/BR-28.xml",
+        "pdf": "invalid/BR-28.pdf"
+      },
+      "description": {
+        "en": "The first line's gross price (BT-148) is written with a minus sign; its price discount (BT-147) and net price (BT-146) are right (France's BR-FR-DEC-03, which wants a positive price outside the billing frames S9, M9 and B9, fails too).",
+        "fr": "Le prix brut de la première ligne (BT-148) est écrit avec un signe moins ; son rabais (BT-147) et son prix net (BT-146) sont justes (la règle française BR-FR-DEC-03, qui exige un prix positif hors des cadres de facturation S9, M9 et B9, échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-28.xml",
+        "pdf": "fixed/BR-28.pdf"
+      }
+    },
+    {
+      "id": "BR-29",
+      "status": "invalid",
+      "rule": "BR-29",
+      "fires": [
+        "BR-29"
+      ],
+      "files": {
+        "xml": "invalid/BR-29.xml",
+        "pdf": "invalid/BR-29.pdf"
+      },
+      "description": {
+        "en": "The invoicing period (BG-14) ends before it starts: its start (BT-73) and end (BT-74) dates are swapped.",
+        "fr": "La période de facturation (BG-14) finit avant de commencer : ses dates de début (BT-73) et de fin (BT-74) sont inversées."
+      },
+      "fixed": {
+        "xml": "fixed/BR-29.xml",
+        "pdf": "fixed/BR-29.pdf"
+      }
+    },
+    {
+      "id": "BR-30",
+      "status": "invalid",
+      "rule": "BR-30",
+      "fires": [
+        "BR-30"
+      ],
+      "files": {
+        "xml": "invalid/BR-30.xml",
+        "pdf": "invalid/BR-30.pdf"
+      },
+      "description": {
+        "en": "The first line's period (BG-26) ends before it starts: its start (BT-134) and end (BT-135) dates are swapped.",
+        "fr": "La période de la première ligne (BG-26) finit avant de commencer : ses dates de début (BT-134) et de fin (BT-135) sont inversées."
+      },
+      "fixed": {
+        "xml": "fixed/BR-30.xml",
+        "pdf": "fixed/BR-30.pdf"
+      }
+    },
+    {
+      "id": "BR-32",
+      "status": "invalid",
+      "rule": "BR-32",
+      "fires": [
+        "BR-32",
+        "BR-S-08",
+        "FX-SCH-A-000185"
+      ],
+      "files": {
+        "xml": "invalid/BR-32.xml",
+        "pdf": "invalid/BR-32.pdf"
+      },
+      "description": {
+        "en": "A document level allowance has no VAT category (BT-95), so it lowers no VAT breakdown (BR-S-08, on the standard rate's taxable amount, and the Factur-X profile rule FX-SCH-A-000185 fail too).",
+        "fr": "Une remise au niveau du document n'a pas de catégorie de TVA (BT-95) : elle ne réduit donc aucune ventilation de TVA (BR-S-08, sur la base du taux normal, et la règle du profil Factur-X FX-SCH-A-000185 échouent aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-32.xml",
+        "pdf": "fixed/BR-32.pdf"
+      }
+    },
+    {
+      "id": "BR-37",
+      "status": "invalid",
+      "rule": "BR-37",
+      "fires": [
+        "BR-37",
+        "BR-S-08",
+        "FX-SCH-A-000479"
+      ],
+      "files": {
+        "xml": "invalid/BR-37.xml",
+        "pdf": "invalid/BR-37.pdf"
+      },
+      "description": {
+        "en": "A document level charge has no VAT category (BT-102), so it adds to no VAT breakdown (BR-S-08, on the standard rate's taxable amount, and the Factur-X profile rule FX-SCH-A-000479 fail too).",
+        "fr": "Des frais au niveau du document n'ont pas de catégorie de TVA (BT-102) : ils ne s'ajoutent donc à aucune ventilation de TVA (BR-S-08, sur la base du taux normal, et la règle du profil Factur-X FX-SCH-A-000479 échouent aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-37.xml",
+        "pdf": "fixed/BR-37.pdf"
+      }
+    },
+    {
+      "id": "BR-45",
+      "status": "invalid",
+      "rule": "BR-45",
+      "fires": [
+        "BR-45",
+        "BR-E-08",
+        "FX-SCH-A-000177"
+      ],
+      "files": {
+        "xml": "invalid/BR-45.xml",
+        "pdf": "invalid/BR-45.pdf"
+      },
+      "description": {
+        "en": "The VAT breakdown of the exempt line (category E) has no taxable amount (BT-116) (BR-E-08, on that amount, and the Factur-X profile rule FX-SCH-A-000177 fail too).",
+        "fr": "La ventilation de TVA de la ligne exonérée (catégorie E) n'a pas de base (BT-116) (BR-E-08, sur ce montant, et la règle du profil Factur-X FX-SCH-A-000177 échouent aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-45.xml",
+        "pdf": "fixed/BR-45.pdf"
+      }
+    },
+    {
+      "id": "BR-46",
+      "status": "invalid",
+      "rule": "BR-46",
+      "fires": [
+        "BR-46",
+        "BR-CO-17",
+        "BR-E-09",
+        "FX-SCH-A-000176"
+      ],
+      "files": {
+        "xml": "invalid/BR-46.xml",
+        "pdf": "invalid/BR-46.pdf"
+      },
+      "description": {
+        "en": "The VAT breakdown of the exempt line (category E) has no VAT amount (BT-117), although it is 0 (BR-CO-17 and BR-E-09, on that amount, and the Factur-X profile rule FX-SCH-A-000176 fail too).",
+        "fr": "La ventilation de TVA de la ligne exonérée (catégorie E) n'a pas de montant de TVA (BT-117), bien qu'il soit nul (BR-CO-17 et BR-E-09, sur ce montant, et la règle du profil Factur-X FX-SCH-A-000176 échouent aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-46.xml",
+        "pdf": "fixed/BR-46.pdf"
+      }
+    },
+    {
+      "id": "BR-48",
+      "status": "invalid",
+      "rule": "BR-48",
+      "fires": [
+        "BR-48"
+      ],
+      "files": {
+        "xml": "invalid/BR-48.xml",
+        "pdf": "invalid/BR-48.pdf"
+      },
+      "description": {
+        "en": "The VAT breakdown of the exempt line (category E) has no VAT rate (BT-119): an exempt category still gives its rate, 0.",
+        "fr": "La ventilation de TVA de la ligne exonérée (catégorie E) n'a pas de taux de TVA (BT-119) : une catégorie exonérée indique quand même son taux, 0."
+      },
+      "fixed": {
+        "xml": "fixed/BR-48.xml",
+        "pdf": "fixed/BR-48.pdf"
+      }
+    },
+    {
+      "id": "BR-50",
+      "status": "invalid",
+      "rule": "BR-50",
+      "fires": [
+        "BR-50"
+      ],
+      "files": {
+        "xml": "invalid/BR-50.xml",
+        "pdf": "invalid/BR-50.pdf"
+      },
+      "description": {
+        "en": "The payment account identifier (BT-84), the IBAN of the credit transfer, is empty.",
+        "fr": "L'identifiant du compte de paiement (BT-84), l'IBAN du virement, est vide."
+      }
+    },
+    {
+      "id": "BR-51",
+      "status": "invalid",
+      "rule": "BR-51",
+      "fires": [
+        "BR-51"
+      ],
+      "files": {
+        "xml": "invalid/BR-51.xml",
+        "pdf": "invalid/BR-51.pdf"
+      },
+      "description": {
+        "en": "The invoice gives the payment card's full number (BT-87); the rule allows 10 characters at most, such as the last 4 digits.",
+        "fr": "La facture indique le numéro complet de la carte de paiement (BT-87) ; la règle n'admet que 10 caractères au plus, par exemple les 4 derniers chiffres."
+      },
+      "fixed": {
+        "xml": "fixed/BR-51.xml",
+        "pdf": "fixed/BR-51.pdf"
+      }
+    },
+    {
+      "id": "BR-53",
+      "status": "invalid",
+      "rule": "BR-53",
+      "fires": [
+        "BR-53"
+      ],
+      "files": {
+        "xml": "invalid/BR-53.xml",
+        "pdf": "invalid/BR-53.pdf"
+      },
+      "description": {
+        "en": "The invoice names a VAT accounting currency (BT-6), EUR, which is its own currency (BT-5): the rule wants another currency, and the VAT total in it (BT-111).",
+        "fr": "La facture indique une devise de comptabilisation de la TVA (BT-6), EUR, qui est sa propre devise (BT-5) : la règle attend une autre devise, et le total de TVA dans cette devise (BT-111)."
+      }
+    },
+    {
+      "id": "BR-55",
+      "status": "invalid",
+      "rule": "BR-55",
+      "fires": [
+        "BR-55",
+        "BR-FR-02_BT-25"
+      ],
+      "files": {
+        "xml": "invalid/BR-55.xml",
+        "pdf": "invalid/BR-55.pdf"
+      },
+      "description": {
+        "en": "The invoice refers to a preceding invoice (BG-3) whose reference (BT-25) is empty (France's BR-FR-02, on the characters of a number, fails too).",
+        "fr": "La facture fait référence à une facture antérieure (BG-3) dont la référence (BT-25) est vide (la règle française BR-FR-02, sur les caractères d'un numéro, échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-55.xml",
+        "pdf": "fixed/BR-55.pdf"
+      }
+    },
+    {
+      "id": "BR-56",
+      "status": "invalid",
+      "rule": "BR-56",
+      "fires": [
+        "BR-56",
+        "FX-SCH-A-000169"
+      ],
+      "files": {
+        "xml": "invalid/BR-56.xml",
+        "pdf": "invalid/BR-56.pdf"
+      },
+      "description": {
+        "en": "The seller's tax representative (BG-11) has no VAT identifier (BT-63) (the Factur-X profile rule FX-SCH-A-000169, which asks for it too, fails too).",
+        "fr": "Le représentant fiscal du vendeur (BG-11) n'a pas de numéro de TVA (BT-63) (la règle du profil Factur-X FX-SCH-A-000169, qui l'exige aussi, échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-56.xml",
+        "pdf": "fixed/BR-56.pdf"
+      }
+    },
+    {
+      "id": "BR-57",
+      "status": "invalid",
+      "rule": "BR-57",
+      "fires": [
+        "BR-57",
+        "BR-CL-14"
+      ],
+      "files": {
+        "xml": "invalid/BR-57.xml",
+        "pdf": "invalid/BR-57.pdf"
+      },
+      "description": {
+        "en": "The country code of the deliver-to address (BT-80) is empty (BR-CL-14, on the list of country codes, fails too).",
+        "fr": "Le code pays de l'adresse de livraison (BT-80) est vide (BR-CL-14, sur la liste des codes pays, échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-57.xml",
+        "pdf": "fixed/BR-57.pdf"
+      }
+    },
+    {
+      "id": "BR-61",
+      "status": "invalid",
+      "rule": "BR-61",
+      "fires": [
+        "BR-50",
+        "BR-61",
+        "CII-SR-470"
+      ],
+      "files": {
+        "xml": "invalid/BR-61.xml",
+        "pdf": "invalid/BR-61.pdf"
+      },
+      "description": {
+        "en": "The credit transfer's account gives the account name (BT-85) but no IBAN or other account identifier (BT-84) (BR-50 and the CII syntax rule CII-SR-470, on the same identifier, fail too).",
+        "fr": "Le compte du virement indique le nom du compte (BT-85) mais ni IBAN ni autre identifiant de compte (BT-84) (BR-50 et la règle de syntaxe CII CII-SR-470, sur le même identifiant, échouent aussi)."
+      }
+    },
+    {
+      "id": "BR-62",
+      "status": "invalid",
+      "rule": "BR-62",
+      "fires": [
+        "BR-62",
+        "FX-SCH-A-000446"
+      ],
+      "files": {
+        "xml": "invalid/BR-62.xml",
+        "pdf": "invalid/BR-62.pdf"
+      },
+      "description": {
+        "en": "The seller's electronic address (BT-34) has no scheme identifier (BT-34-1) (the Factur-X profile rule FX-SCH-A-000446, which asks for it too, fails too).",
+        "fr": "L'adresse électronique du vendeur (BT-34) n'a pas d'identifiant de schéma (BT-34-1) (la règle du profil Factur-X FX-SCH-A-000446, qui l'exige aussi, échoue aussi)."
+      }
+    },
+    {
+      "id": "BR-63",
+      "status": "invalid",
+      "rule": "BR-63",
+      "fires": [
+        "BR-63",
+        "FX-SCH-A-000428"
+      ],
+      "files": {
+        "xml": "invalid/BR-63.xml",
+        "pdf": "invalid/BR-63.pdf"
+      },
+      "description": {
+        "en": "The buyer's electronic address (BT-49) has no scheme identifier (BT-49-1) (the Factur-X profile rule FX-SCH-A-000428, which asks for it too, fails too).",
+        "fr": "L'adresse électronique de l'acheteur (BT-49) n'a pas d'identifiant de schéma (BT-49-1) (la règle du profil Factur-X FX-SCH-A-000428, qui l'exige aussi, échoue aussi)."
+      }
+    },
+    {
+      "id": "BR-64",
+      "status": "invalid",
+      "rule": "BR-64",
+      "fires": [
+        "BR-64",
+        "CII-SR-046",
+        "FX-SCH-A-000551"
+      ],
+      "files": {
+        "xml": "invalid/BR-64.xml",
+        "pdf": "invalid/BR-64.pdf"
+      },
+      "description": {
+        "en": "The first line's item standard identifier (BT-157), a GTIN, has no scheme identifier (BT-157-1) (the CII syntax rule CII-SR-046 and the Factur-X profile rule FX-SCH-A-000551, which ask for it too, fail too).",
+        "fr": "L'identifiant standard de l'article de la première ligne (BT-157), un GTIN, n'a pas d'identifiant de schéma (BT-157-1) (la règle de syntaxe CII CII-SR-046 et la règle du profil Factur-X FX-SCH-A-000551, qui l'exigent aussi, échouent aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-64.xml",
+        "pdf": "fixed/BR-64.pdf"
+      }
+    },
+    {
+      "id": "BR-65",
+      "status": "invalid",
+      "rule": "BR-65",
+      "fires": [
+        "BR-65",
+        "FX-SCH-A-000296"
+      ],
+      "files": {
+        "xml": "invalid/BR-65.xml",
+        "pdf": "invalid/BR-65.pdf"
+      },
+      "description": {
+        "en": "The first line's item classification identifier (BT-158) has no scheme identifier (BT-158-1) (the Factur-X profile rule FX-SCH-A-000296, which asks for it too, fails too).",
+        "fr": "L'identifiant de classification de l'article de la première ligne (BT-158) n'a pas d'identifiant de schéma (BT-158-1) (la règle du profil Factur-X FX-SCH-A-000296, qui l'exige aussi, échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-65.xml",
+        "pdf": "fixed/BR-65.pdf"
+      }
+    },
+    {
+      "id": "BR-CL-01",
+      "status": "invalid",
+      "rule": "BR-CL-01",
+      "fires": [
+        "BR-CL-01",
+        "FX-SCH-A-000555",
+        "BR-FR-04_BT-3"
+      ],
+      "files": {
+        "xml": "invalid/BR-CL-01.xml",
+        "pdf": "invalid/BR-CL-01.pdf"
+      },
+      "description": {
+        "en": "The invoice type code (BT-3) is INV, a word instead of a code from the UNTDID 1001 list such as 380 (the Factur-X profile rule FX-SCH-A-000555, on the same list, and France's BR-FR-04, on its own list of type codes, fail too).",
+        "fr": "Le code type de document (BT-3) est INV, un mot au lieu d'un code de la liste UNTDID 1001 comme 380 (la règle du profil Factur-X FX-SCH-A-000555, sur la même liste, et la règle française BR-FR-04, sur sa propre liste de codes types, échouent aussi)."
+      }
+    },
+    {
+      "id": "BR-CL-04",
+      "status": "invalid",
+      "rule": "BR-CL-04",
+      "fires": [
+        "BR-CL-03",
+        "BR-CL-04",
+        "FX-SCH-A-000595",
+        "FX-SCH-A-000606",
+        "BR-FR-CO-12_BT-5"
+      ],
+      "files": {
+        "xml": "invalid/BR-CL-04.xml",
+        "pdf": "invalid/BR-CL-04.pdf"
+      },
+      "description": {
+        "en": "The invoice currency (BT-5) is written EURO instead of the ISO 4217 code EUR, and so is the VAT total's currency (BR-CL-03, the same check on an amount's currency, the Factur-X profile rules FX-SCH-A-000595 and FX-SCH-A-000606, and France's BR-FR-CO-12, which asks an invoice in another currency than EUR for its VAT in euros, fail too).",
+        "fr": "La devise de la facture (BT-5) est écrite EURO au lieu du code ISO 4217 EUR, comme la devise du total de TVA (BR-CL-03, le même contrôle sur la devise d'un montant, les règles du profil Factur-X FX-SCH-A-000595 et FX-SCH-A-000606, et la règle française BR-FR-CO-12, qui demande à une facture dans une autre devise que EUR sa TVA en euros, échouent aussi)."
+      }
+    },
+    {
+      "id": "BR-CL-05",
+      "status": "invalid",
+      "rule": "BR-CL-05",
+      "fires": [
+        "BR-CL-03",
+        "BR-CL-05",
+        "FX-SCH-A-000607",
+        "FX-SCH-A-000610",
+        "BR-FR-CO-12_BT-5"
+      ],
+      "files": {
+        "xml": "invalid/BR-CL-05.xml",
+        "pdf": "invalid/BR-CL-05.pdf"
+      },
+      "description": {
+        "en": "The invoice is in US dollars; its VAT accounting currency (BT-6) is written EURO instead of the ISO 4217 code EUR, and so is the currency of its VAT total in that currency (BR-CL-03, the same check on an amount's currency, the Factur-X profile rules FX-SCH-A-000607 and FX-SCH-A-000610, and France's BR-FR-CO-12, which asks an invoice in another currency than EUR for its VAT in euros, fail too).",
+        "fr": "La facture est en dollars américains ; sa devise de comptabilisation de la TVA (BT-6) est écrite EURO au lieu du code ISO 4217 EUR, comme la devise de son total de TVA dans cette devise (BR-CL-03, le même contrôle sur la devise d'un montant, les règles du profil Factur-X FX-SCH-A-000607 et FX-SCH-A-000610, et la règle française BR-FR-CO-12, qui demande à une facture dans une autre devise que EUR sa TVA en euros, échouent aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-CL-05.xml",
+        "pdf": "fixed/BR-CL-05.pdf"
+      }
+    },
+    {
+      "id": "BR-CL-06",
+      "status": "invalid",
+      "rule": "BR-CL-06",
+      "fires": [
+        "BR-CL-06",
+        "FX-SCH-A-000588"
+      ],
+      "files": {
+        "xml": "invalid/BR-CL-06.xml",
+        "pdf": "invalid/BR-CL-06.pdf"
+      },
+      "description": {
+        "en": "The VAT point date code (BT-8) is 35, a code of the UBL syntax: CII uses 5, 29 or 72 (the Factur-X profile rule FX-SCH-A-000588, on the same list, fails too).",
+        "fr": "Le code de date d'exigibilité de la TVA (BT-8) est 35, un code de la syntaxe UBL : CII utilise 5, 29 ou 72 (la règle du profil Factur-X FX-SCH-A-000588, sur la même liste, échoue aussi)."
+      }
+    },
+    {
+      "id": "BR-CL-07",
+      "status": "invalid",
+      "rule": "BR-CL-07",
+      "fires": [
+        "BR-CL-07",
+        "FX-SCH-A-000282"
+      ],
+      "files": {
+        "xml": "invalid/BR-CL-07.xml",
+        "pdf": "invalid/BR-CL-07.pdf"
+      },
+      "description": {
+        "en": "The scheme of the invoiced object identifier (BT-18-1) is ORDER, a word instead of a code from the UNTDID 1153 list (the Factur-X profile rule FX-SCH-A-000282, on the same list, fails too).",
+        "fr": "Le schéma de l'identifiant de l'objet facturé (BT-18-1) est ORDER, un mot au lieu d'un code de la liste UNTDID 1153 (la règle du profil Factur-X FX-SCH-A-000282, sur la même liste, échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-CL-07.xml",
+        "pdf": "fixed/BR-CL-07.pdf"
+      }
+    },
+    {
+      "id": "BR-CL-08",
+      "status": "invalid",
+      "rule": "BR-CL-08",
+      "fires": [
+        "BR-CL-08",
+        "FX-SCH-A-000553"
+      ],
+      "files": {
+        "xml": "invalid/BR-CL-08.xml",
+        "pdf": "invalid/BR-CL-08.pdf"
+      },
+      "description": {
+        "en": "A note's subject code (BT-21) is INFO, a word instead of a code from the UNCL 4451 list (the Factur-X profile rule FX-SCH-A-000553, on the same list, fails too).",
+        "fr": "Le code sujet d'une note (BT-21) est INFO, un mot au lieu d'un code de la liste UNCL 4451 (la règle du profil Factur-X FX-SCH-A-000553, sur la même liste, échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-CL-08.xml",
+        "pdf": "fixed/BR-CL-08.pdf"
+      }
+    },
+    {
+      "id": "BR-CL-10",
+      "status": "invalid",
+      "rule": "BR-CL-10",
+      "fires": [
+        "BR-CL-10",
+        "FX-SCH-A-000579"
+      ],
+      "files": {
+        "xml": "invalid/BR-CL-10.xml",
+        "pdf": "invalid/BR-CL-10.pdf"
+      },
+      "description": {
+        "en": "The scheme of the seller identifier (BT-29-1) is written SIRET instead of its ISO 6523 code, 0009 (the Factur-X profile rule FX-SCH-A-000579, on the same list, fails too).",
+        "fr": "Le schéma de l'identifiant du vendeur (BT-29-1) est écrit SIRET au lieu de son code ISO 6523, 0009 (la règle du profil Factur-X FX-SCH-A-000579, sur la même liste, échoue aussi)."
+      }
+    },
+    {
+      "id": "BR-CL-11",
+      "status": "invalid",
+      "rule": "BR-CL-11",
+      "fires": [
+        "BR-CL-11",
+        "FX-SCH-A-000581",
+        "BR-FR-09_BT-29",
+        "BR-FR-10_BT-30"
+      ],
+      "files": {
+        "xml": "invalid/BR-CL-11.xml",
+        "pdf": "invalid/BR-CL-11.pdf"
+      },
+      "description": {
+        "en": "The scheme of the seller's SIREN, its legal registration identifier (BT-30-1), is written SIREN, a name instead of the ISO 6523 code 0002 (the Factur-X profile rule FX-SCH-A-000581, on the same list, and France's BR-FR-10 and BR-FR-09, which read the SIREN under the code 0002 only, fail too).",
+        "fr": "Le schéma du SIREN du vendeur, son identifiant d'immatriculation légale (BT-30-1), est écrit SIREN, un nom au lieu du code ISO 6523 0002 (la règle du profil Factur-X FX-SCH-A-000581, sur la même liste, et les règles françaises BR-FR-10 et BR-FR-09, qui ne lisent le SIREN que sous le code 0002, échouent aussi)."
+      }
+    },
+    {
+      "id": "BR-CL-13",
+      "status": "invalid",
+      "rule": "BR-CL-13",
+      "fires": [
+        "BR-CL-13",
+        "FX-SCH-A-000297"
+      ],
+      "files": {
+        "xml": "invalid/BR-CL-13.xml",
+        "pdf": "invalid/BR-CL-13.pdf"
+      },
+      "description": {
+        "en": "The scheme of the first line's item classification (BT-158-1) is written UNSPSC instead of its UNTDID 7143 code, TST (the Factur-X profile rule FX-SCH-A-000297, on the same list, fails too).",
+        "fr": "Le schéma de la classification de l'article de la première ligne (BT-158-1) est écrit UNSPSC au lieu de son code UNTDID 7143, TST (la règle du profil Factur-X FX-SCH-A-000297, sur la même liste, échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-CL-13.xml",
+        "pdf": "fixed/BR-CL-13.pdf"
+      }
+    },
+    {
+      "id": "BR-CL-14",
+      "status": "invalid",
+      "rule": "BR-CL-14",
+      "fires": [
+        "BR-CL-14",
+        "FX-SCH-A-000568"
+      ],
+      "files": {
+        "xml": "invalid/BR-CL-14.xml",
+        "pdf": "invalid/BR-CL-14.pdf"
+      },
+      "description": {
+        "en": "The buyer's country (BT-55) is written France instead of the ISO 3166-1 code FR (the Factur-X profile rule FX-SCH-A-000568, on the same list, fails too).",
+        "fr": "Le pays de l'acheteur (BT-55) est écrit France au lieu du code ISO 3166-1 FR (la règle du profil Factur-X FX-SCH-A-000568, sur la même liste, échoue aussi)."
+      }
+    },
+    {
+      "id": "BR-CL-15",
+      "status": "invalid",
+      "rule": "BR-CL-15",
+      "fires": [
+        "BR-CL-15",
+        "FX-SCH-A-000628"
+      ],
+      "files": {
+        "xml": "invalid/BR-CL-15.xml",
+        "pdf": "invalid/BR-CL-15.pdf"
+      },
+      "description": {
+        "en": "The first line's item country of origin (BT-159) is written France instead of the ISO 3166-1 code FR (the Factur-X profile rule FX-SCH-A-000628, on the same list, fails too).",
+        "fr": "Le pays d'origine de l'article de la première ligne (BT-159) est écrit France au lieu du code ISO 3166-1 FR (la règle du profil Factur-X FX-SCH-A-000628, sur la même liste, échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-CL-15.xml",
+        "pdf": "fixed/BR-CL-15.pdf"
+      }
+    },
+    {
+      "id": "BR-CL-16",
+      "status": "invalid",
+      "rule": "BR-CL-16",
+      "fires": [
+        "BR-CL-16",
+        "FX-SCH-A-000609"
+      ],
+      "files": {
+        "xml": "invalid/BR-CL-16.xml",
+        "pdf": "invalid/BR-CL-16.pdf"
+      },
+      "description": {
+        "en": "The payment means code (BT-81) is SEPA, a word instead of a code from the UNCL 4461 list such as 30 (the Factur-X profile rule FX-SCH-A-000609, on the same list, fails too).",
+        "fr": "Le code du moyen de paiement (BT-81) est SEPA, un mot au lieu d'un code de la liste UNCL 4461 comme 30 (la règle du profil Factur-X FX-SCH-A-000609, sur la même liste, échoue aussi)."
+      }
+    },
+    {
+      "id": "BR-CL-17",
+      "status": "invalid",
+      "rule": "BR-CL-17",
+      "fires": [
+        "BR-CL-17",
+        "BR-S-08",
+        "FX-SCH-A-000599",
+        "BR-FR-15_BT-95_BT-102"
+      ],
+      "files": {
+        "xml": "invalid/BR-CL-17.xml",
+        "pdf": "invalid/BR-CL-17.pdf"
+      },
+      "description": {
+        "en": "A document level allowance's VAT category code (BT-95) is VAT, the tax type, instead of a category such as S, so the allowance lowers no VAT breakdown (BR-S-08, on the standard rate's taxable amount, the Factur-X profile rule FX-SCH-A-000599, on the same list, and France's BR-FR-15, on the categories allowed in France, fail too).",
+        "fr": "Le code de catégorie de TVA d'une remise au niveau du document (BT-95) est VAT, le type de taxe, au lieu d'une catégorie comme S : la remise ne réduit donc aucune ventilation de TVA (BR-S-08, sur la base du taux normal, la règle du profil Factur-X FX-SCH-A-000599, sur la même liste, et la règle française BR-FR-15, sur les catégories admises en France, échouent aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-CL-17.xml",
+        "pdf": "fixed/BR-CL-17.pdf"
+      }
+    },
+    {
+      "id": "BR-CL-18",
+      "status": "invalid",
+      "rule": "BR-CL-18",
+      "fires": [
+        "BR-CL-18",
+        "FX-SCH-A-000587",
+        "FX-SCH-A-000619",
+        "BR-FR-15_BT-95_BT-118",
+        "BR-FR-15_BT-95_BT-151"
+      ],
+      "files": {
+        "xml": "invalid/BR-CL-18.xml",
+        "pdf": "invalid/BR-CL-18.pdf"
+      },
+      "description": {
+        "en": "The second line, at the reduced rate of 5.5 %, has the VAT category code AA, a UNCL 5305 code for a lower rate that EN 16931 does not use; its category S accepts any rate above zero (the Factur-X profile rules FX-SCH-A-000587 and FX-SCH-A-000619, on the same list, and France's BR-FR-15, on the categories allowed in France, fail too).",
+        "fr": "La deuxième ligne, au taux réduit de 5,5 %, a le code de catégorie de TVA AA, un code de la liste UNCL 5305 pour un taux réduit qu'EN 16931 n'utilise pas ; sa catégorie S admet tout taux supérieur à zéro (les règles du profil Factur-X FX-SCH-A-000587 et FX-SCH-A-000619, sur la même liste, et la règle française BR-FR-15, sur les catégories admises en France, échouent aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-CL-18.xml",
+        "pdf": "fixed/BR-CL-18.pdf"
+      }
+    },
+    {
+      "id": "BR-CL-19",
+      "status": "invalid",
+      "rule": "BR-CL-19",
+      "fires": [
+        "BR-CL-19",
+        "FX-SCH-A-000601"
+      ],
+      "files": {
+        "xml": "invalid/BR-CL-19.xml",
+        "pdf": "invalid/BR-CL-19.pdf"
+      },
+      "description": {
+        "en": "A document level allowance's reason code (BT-98) is its reason's text, Remise, instead of a code from the UNCL 5189 list (the Factur-X profile rule FX-SCH-A-000601, on the same list, fails too).",
+        "fr": "Le code motif d'une remise au niveau du document (BT-98) est le texte de son motif, Remise, au lieu d'un code de la liste UNCL 5189 (la règle du profil Factur-X FX-SCH-A-000601, sur la même liste, échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-CL-19.xml",
+        "pdf": "fixed/BR-CL-19.pdf"
+      }
+    },
+    {
+      "id": "BR-CL-20",
+      "status": "invalid",
+      "rule": "BR-CL-20",
+      "fires": [
+        "BR-CL-20",
+        "FX-SCH-A-000604"
+      ],
+      "files": {
+        "xml": "invalid/BR-CL-20.xml",
+        "pdf": "invalid/BR-CL-20.pdf"
+      },
+      "description": {
+        "en": "A document level charge's reason code (BT-105) is its reason's text, Frais de port, instead of a code from the UNCL 7161 list (the Factur-X profile rule FX-SCH-A-000604, on the same list, fails too).",
+        "fr": "Le code motif de frais au niveau du document (BT-105) est le texte de leur motif, Frais de port, au lieu d'un code de la liste UNCL 7161 (la règle du profil Factur-X FX-SCH-A-000604, sur la même liste, échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-CL-20.xml",
+        "pdf": "fixed/BR-CL-20.pdf"
+      }
+    },
+    {
+      "id": "BR-CL-21",
+      "status": "invalid",
+      "rule": "BR-CL-21",
+      "fires": [
+        "BR-CL-21",
+        "FX-SCH-A-000626"
+      ],
+      "files": {
+        "xml": "invalid/BR-CL-21.xml",
+        "pdf": "invalid/BR-CL-21.pdf"
+      },
+      "description": {
+        "en": "The scheme of the first line's item standard identifier (BT-157-1), a GTIN, is written EAN instead of its ISO 6523 code, 0160 (the Factur-X profile rule FX-SCH-A-000626, on the same list, fails too).",
+        "fr": "Le schéma de l'identifiant standard de l'article de la première ligne (BT-157-1), un GTIN, est écrit EAN au lieu de son code ISO 6523, 0160 (la règle du profil Factur-X FX-SCH-A-000626, sur la même liste, échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-CL-21.xml",
+        "pdf": "fixed/BR-CL-21.pdf"
+      }
+    },
+    {
+      "id": "BR-CL-22",
+      "status": "invalid",
+      "rule": "BR-CL-22",
+      "fires": [
+        "BR-CL-22",
+        "FX-SCH-A-000589"
+      ],
+      "files": {
+        "xml": "invalid/BR-CL-22.xml",
+        "pdf": "invalid/BR-CL-22.pdf"
+      },
+      "description": {
+        "en": "The exemption reason code of the exempt line's VAT breakdown (BT-121) is VATEX-EU-132-1, cut short: the VATEX list has VATEX-EU-132 and VATEX-EU-132-1A to VATEX-EU-132-1Q (the Factur-X profile rule FX-SCH-A-000589, on the same list, fails too).",
+        "fr": "Le code motif d'exonération de la ventilation de TVA de la ligne exonérée (BT-121) est VATEX-EU-132-1, tronqué : la liste VATEX a VATEX-EU-132 et VATEX-EU-132-1A à VATEX-EU-132-1Q (la règle du profil Factur-X FX-SCH-A-000589, sur la même liste, échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-CL-22.xml",
+        "pdf": "fixed/BR-CL-22.pdf"
+      }
+    },
+    {
+      "id": "BR-CL-23",
+      "status": "invalid",
+      "rule": "BR-CL-23",
+      "fires": [
+        "BR-CL-23",
+        "FX-SCH-A-000613"
+      ],
+      "files": {
+        "xml": "invalid/BR-CL-23.xml",
+        "pdf": "invalid/BR-CL-23.pdf"
+      },
+      "description": {
+        "en": "The first line's unit of measure code (BT-130) is U, an abbreviation instead of a code from UN/ECE Recommendation 20, such as C62 (the Factur-X profile rule FX-SCH-A-000613, on the same list, fails too).",
+        "fr": "Le code d'unité de mesure de la première ligne (BT-130) est U, une abréviation au lieu d'un code de la recommandation 20 de la CEE-ONU, comme C62 (la règle du profil Factur-X FX-SCH-A-000613, sur la même liste, échoue aussi)."
+      }
+    },
+    {
+      "id": "BR-CL-24",
+      "status": "invalid",
+      "rule": "BR-CL-24",
+      "fires": [
+        "BR-CL-24",
+        "FX-SCH-A-000287"
+      ],
+      "files": {
+        "xml": "invalid/BR-CL-24.xml",
+        "pdf": "invalid/BR-CL-24.pdf"
+      },
+      "description": {
+        "en": "A supporting document's attached file (BT-125), a CSV file, has the MIME code text/plain, which the rule does not allow; text/csv is allowed (the Factur-X profile rule FX-SCH-A-000287, on the same list, fails too).",
+        "fr": "Le fichier joint d'un justificatif (BT-125), un fichier CSV, a le code MIME text/plain, que la règle n'admet pas ; text/csv est admis (la règle du profil Factur-X FX-SCH-A-000287, sur la même liste, échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-CL-24.xml",
+        "pdf": "fixed/BR-CL-24.pdf"
+      }
+    },
+    {
+      "id": "BR-CL-25",
+      "status": "invalid",
+      "rule": "BR-CL-25",
+      "fires": [
+        "BR-CL-25",
+        "FX-SCH-A-000582"
+      ],
+      "files": {
+        "xml": "invalid/BR-CL-25.xml",
+        "pdf": "invalid/BR-CL-25.pdf"
+      },
+      "description": {
+        "en": "The scheme of the seller's electronic address (BT-34-1) is written SIREN instead of its EAS code, 0225 (the Factur-X profile rule FX-SCH-A-000582, on the same list, fails too).",
+        "fr": "Le schéma de l'adresse électronique du vendeur (BT-34-1) est écrit SIREN au lieu de son code EAS, 0225 (la règle du profil Factur-X FX-SCH-A-000582, sur la même liste, échoue aussi)."
+      }
+    },
+    {
+      "id": "BR-CL-26",
+      "status": "invalid",
+      "rule": "BR-CL-26",
+      "fires": [
+        "BR-CL-26",
+        "FX-SCH-A-000585"
+      ],
+      "files": {
+        "xml": "invalid/BR-CL-26.xml",
+        "pdf": "invalid/BR-CL-26.pdf"
+      },
+      "description": {
+        "en": "The scheme of the deliver-to location identifier (BT-71-1), a GLN, is written GLN instead of its ISO 6523 code, 0088 (the Factur-X profile rule FX-SCH-A-000585, on the same list, fails too).",
+        "fr": "Le schéma de l'identifiant du lieu de livraison (BT-71-1), un GLN, est écrit GLN au lieu de son code ISO 6523, 0088 (la règle du profil Factur-X FX-SCH-A-000585, sur la même liste, échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-CL-26.xml",
+        "pdf": "fixed/BR-CL-26.pdf"
+      }
     }
   ],
   "annotated": {

@@ -203,26 +203,30 @@ def party(tag, name, global_ids, legal_id=None):
     return node
 
 
-def add_payee(global_ids, legal_id=None):
-    """Add a payee (BG-10), a factoring company, before the payment means."""
+def add_payee(global_ids, legal_id=None, name="Affacturage Exemple"):
+    """Add a payee (BG-10), by default a factoring company, before the payment means."""
 
     def edit(root):
         insert(
             first(root, "ApplicableHeaderTradeSettlement"),
-            party("PayeeTradeParty", "Affacturage Exemple", global_ids, legal_id),
+            party("PayeeTradeParty", name, global_ids, legal_id),
             before="SpecifiedTradeSettlementPaymentMeans",
         )
 
     return edit
 
 
-def add_ship_to(global_ids):
-    """Add a deliver-to party (BG-13) with location identifiers (BT-71)."""
+def add_ship_to(global_ids, name="Médiathèque d'Exemple", address=None):
+    """Add a deliver-to party (BG-13) with location identifiers (BT-71), and its address (BG-15: postcode, street,
+    city, country) when given."""
 
     def edit(root):
-        first(root, "ApplicableHeaderTradeDelivery").insert(
-            0, party("ShipToTradeParty", "Médiathèque d'Exemple", global_ids)
-        )
+        node = party("ShipToTradeParty", name, global_ids)
+        if address is not None:
+            postal = sub(node, "ram:PostalTradeAddress")
+            for tag, value in zip(("PostcodeCode", "LineOne", "CityName", "CountryID"), address, strict=True):
+                sub(postal, f"ram:{tag}", value)
+        first(root, "ApplicableHeaderTradeDelivery").insert(0, node)
 
     return edit
 
@@ -236,14 +240,15 @@ def add_global_id(party_tag, value, scheme):
     return edit
 
 
-def billing_period(start, end):
-    """Add the invoicing period (BG-14: BT-73, BT-74) after the VAT breakdown."""
+def billing_period(start, end, where="ApplicableHeaderTradeSettlement"):
+    """Add the invoicing period (BG-14: BT-73, BT-74) after the VAT breakdown, or with where
+    "SpecifiedLineTradeSettlement", the first line's period (BG-26: BT-134, BT-135) after its VAT."""
 
     def edit(root):
         period = new("ram:BillingSpecifiedPeriod")
         sub(sub(period, "ram:StartDateTime"), "udt:DateTimeString", start, format="102")
         sub(sub(period, "ram:EndDateTime"), "udt:DateTimeString", end, format="102")
-        insert(first(root, "ApplicableHeaderTradeSettlement"), period, after="ApplicableTradeTax")
+        insert(first(root, where), period, after="ApplicableTradeTax")
 
     return edit
 
@@ -471,6 +476,120 @@ def no_exemption_reason(root):
     for tax in first(root, "ApplicableHeaderTradeSettlement").iterfind(ram("ApplicableTradeTax")):
         for node in tax.findall(ram("ExemptionReason")):
             tax.remove(node)
+
+
+# Edits at an XPath, its prefixes those of cii.NS (rsm:, ram:, udt:, qdt:).
+
+
+def set_value(path, text):
+    """Rewrite the text of the first element at an XPath."""
+
+    def edit(root):
+        root.xpath(path, namespaces=NS)[0].text = text
+
+    return edit
+
+
+def set_attribute(path, name, value):
+    """Set an attribute of every element at an XPath; None removes it."""
+
+    def edit(root):
+        for node in root.xpath(path, namespaces=NS):
+            if value is None:
+                node.attrib.pop(name, None)
+            else:
+                node.set(name, value)
+
+    return edit
+
+
+def remove(path):
+    """Remove the first element at an XPath."""
+
+    def edit(root):
+        node = root.xpath(path, namespaces=NS)[0]
+        node.getparent().remove(node)
+
+    return edit
+
+
+def add_tax_currency(code):
+    """Name a VAT accounting currency (BT-6) without its VAT total (BT-111)."""
+
+    def edit(root):
+        insert(
+            first(root, "ApplicableHeaderTradeSettlement"),
+            new("ram:TaxCurrencyCode", code),
+            before="InvoiceCurrencyCode",
+        )
+
+    return edit
+
+
+def add_product_id(value, scheme):
+    """Give the first line's item a standard identifier (BT-157), with its scheme (BT-157-1) or none."""
+
+    def edit(root):
+        node = new("ram:GlobalID", value, **({"schemeID": scheme} if scheme is not None else {}))
+        first(root, "SpecifiedTradeProduct").insert(0, node)
+
+    return edit
+
+
+def add_classification(code, list_id):
+    """Give the first line's item a classification identifier (BT-158), with its scheme (BT-158-1) or none."""
+
+    def edit(root):
+        classification = new("ram:DesignatedProductClassification")
+        sub(classification, "ram:ClassCode", code, **({"listID": list_id} if list_id is not None else {}))
+        insert(first(root, "SpecifiedTradeProduct"), classification, before="OriginTradeCountry")
+
+    return edit
+
+
+def add_origin(country):
+    """Give the first line's item a country of origin (BT-159)."""
+
+    def edit(root):
+        sub(sub(first(root, "SpecifiedTradeProduct"), "ram:OriginTradeCountry"), "ram:ID", country)
+
+    return edit
+
+
+def add_card(number):
+    """Give the payment means a payment card (BG-18) whose primary account number is number (BT-87)."""
+
+    def edit(root):
+        card = new("ram:ApplicableTradeSettlementFinancialCard")
+        sub(card, "ram:ID", number)
+        insert(first(root, "SpecifiedTradeSettlementPaymentMeans"), card, after="TypeCode")
+
+    return edit
+
+
+def account_name_only(name):
+    """Replace the payment account's identifier (BT-84) by its name (BT-85): an account with no IBAN."""
+
+    def edit(root):
+        account = first(root, "PayeePartyCreditorFinancialAccount")
+        for node in list(account):
+            account.remove(node)
+        sub(account, "ram:AccountName", name)
+
+    return edit
+
+
+def add_attachment(issuer_id, name, filename, mime, content):
+    """Add a supporting document (BG-24) with an attached file (BT-125): its MIME code and file name."""
+
+    def edit(root):
+        document = sub(agreement(root), "ram:AdditionalReferencedDocument")
+        sub(document, "ram:IssuerAssignedID", issuer_id)
+        sub(document, "ram:TypeCode", "916")
+        sub(document, "ram:Name", name)
+        sub(document, "ram:AttachmentBinaryObject", content, mimeCode=mime, filename=filename)
+
+    return edit
 
 
 def build(base, variant=None):
