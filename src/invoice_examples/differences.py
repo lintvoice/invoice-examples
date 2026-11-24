@@ -281,6 +281,19 @@ TERMS = {
         "id",
     ),
     "BuyerTradeParty/PostalTradeAddress/CountryID": ("BT-55", "Buyer country code", "Code pays de l'acheteur", "text"),
+    "ShipToTradeParty/PostalTradeAddress/LineOne": (
+        "BT-75",
+        "Deliver to address line 1",
+        "Adresse de livraison",
+        "text",
+    ),
+    "ShipToTradeParty/PostalTradeAddress/CityName": ("BT-77", "Deliver to city", "Ville de livraison", "text"),
+    "ShipToTradeParty/PostalTradeAddress/PostcodeCode": (
+        "BT-78",
+        "Deliver to post code",
+        "Code postal de livraison",
+        "text",
+    ),
     "ShipToTradeParty/PostalTradeAddress/CountryID": (
         "BT-80",
         "Deliver to country code",
@@ -325,6 +338,33 @@ TERMS = {
     ),
     # in CII, an allowance's or charge's VAT category also carries a tax type, always VAT: no business term of its own
     "SpecifiedTradeAllowanceCharge/CategoryTradeTax/TypeCode": (None, "", "", "syntax"),
+    # a VAT breakdown (BG-23) as a whole, when one is missing or one too many (the VAT category rules)
+    "ApplicableHeaderTradeSettlement/ApplicableTradeTax/CalculatedAmount": (
+        "BT-117",
+        "VAT category tax amount",
+        "Montant de TVA de la catégorie",
+        "amount",
+    ),
+    "ApplicableHeaderTradeSettlement/ApplicableTradeTax/BasisAmount": (
+        "BT-116",
+        "VAT category taxable amount",
+        "Base de la catégorie de TVA",
+        "amount",
+    ),
+    "ApplicableHeaderTradeSettlement/ApplicableTradeTax/RateApplicablePercent": (
+        "BT-119",
+        "VAT category rate",
+        "Taux de la catégorie de TVA",
+        "percent",
+    ),
+    "ApplicableHeaderTradeSettlement/ApplicableTradeTax/ExemptionReason": (
+        "BT-120",
+        "VAT exemption reason text",
+        "Motif d'exonération de TVA",
+        "text",
+    ),
+    # in CII, a VAT breakdown also carries a tax type, always VAT: no business term of its own
+    "ApplicableHeaderTradeSettlement/ApplicableTradeTax/TypeCode": (None, "", "", "syntax"),
     "ApplicableHeaderTradeSettlement/ApplicableTradeTax/CategoryCode": (
         "BT-118",
         "VAT category code",

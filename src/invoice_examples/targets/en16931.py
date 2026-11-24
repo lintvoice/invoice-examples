@@ -26,6 +26,14 @@ from ..edits import (
     add_tax_currency,
     add_tax_representative,
     accounting_vat_total,
+    add_breakdown,
+    add_exemption_reason,
+    breakdown_basis,
+    breakdown_per_line,
+    breakdown_vat,
+    drop_breakdown,
+    no_exemption,
+    set_rate,
     add_element,
     allowance_as_negative_line,
     billing_period,
@@ -127,6 +135,59 @@ GERMAN = {
         "unit": "Stk",
         "scheme_names": {"global": "GLN", "legal": "HRB", "endpoint": "EMAIL"},
         "thanks": "Thank you for your order.",
+    },
+}
+# What the VAT category variants (vat_categories) put on the invoice, per category: its two items (the base's
+# quantities and prices), its exemption reason (BT-120) and code (BT-121), the parties it needs; and the reason a
+# category that charges VAT should not give (BR-S-10, BR-Z-10).
+GERMAN["words"]["categories"] = {
+    "S": {"wrong_reason": "Standard rate"},
+    # PV modules sold to the operator of the system: 0 % rate, § 12 (3) UStG; next to them, a charging station at the
+    # standard rate (the mixed invoice of BR-Z-01)
+    "Z": {
+        "items": ("Photovoltaic module, 430 Wp", "Module mounting clamp"),
+        "standard_line": ("Wallbox charging station", "1", "300.00", "S", "19"),
+        "wrong_reason": "Zero rated",
+    },
+    # transport of goods being exported, invoiced to the exporter: exempt, § 4 No. 3a UStG (Directive art. 146 (1) (e));
+    # next to it, storage in Berlin at the standard rate
+    "E": {
+        "items": ("Road freight Munich - Zurich, export consignment", "Loading of export pallets"),
+        "reason": ("Exempt: transport of export goods (§ 4 No. 3a UStG)", "VATEX-EU-146-1E"),
+        "standard_line": ("Storage, Berlin warehouse", "1", "300.00", "S", "19"),
+    },
+    # construction work subcontracted to a general contractor that itself supplies construction work: § 13b UStG
+    "AE": {
+        "items": ("Electrical installation works (subcontract)", "Cable tray, installed"),
+        "reason": ("Reverse charge: the recipient is liable for the VAT (§ 13b UStG)", "VATEX-EU-AE"),
+        "buyer": {**GERMAN["buyer"], "vat": cii.vat_de("99999997")},
+    },
+    # goods shipped to a company in Austria: § 4 No. 1b and § 6a UStG; ATU99999993: VIES answers that no company holds
+    # it (checked 2026-11-24)
+    "K": {
+        "items": ("Industrial pump", "Pump seal kit"),
+        "reason": ("Tax-exempt intra-Community supply (§ 4 No. 1b, § 6a UStG)", "VATEX-EU-IC"),
+        "buyer": {
+            "name": "Beispielkunde GmbH",
+            "address": ("1010", "Musterplatz 1", "Wien", "AT"),
+            "vat": "ATU99999993",
+        },
+        "ship_to": ("Beispielkunde GmbH", ("1010", "Musterplatz 1", "Wien", "AT")),
+    },
+    # goods exported to a company in Switzerland: § 4 No. 1a and § 6 UStG
+    "G": {
+        "items": ("Packaging machine", "Spare parts kit"),
+        "reason": ("Tax-exempt export delivery (§ 4 No. 1a, § 6 UStG)", "VATEX-EU-G"),
+        "buyer": {"name": "Beispielkunde AG", "address": ("4051", "Musterstrasse 1", "Basel", "CH")},
+    },
+    # a service to a company in Switzerland, supplied where the customer is (§ 3a (2) UStG): not taxable in Germany;
+    # the seller gives its tax number (Steuernummer, BT-32), not its VAT number, which BR-O-02 forbids. 99/999/99999
+    # is no Berlin tax office's number (they start 11 to 37).
+    "O": {
+        "items": ("Software consulting, October 2026", "Remote support, hours"),
+        "reason": ("Not subject to VAT: place of supply outside Germany (§ 3a (2) UStG)", "VATEX-EU-O"),
+        "seller": {**GERMAN["seller"], "vat": None, "tax_number": "99/999/99999"},
+        "buyer": {"name": "Beispielkunde AG", "address": ("8001", "Musterstrasse 1", "Zürich", "CH")},
     },
 }
 
@@ -1129,6 +1190,344 @@ def code_lists(base):
     )
 
 
+# The VAT categories, as the rule pages name them: (code, English, French). K is the code of the BR-IC rules.
+CATEGORY = {
+    "S": ("standard rate", "taux normal"),
+    "Z": ("zero rate", "taux zéro"),
+    "E": ("exempt", "exonération"),
+    "AE": ("reverse charge", "autoliquidation"),
+    "K": ("intra-Community supply", "livraison intracommunautaire"),
+    "G": ("export outside the EU", "exportation hors de l'UE"),
+    "O": ("outside the scope of VAT", "hors du champ de la TVA"),
+    "B": ("split payment, Italy's", "paiement scindé, italien"),
+}
+RULE_PREFIX = {"S": "BR-S", "Z": "BR-Z", "E": "BR-E", "AE": "BR-AE", "K": "BR-IC", "G": "BR-G", "O": "BR-O"}
+SELLER_VAT = "//ram:SellerTradeParty/ram:SpecifiedTaxRegistration"
+BUYER_VAT = "//ram:BuyerTradeParty/ram:SpecifiedTaxRegistration"
+
+
+def _cat(code):
+    """How a description names a category: "VAT category Z (zero rate)", « la catégorie de TVA Z (taux zéro) »."""
+    en, fr = CATEGORY[code]
+    return f"VAT category {code} ({en})", f"la catégorie de TVA {code} ({fr})"
+
+
+def vat_categories(base):
+    """One invalid variant per VAT category rule (BR-S, BR-Z, BR-E, BR-AE, BR-IC, BR-G, BR-O, BR-B) still without one,
+    built on base. Each category has its context: the whole invoice in that category, its items, its buyer, its
+    exemption reason and code (base["words"]["categories"]); the variant's edit then breaks the rule, so its fixed
+    counterpart is the same invoice in that category.
+
+    Some of these rules cannot fail alone in CII: BR-x-03 and BR-x-04 (an allowance, a charge) run the same test as
+    BR-x-02 (the lines), so they fail with it; BR-O-11 and BR-O-12 run one test, and so do BR-O-13 and BR-O-14; a
+    category's breakdown can only be missing next to another one (the Factur-X schema requires a breakdown), so for
+    the categories that make a whole invoice its first rule fails with one breakdown per line. BR-S-02, BR-S-08 and
+    BR-E-10 are in variants(); BR-S-09 fails in BR-CO-17's example."""
+    w, lines = base["words"], base["lines"]
+    std = lines[0][4]
+    cats = w["categories"]
+
+    def ctx(code, extra_lines=(), allowance=False, charge=False, **override):
+        """The invoice in a category: its two lines (the base's quantities and prices), its exemption reason and code,
+        its parties; plus an allowance or a charge in the same category."""
+        c = cats[code]
+        rate = None if code == "O" else ("0" if code != "B" else std)
+        changes = {
+            "lines": [(n, q, p, code, rate) for n, (_, q, p, *_) in zip(c["items"], lines, strict=True)]
+            + list(extra_lines)
+        }
+        if c.get("reason"):
+            changes["exemptions"] = {code: c["reason"]}
+        for key in ("seller", "buyer", "ship_to", "buyer_reference"):
+            if key in c:
+                changes[key] = c[key]
+        if allowance:
+            changes["allowances"] = [("10.00", "95", w["allowance"], code, rate)]
+        if charge:
+            changes["charges"] = [("10.00", "FC", w["charge"], code, rate)]
+        changes.update(override)
+        return changes
+
+    out = []
+
+    def add(rule, fires, en, fr, changes=None, edit=None, fixed=None, fixed_changes=None):
+        out.append(Variant(rule, rule, tuple(fires), en, fr, changes or {}, edit, fixed, fixed_changes))
+
+    # BR-x-01: every category used has exactly one VAT breakdown
+    for code in ("Z", "E"):
+        en, fr = _cat(code)
+        if code not in cats:
+            continue
+        p = RULE_PREFIX[code]
+        mixed = ctx(code, extra_lines=[cats[code]["standard_line"]])
+        add(
+            f"{p}-01",
+            (f"{p}-01",),
+            f"The lines are in {en}, next to one at the standard rate, but the invoice has no VAT breakdown for their category.",
+            f"Les lignes relèvent de {fr}, à côté d'une ligne au taux normal, mais la facture n'a pas de ventilation de TVA pour leur catégorie.",
+            mixed,
+            drop_breakdown(code),
+        )
+    for code in ("AE", "K", "G", "O"):
+        if code not in cats:
+            continue
+        en, fr = _cat(code)
+        p = RULE_PREFIX[code]
+        add(
+            f"{p}-01",
+            (f"{p}-01", f"{p}-08"),
+            f"The lines are in {en}, and the invoice gives one VAT breakdown per line instead of one for the category ({p}-08, on each breakdown's taxable amount, fails too).",
+            f"Les lignes relèvent de {fr}, et la facture donne une ventilation de TVA par ligne au lieu d'une pour la catégorie ({p}-08, sur la base de chaque ventilation, échoue aussi).",
+            ctx(code),
+            breakdown_per_line(code),
+        )
+    # BR-S-01: one standard-rated line and no standard-rated breakdown (with two such lines, the CII test passes)
+    add(
+        "BR-S-01",
+        ("BR-S-01", "BR-CO-14"),
+        "The invoice has one standard-rated line and one exempt line, but no VAT breakdown for the standard rate; its VAT total still holds the line's VAT (BR-CO-14, on the VAT total against the breakdowns, fails too).",
+        "La facture a une ligne au taux normal et une ligne exonérée, mais pas de ventilation de TVA pour le taux normal ; son total de TVA compte toujours la TVA de la ligne (BR-CO-14, sur le total de TVA comparé aux ventilations, échoue aussi).",
+        {"lines": [lines[0], w["exempt_line"]]},
+        drop_breakdown("S"),
+    )
+
+    # BR-x-02 to 04: the VAT numbers each category requires (or, for O, forbids), on a line, an allowance, a charge
+    for code in ("S", "Z", "E", "AE", "K", "G", "O"):
+        if code not in cats:
+            continue
+        en, fr = _cat(code)
+        p = RULE_PREFIX[code]
+        if code == "K":
+            who_en, who_fr, edit = (
+                "the buyer has no VAT number (BT-48)",
+                "l'acheteur n'a pas de numéro de TVA (BT-48)",
+                remove(BUYER_VAT),
+            )
+        elif code == "O":
+            who_en, who_fr, edit = (
+                "the seller gives a VAT number (BT-31)",
+                "le vendeur indique un numéro de TVA (BT-31)",
+                None,
+            )
+        else:
+            who_en, who_fr, edit = (
+                "the seller has no VAT number (BT-31)",
+                "le vendeur n'a pas de numéro de TVA (BT-31)",
+                remove(SELLER_VAT),
+            )
+        # O: the seller keeps its VAT number in the variant; the fixed counterpart removes it
+        o_seller = {"seller": {**cats["O"]["seller"], "vat": base["seller"]["vat"]}} if code == "O" else {}
+        o_fixed = remove(SELLER_VAT) if code == "O" else None
+        if code != "S":
+            add(
+                f"{p}-02",
+                (f"{p}-02",),
+                f"The lines are in {en}, but {who_en}.",
+                f"Les lignes relèvent de {fr}, mais {who_fr}.",
+                {**ctx(code), **o_seller},
+                edit,
+                o_fixed,
+            )
+        for n, kind in (("03", "allowance"), ("04", "charge")):
+            what_en = "A document level allowance" if kind == "allowance" else "A document level charge"
+            what_fr = "Une remise au niveau du document" if kind == "allowance" else "Des frais au niveau du document"
+            verb_fr = "relève" if kind == "allowance" else "relèvent"
+            if code == "S":
+                context = {f"{kind}s": [("10.00", "95" if kind == "allowance" else "FC", w[kind], "S", std)]}
+            else:
+                context = ctx(code, **{kind: True})
+            add(
+                f"{p}-{n}",
+                (f"{p}-02", f"{p}-{n}"),
+                f"{what_en} is in {en}, like the lines, but {who_en} ({p}-02, the same check for the lines, fails too).",
+                f"{what_fr} {verb_fr} de {fr}, comme les lignes, mais {who_fr} ({p}-02, le même contrôle pour les lignes, échoue aussi).",
+                {**context, **o_seller},
+                edit,
+                o_fixed,
+            )
+
+    # BR-x-05 to 07: the rate of a line, an allowance, a charge (S: above 0; Z, E, AE, K, G: 0; O: none)
+    where = (
+        ("05", "line", "The first line", "La première ligne", "BT-152", "", "relève"),
+        (
+            "06",
+            "allowance",
+            "A document level allowance",
+            "Une remise au niveau du document",
+            "BT-96",
+            "allowance",
+            "relève",
+        ),
+        ("07", "charge", "A document level charge", "Des frais au niveau du document", "BT-103", "charge", "relèvent"),
+    )
+    for code in ("Z", "E", "AE", "K", "G", "O"):
+        if code not in cats:
+            continue
+        en, fr = _cat(code)
+        p = RULE_PREFIX[code]
+        for n, place, what_en, what_fr, bt, kind, verb_fr in where:
+            context = ctx(code, **({kind: True} if kind else {}))
+            if code == "O":
+                add(
+                    f"{p}-{n}",
+                    (f"{p}-{n}",),
+                    f"{what_en} is outside the scope of VAT (O), yet gives a VAT rate ({bt}), 0 %; this category has no rate.",
+                    f"{what_fr} {verb_fr} de la catégorie hors du champ de la TVA (O), et indique pourtant un taux de TVA ({bt}), 0 % ; cette catégorie n'a pas de taux.",
+                    context,
+                    set_rate(place, "0"),
+                )
+            else:
+                add(
+                    f"{p}-{n}",
+                    (f"{p}-{n}",),
+                    f"{what_en} is in {en}, but its VAT rate ({bt}) is {std} % instead of 0 %.",
+                    f"{what_fr} {verb_fr} de {fr}, mais son taux de TVA ({bt}) est de {std} % au lieu de 0 %.",
+                    context,
+                    set_rate(place, std),
+                )
+    # S: a rate of 0 under the standard rate, the invoice's breakdowns computed from it; the fixed counterpart has the
+    # standard rate
+    s_cases = (
+        ("05", {"lines": [(*lines[0][:4], "0"), *lines[1:]]}, {"lines": lines}),
+        (
+            "06",
+            {"allowances": [("10.00", "95", w["allowance"], "S", "0")]},
+            {"allowances": [("10.00", "95", w["allowance"], "S", std)]},
+        ),
+        (
+            "07",
+            {"charges": [("10.00", "FC", w["charge"], "S", "0")]},
+            {"charges": [("10.00", "FC", w["charge"], "S", std)]},
+        ),
+    )
+    for (n, changes, fixed_changes), (_, _, what_en, what_fr, bt, _, verb_fr) in zip(s_cases, where, strict=True):
+        add(
+            f"BR-S-{n}",
+            (f"BR-S-{n}",),
+            f"{what_en} is in VAT category S (standard rate), but its VAT rate ({bt}) is 0 %.",
+            f"{what_fr} {verb_fr} de la catégorie de TVA S (taux normal), mais son taux de TVA ({bt}) est de 0 %.",
+            changes,
+            fixed_changes=fixed_changes,
+        )
+
+    # BR-x-08 to 10: a category's breakdown: its taxable amount, its VAT amount, its exemption reason
+    for code in ("Z", "E", "AE", "K", "G", "O"):
+        if code not in cats:
+            continue
+        en, fr = _cat(code)
+        p = RULE_PREFIX[code]
+        add(
+            f"{p}-08",
+            (f"{p}-08",),
+            f"The taxable amount of the VAT breakdown in {en} (BT-116) is 1 € more than the net amounts of its lines (BT-131).",
+            f"La base de la ventilation de TVA de {fr} (BT-116) dépasse de 1 € la somme des montants nets de ses lignes (BT-131).",
+            ctx(code),
+            breakdown_basis(code, 1),
+        )
+        add(
+            f"{p}-09",
+            (f"{p}-09", "BR-CO-17"),
+            f"The VAT breakdown in {en} has a VAT amount (BT-117) of {std} % of its taxable amount instead of 0; the VAT total follows it (BR-CO-17, on the VAT amount against the taxable amount times the rate, fails too).",
+            f"La ventilation de TVA de {fr} a un montant de TVA (BT-117) de {std} % de sa base au lieu de 0 ; le total de TVA le suit (BR-CO-17, sur le montant de TVA comparé à la base multipliée par le taux, échoue aussi).",
+            ctx(code),
+            breakdown_vat(code, std),
+        )
+        if code not in ("Z", "E"):  # Z: below; E: BR-E-10 is in variants()
+            add(
+                f"{p}-10",
+                (f"{p}-10",),
+                f"The VAT breakdown in {en} gives neither an exemption reason (BT-120) nor an exemption reason code (BT-121).",
+                f"La ventilation de TVA de {fr} n'indique ni motif d'exonération (BT-120) ni code de motif (BT-121).",
+                ctx(code),
+                no_exemption(code),
+            )
+    for code in ("S", "Z"):
+        if code not in cats:
+            continue
+        context = ctx(code) if code != "S" else {}
+        en, fr = _cat(code)
+        reason = cats[code]["wrong_reason"]
+        add(
+            f"{RULE_PREFIX[code]}-10",
+            (f"{RULE_PREFIX[code]}-10",),
+            f"The VAT breakdown in {en} gives an exemption reason (BT-120), « {reason} »; a category that charges VAT, or charges it at 0 %, has none.",
+            f"La ventilation de TVA de {fr} indique un motif d'exonération (BT-120), « {reason} » ; une catégorie qui applique la TVA, même à 0 %, n'en a pas.",
+            context,
+            add_exemption_reason(code, reason),
+        )
+
+    # BR-IC-11 and 12: an intra-Community supply says when and where the goods were delivered
+    add(
+        "BR-IC-11",
+        ("BR-IC-11",),
+        "The lines are an intra-Community supply (K), but the invoice gives neither an actual delivery date (BT-72) nor an invoicing period (BG-14).",
+        "Les lignes sont une livraison intracommunautaire (K), mais la facture n'indique ni date de livraison (BT-72) ni période de facturation (BG-14).",
+        ctx("K"),
+        remove("//ram:ActualDeliverySupplyChainEvent"),
+    )
+    add(
+        "BR-IC-12",
+        ("BR-IC-12",),
+        "The lines are an intra-Community supply (K), but the invoice has no deliver-to address, so no deliver-to country (BT-80).",
+        "Les lignes sont une livraison intracommunautaire (K), mais la facture n'a pas d'adresse de livraison, donc pas de pays de livraison (BT-80).",
+        ctx("K"),
+        remove("//ram:ShipToTradeParty"),
+    )
+
+    # BR-B: split payment is Italian; the Factur-X profile does not accept category B at all
+    b_en, b_fr = _cat("B")
+    add(
+        "BR-B-01",
+        ("BR-B-01", "FX-SCH-A-000587", "FX-SCH-A-000619"),
+        f"The lines are in {b_en} (B) on an invoice between two companies outside Italy (the Factur-X profile rules FX-SCH-A-000587 and FX-SCH-A-000619, which do not accept category B, fail too).",
+        f"Les lignes relèvent de {b_fr} (B) sur une facture entre deux entreprises hors d'Italie (les règles du profil Factur-X FX-SCH-A-000587 et FX-SCH-A-000619, qui n'acceptent pas la catégorie B, échouent aussi).",
+        {"lines": [(*line[:3], "B", line[4]) for line in lines]},
+    )
+    add(
+        "BR-B-02",
+        ("BR-B-01", "BR-B-02", "FX-SCH-A-000587", "FX-SCH-A-000619"),
+        f"The second line is in {b_en} (B), the first at the standard rate (S) (BR-B-01, as the invoice is not Italian, and the Factur-X profile rules FX-SCH-A-000587 and FX-SCH-A-000619, which do not accept category B, fail too).",
+        f"La deuxième ligne relève de {b_fr} (B), la première du taux normal (S) (BR-B-01, la facture n'étant pas italienne, et les règles du profil Factur-X FX-SCH-A-000587 et FX-SCH-A-000619, qui n'acceptent pas la catégorie B, échouent aussi).",
+        {"lines": [lines[0], (*lines[1][:3], "B", lines[1][4])]},
+    )
+    # BR-O-11 to 14: an invoice outside the scope of VAT has no other category (two CII tests for four rules)
+    if "O" not in cats:
+        return tuple(out)
+    add(
+        "BR-O-11",
+        ("BR-O-11", "BR-O-12"),
+        f"The invoice is {CATEGORY['O'][0]} (O), but it also has an empty VAT breakdown at the standard rate, S {std} % (BR-O-12, whose test in CII is the same, fails too).",
+        f"La facture est {CATEGORY['O'][1]} (O), mais elle a aussi une ventilation de TVA vide au taux normal, S {std} % (BR-O-12, dont le test en CII est le même, échoue aussi).",
+        ctx("O"),
+        add_breakdown("S", std),
+    )
+    o_lines = ctx("O")["lines"]
+    add(
+        "BR-O-12",
+        ("BR-O-11", "BR-O-12"),
+        f"The invoice is {CATEGORY['O'][0]} (O), but its second line is at the standard rate, S {std} %, with its own VAT breakdown (BR-O-11, whose test in CII is the same, fails too).",
+        f"La facture est {CATEGORY['O'][1]} (O), mais sa deuxième ligne est au taux normal, S {std} %, avec sa propre ventilation de TVA (BR-O-11, dont le test en CII est le même, échoue aussi).",
+        {**ctx("O"), "lines": [o_lines[0], (*o_lines[1][:3], "S", std)]},
+        fixed_changes={"lines": o_lines},
+    )
+    for rule, kind, what_en, what_fr, twin in (
+        ("BR-O-13", "allowances", "a document level allowance", "une remise au niveau du document", "BR-O-14"),
+        ("BR-O-14", "charges", "a document level charge", "des frais au niveau du document", "BR-O-13"),
+    ):
+        reason_code = "95" if kind == "allowances" else "FC"
+        word = w["allowance"] if kind == "allowances" else w["charge"]
+        add(
+            rule,
+            ("BR-O-11", "BR-O-12", "BR-O-13", "BR-O-14"),
+            f"The invoice is {CATEGORY['O'][0]} (O), but {what_en} is at the standard rate, S {std} %, with its own VAT breakdown ({twin}, whose test in CII is the same, and BR-O-11 and BR-O-12, on that breakdown, fail too).",
+            f"La facture est {CATEGORY['O'][1]} (O), mais {what_fr} est au taux normal, S {std} %, avec sa propre ventilation de TVA ({twin}, dont le test en CII est le même, et BR-O-11 et BR-O-12, sur cette ventilation, échouent aussi).",
+            {**ctx("O"), kind: [("10.00", reason_code, word, "S", std)]},
+            fixed_changes={kind: [("10.00", reason_code, word, "O", None)]},
+        )
+
+    return tuple(out)
+
+
 def _exemption_code(root, code):
     """Give the exempt category's VAT breakdown an exemption reason code (BT-121), after its category code."""
     for tax in root.xpath(EXEMPT_TAX, namespaces=cii.NS):
@@ -1147,7 +1546,14 @@ BR_52 = Variant(
     fixed=add_documents(("TS-2026-10", "916", "Timesheet", None)),
 )
 
-VARIANTS = (*variants(GERMAN), BR_52, *decimals(GERMAN), *core(GERMAN), *code_lists(GERMAN))
+VARIANTS = (
+    *variants(GERMAN),
+    BR_52,
+    *decimals(GERMAN),
+    *core(GERMAN),
+    *code_lists(GERMAN),
+    *vat_categories(GERMAN),
+)
 
 
 def build(variant=None):

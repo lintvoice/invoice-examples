@@ -155,6 +155,74 @@ FRENCH = {
         "thanks": "Merci pour votre commande.",
     },
 }
+# A French company buying from the seller (the categories where the town hall of the baseline would not be realistic):
+# an exporter, a general contractor. Their SIRENs are fictitious, their last digit a Luhn key; the API Recherche
+# d'entreprises (recherche-entreprises.api.gouv.fr) finds no company under either (checked 2026-11-24).
+EXPORTER_SIREN = luhn_complete("05678901")
+CONTRACTOR_SIREN = luhn_complete("06789012")
+
+
+def _company(name, siren, address):
+    siret = luhn_complete(siren + "0001")
+    return {
+        "name": name,
+        "global_id": (siret, "0009"),
+        "legal_id": (siren, "0002"),
+        "address": address,
+        "endpoint": (siren, "0225"),
+        "department": None,
+        "vat": vat_fr(siren),
+    }
+
+
+# What the VAT category variants put on the invoice, per category (targets/en16931.py, vat_categories). No Z and no O:
+# France has no domestic zero rate, and a French company registered for VAT gives its VAT number on every invoice
+# (CGI annex II, art. 242 nonies A), which category O forbids (BR-O-02); those examples are on the European invoice.
+FRENCH["words"]["categories"] = {
+    "S": {"wrong_reason": "Taux normal"},
+    # transport of goods being exported, invoiced to the exporter: CGI art. 262 I 1° (Directive art. 146 (1) (e))
+    "E": {
+        "items": ("Transport routier Lyon - Genève, marchandises exportées", "Chargement des palettes exportées"),
+        "reason": ("Exonération de TVA, article 262 I 1° du CGI", "VATEX-EU-146-1E"),
+        "standard_line": ("Stockage en entrepôt à Lyon", "1", "300.00", "S", "20"),
+        "buyer": _company("Exportateur Exemple SAS", EXPORTER_SIREN, ("69007", "3 quai de l'Exemple", "Lyon", "FR")),
+        "buyer_reference": None,
+    },
+    # construction work subcontracted to a general contractor: CGI art. 283-2 nonies, the mention « Autoliquidation »
+    "AE": {
+        "items": ("Travaux d'électricité en sous-traitance", "Chemin de câbles posé"),
+        "reason": ("Autoliquidation", "VATEX-EU-AE"),
+        "buyer": _company(
+            "Entreprise Générale Exemple SAS", CONTRACTOR_SIREN, ("75015", "8 rue de l'Exemple", "Paris", "FR")
+        ),
+        "buyer_reference": None,
+    },
+    # goods shipped to a company in Belgium: CGI art. 262 ter I; BE0999999922: VIES answers that no company holds it
+    # (checked 2026-11-24)
+    "K": {
+        "items": ("Pompe industrielle", "Kit de joints de pompe"),
+        "reason": ("Exonération de TVA, article 262 ter I du CGI", "VATEX-EU-IC"),
+        "buyer": {
+            "name": "Client Exemple SRL",
+            "address": ("1000", "Rue de l'Exemple 1", "Bruxelles", "BE"),
+            "endpoint": ("achats@client-exemple.example", "EM"),  # BT-49, which BR-FR-12 requires
+            "vat": "BE0999999922",
+        },
+        "ship_to": ("Client Exemple SRL", ("1000", "Rue de l'Exemple 1", "Bruxelles", "BE")),
+        "buyer_reference": None,
+    },
+    # goods exported to a company in Switzerland: CGI art. 262 I 1°
+    "G": {
+        "items": ("Machine d'emballage", "Kit de pièces de rechange"),
+        "reason": ("Exonération de TVA, article 262 I 1° du CGI", "VATEX-EU-G"),
+        "buyer": {
+            "name": "Client Exemple SA",
+            "address": ("1201", "Rue de l'Exemple 1", "Genève", "CH"),
+            "endpoint": ("achats@client-exemple.example", "EM"),
+        },
+        "buyer_reference": None,
+    },
+}
 
 
 def amt(value):
@@ -198,6 +266,8 @@ def party(parent, tag, p):
         el(el(node, "ram:URIUniversalCommunication"), "ram:URIID", p["endpoint"][0], **_scheme(p["endpoint"][1]))
     if p.get("vat"):
         el(el(node, "ram:SpecifiedTaxRegistration"), "ram:ID", p["vat"], schemeID="VA")
+    if p.get("tax_number"):  # BT-32, the seller's tax registration identifier (a German Steuernummer)
+        el(el(node, "ram:SpecifiedTaxRegistration"), "ram:ID", p["tax_number"], schemeID="FC")
     return node
 
 
@@ -234,7 +304,8 @@ def build(c):
         tax = el(settle, "ram:ApplicableTradeTax")
         el(tax, "ram:TypeCode", c["tax_type"])
         el(tax, "ram:CategoryCode", cat)
-        el(tax, "ram:RateApplicablePercent", rate)
+        if rate is not None:  # None: no rate at all, as category O (not subject to VAT) requires
+            el(tax, "ram:RateApplicablePercent", rate)
         for d in discount:
             ac = el(settle, "ram:SpecifiedTradeAllowanceCharge")
             el(el(ac, "ram:ChargeIndicator"), "udt:Indicator", "false")
@@ -252,8 +323,15 @@ def build(c):
         el(el(agree, "ram:BuyerOrderReferencedDocument"), "ram:IssuerAssignedID", c["order_reference"])
 
     delivery = el(tx, "ram:ApplicableHeaderTradeDelivery")
-    event = el(delivery, "ram:ActualDeliverySupplyChainEvent")
-    date(event, "ram:OccurrenceDateTime", c["delivery_date"])
+    if c.get("ship_to"):  # BG-13: (name, (postcode, street, city, country))
+        ship_to = el(delivery, "ram:ShipToTradeParty")
+        el(ship_to, "ram:Name", c["ship_to"][0])
+        addr = el(ship_to, "ram:PostalTradeAddress")
+        for tag, value in zip(("PostcodeCode", "LineOne", "CityName", "CountryID"), c["ship_to"][1], strict=True):
+            el(addr, f"ram:{tag}", value)
+    if c["delivery_date"]:
+        event = el(delivery, "ram:ActualDeliverySupplyChainEvent")
+        date(event, "ram:OccurrenceDateTime", c["delivery_date"])
 
     settle = el(tx, "ram:ApplicableHeaderTradeSettlement")
     if c["tax_currency"]:
@@ -278,19 +356,28 @@ def build(c):
         for amount, _code, _reason, cat, rate in items:
             groups[(cat, rate)] = groups.get((cat, rate), Decimal(0)) + sign * Decimal(amount)
     tax_total = Decimal(0)
+    # the exemption reason (BT-120) and its code (BT-121) of a category, when the invoice names them; else the
+    # invoice's one reason, for the categories that need one
+    exemptions = c.get("exemptions", {})
     for (cat, rate), basis in groups.items():
-        vat = (basis * Decimal(rate) / 100).quantize(CENT, ROUND_HALF_UP)
+        vat = (basis * Decimal(rate or 0) / 100).quantize(CENT, ROUND_HALF_UP)
         tax_total += vat
         tax = el(settle, "ram:ApplicableTradeTax")
         el(tax, "ram:CalculatedAmount", amt(vat))
         el(tax, "ram:TypeCode", c["tax_type"])
-        if cat in ("E", "AE", "K", "G", "O"):
-            el(tax, "ram:ExemptionReason", c["exemption_reason"])
+        reason, code = exemptions.get(
+            cat, (c["exemption_reason"], None) if cat in ("E", "AE", "K", "G", "O") else (None, None)
+        )
+        if reason:
+            el(tax, "ram:ExemptionReason", reason)
         el(tax, "ram:BasisAmount", amt(basis))
         el(tax, "ram:CategoryCode", cat)
+        if code:
+            el(tax, "ram:ExemptionReasonCode", code)
         if c["due_date_type"]:
             el(tax, "ram:DueDateTypeCode", c["due_date_type"])
-        el(tax, "ram:RateApplicablePercent", rate)
+        if rate is not None:
+            el(tax, "ram:RateApplicablePercent", rate)
     for indicator, amount, code, reason, cat, rate in [("false", *a) for a in c["allowances"]] + [
         ("true", *a) for a in c["charges"]
     ]:
@@ -302,7 +389,8 @@ def build(c):
         tax = el(ac, "ram:CategoryTradeTax")
         el(tax, "ram:TypeCode", c["tax_type"])
         el(tax, "ram:CategoryCode", cat)
-        el(tax, "ram:RateApplicablePercent", rate)
+        if rate is not None:
+            el(tax, "ram:RateApplicablePercent", rate)
     terms = el(settle, "ram:SpecifiedTradePaymentTerms")
     el(terms, "ram:Description", c["payment_terms"])
     date(terms, "ram:DueDateDateTime", c["due_date"])

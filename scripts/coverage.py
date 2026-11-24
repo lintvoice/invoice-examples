@@ -37,6 +37,15 @@ NO_EXAMPLE = {
     "BR-CO-07": "no example: its official test is always true, so no invoice fails it",
     "BR-CO-08": "no example: its official test is always true, so no invoice fails it",
 }
+# EN 16931 rules the French invoice cannot show: their examples are in the en16931 target.
+NOT_ON_THE_FRENCH_INVOICE = (
+    ("BR-Z-", "in the `en16931` target: France has no domestic zero rate"),
+    (
+        "BR-O-",
+        "in the `en16931` target: a French company registered for VAT gives its VAT number on its invoices, which "
+        "category O forbids",
+    ),
+)
 # Rules that an EN 16931 invoice cannot reach, or only through cases we do not generate yet.
 NOT_APPLICABLE = (
     ("EXT-FR-FE", "Factur-X EXTENDED elements; the fr target is the EN 16931 profile"),
@@ -78,11 +87,19 @@ def _row(rule, covered, why):
     return f"| {rule} | {why or 'not yet'} | |"
 
 
+def _elsewhere(name, rule):
+    """Why the French invoice has no example of an EN 16931 rule, or None."""
+    if name != "fr":
+        return None
+    return next((why for prefix, why in NOT_ON_THE_FRENCH_INVOICE if rule.startswith(prefix)), None)
+
+
 def _en16931(name, target):
     text = EN16931.read_text(encoding="utf-8")
     rules = list(dict.fromkeys(re.findall(r'<assert\b[^>]*\bid="(BR-[^"]+)"', text)))
     covered = _examples(target)
     n_cov = sum(r in covered for r in rules)
+    n_elsewhere = sum(bool(_elsewhere(name, r)) and r not in covered for r in rules)
     # an example of an EN 16931 rule these files no longer hold (BR-CO-25, in an EXTENDED-CTC-FR invoice)
     others = sorted({v.id for r, v in covered.items() if re.match(r"BR-(?!FR)", r) and r not in rules})
     also = [
@@ -94,11 +111,13 @@ def _en16931(name, target):
             f"## Target `{name}`: EN 16931 business rules",
             "",
             f"EN 16931 1.3.17, CII Schematron: {len(rules)} business rule ids. **{n_cov} have an invalid example**; "
-            f"{len(NO_EXAMPLE)} cannot have one, the others not yet.",
+            f"{len(NO_EXAMPLE)} cannot have one"
+            + (f", {n_elsewhere} have theirs in the `en16931` target" if n_elsewhere else "")
+            + ", the others not yet.",
             "",
             "| Rule id | Example | What is wrong |",
             "| --- | --- | --- |",
-            *(_row(r, covered, NO_EXAMPLE.get(r)) for r in rules),
+            *(_row(r, covered, NO_EXAMPLE.get(r) or _elsewhere(name, r)) for r in rules),
             "",
             *(also if others else []),
         ],

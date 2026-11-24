@@ -1961,6 +1961,1512 @@
         "xml": "fixed/BR-CL-26.xml",
         "pdf": "fixed/BR-CL-26.pdf"
       }
+    },
+    {
+      "id": "BR-Z-01",
+      "status": "invalid",
+      "rule": "BR-Z-01",
+      "fires": [
+        "BR-Z-01"
+      ],
+      "files": {
+        "xml": "invalid/BR-Z-01.xml",
+        "pdf": "invalid/BR-Z-01.pdf"
+      },
+      "description": {
+        "en": "The lines are in VAT category Z (zero rate), next to one at the standard rate, but the invoice has no VAT breakdown for their category.",
+        "fr": "Les lignes relèvent de la catégorie de TVA Z (taux zéro), à côté d'une ligne au taux normal, mais la facture n'a pas de ventilation de TVA pour leur catégorie."
+      },
+      "fixed": {
+        "xml": "fixed/BR-Z-01.xml",
+        "pdf": "fixed/BR-Z-01.pdf"
+      }
+    },
+    {
+      "id": "BR-E-01",
+      "status": "invalid",
+      "rule": "BR-E-01",
+      "fires": [
+        "BR-E-01"
+      ],
+      "files": {
+        "xml": "invalid/BR-E-01.xml",
+        "pdf": "invalid/BR-E-01.pdf"
+      },
+      "description": {
+        "en": "The lines are in VAT category E (exempt), next to one at the standard rate, but the invoice has no VAT breakdown for their category.",
+        "fr": "Les lignes relèvent de la catégorie de TVA E (exonération), à côté d'une ligne au taux normal, mais la facture n'a pas de ventilation de TVA pour leur catégorie."
+      },
+      "fixed": {
+        "xml": "fixed/BR-E-01.xml",
+        "pdf": "fixed/BR-E-01.pdf"
+      }
+    },
+    {
+      "id": "BR-AE-01",
+      "status": "invalid",
+      "rule": "BR-AE-01",
+      "fires": [
+        "BR-AE-01",
+        "BR-AE-08"
+      ],
+      "files": {
+        "xml": "invalid/BR-AE-01.xml",
+        "pdf": "invalid/BR-AE-01.pdf"
+      },
+      "description": {
+        "en": "The lines are in VAT category AE (reverse charge), and the invoice gives one VAT breakdown per line instead of one for the category (BR-AE-08, on each breakdown's taxable amount, fails too).",
+        "fr": "Les lignes relèvent de la catégorie de TVA AE (autoliquidation), et la facture donne une ventilation de TVA par ligne au lieu d'une pour la catégorie (BR-AE-08, sur la base de chaque ventilation, échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-AE-01.xml",
+        "pdf": "fixed/BR-AE-01.pdf"
+      }
+    },
+    {
+      "id": "BR-IC-01",
+      "status": "invalid",
+      "rule": "BR-IC-01",
+      "fires": [
+        "BR-IC-01",
+        "BR-IC-08"
+      ],
+      "files": {
+        "xml": "invalid/BR-IC-01.xml",
+        "pdf": "invalid/BR-IC-01.pdf"
+      },
+      "description": {
+        "en": "The lines are in VAT category K (intra-Community supply), and the invoice gives one VAT breakdown per line instead of one for the category (BR-IC-08, on each breakdown's taxable amount, fails too).",
+        "fr": "Les lignes relèvent de la catégorie de TVA K (livraison intracommunautaire), et la facture donne une ventilation de TVA par ligne au lieu d'une pour la catégorie (BR-IC-08, sur la base de chaque ventilation, échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-IC-01.xml",
+        "pdf": "fixed/BR-IC-01.pdf"
+      }
+    },
+    {
+      "id": "BR-G-01",
+      "status": "invalid",
+      "rule": "BR-G-01",
+      "fires": [
+        "BR-G-01",
+        "BR-G-08"
+      ],
+      "files": {
+        "xml": "invalid/BR-G-01.xml",
+        "pdf": "invalid/BR-G-01.pdf"
+      },
+      "description": {
+        "en": "The lines are in VAT category G (export outside the EU), and the invoice gives one VAT breakdown per line instead of one for the category (BR-G-08, on each breakdown's taxable amount, fails too).",
+        "fr": "Les lignes relèvent de la catégorie de TVA G (exportation hors de l'UE), et la facture donne une ventilation de TVA par ligne au lieu d'une pour la catégorie (BR-G-08, sur la base de chaque ventilation, échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-G-01.xml",
+        "pdf": "fixed/BR-G-01.pdf"
+      }
+    },
+    {
+      "id": "BR-O-01",
+      "status": "invalid",
+      "rule": "BR-O-01",
+      "fires": [
+        "BR-O-01",
+        "BR-O-08"
+      ],
+      "files": {
+        "xml": "invalid/BR-O-01.xml",
+        "pdf": "invalid/BR-O-01.pdf"
+      },
+      "description": {
+        "en": "The lines are in VAT category O (outside the scope of VAT), and the invoice gives one VAT breakdown per line instead of one for the category (BR-O-08, on each breakdown's taxable amount, fails too).",
+        "fr": "Les lignes relèvent de la catégorie de TVA O (hors du champ de la TVA), et la facture donne une ventilation de TVA par ligne au lieu d'une pour la catégorie (BR-O-08, sur la base de chaque ventilation, échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-O-01.xml",
+        "pdf": "fixed/BR-O-01.pdf"
+      }
+    },
+    {
+      "id": "BR-S-01",
+      "status": "invalid",
+      "rule": "BR-S-01",
+      "fires": [
+        "BR-S-01",
+        "BR-CO-14"
+      ],
+      "files": {
+        "xml": "invalid/BR-S-01.xml",
+        "pdf": "invalid/BR-S-01.pdf"
+      },
+      "description": {
+        "en": "The invoice has one standard-rated line and one exempt line, but no VAT breakdown for the standard rate; its VAT total still holds the line's VAT (BR-CO-14, on the VAT total against the breakdowns, fails too).",
+        "fr": "La facture a une ligne au taux normal et une ligne exonérée, mais pas de ventilation de TVA pour le taux normal ; son total de TVA compte toujours la TVA de la ligne (BR-CO-14, sur le total de TVA comparé aux ventilations, échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-S-01.xml",
+        "pdf": "fixed/BR-S-01.pdf"
+      }
+    },
+    {
+      "id": "BR-S-03",
+      "status": "invalid",
+      "rule": "BR-S-03",
+      "fires": [
+        "BR-S-02",
+        "BR-S-03"
+      ],
+      "files": {
+        "xml": "invalid/BR-S-03.xml",
+        "pdf": "invalid/BR-S-03.pdf"
+      },
+      "description": {
+        "en": "A document level allowance is in VAT category S (standard rate), like the lines, but the seller has no VAT number (BT-31) (BR-S-02, the same check for the lines, fails too).",
+        "fr": "Une remise au niveau du document relève de la catégorie de TVA S (taux normal), comme les lignes, mais le vendeur n'a pas de numéro de TVA (BT-31) (BR-S-02, le même contrôle pour les lignes, échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-S-03.xml",
+        "pdf": "fixed/BR-S-03.pdf"
+      }
+    },
+    {
+      "id": "BR-S-04",
+      "status": "invalid",
+      "rule": "BR-S-04",
+      "fires": [
+        "BR-S-02",
+        "BR-S-04"
+      ],
+      "files": {
+        "xml": "invalid/BR-S-04.xml",
+        "pdf": "invalid/BR-S-04.pdf"
+      },
+      "description": {
+        "en": "A document level charge is in VAT category S (standard rate), like the lines, but the seller has no VAT number (BT-31) (BR-S-02, the same check for the lines, fails too).",
+        "fr": "Des frais au niveau du document relèvent de la catégorie de TVA S (taux normal), comme les lignes, mais le vendeur n'a pas de numéro de TVA (BT-31) (BR-S-02, le même contrôle pour les lignes, échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-S-04.xml",
+        "pdf": "fixed/BR-S-04.pdf"
+      }
+    },
+    {
+      "id": "BR-Z-02",
+      "status": "invalid",
+      "rule": "BR-Z-02",
+      "fires": [
+        "BR-Z-02"
+      ],
+      "files": {
+        "xml": "invalid/BR-Z-02.xml",
+        "pdf": "invalid/BR-Z-02.pdf"
+      },
+      "description": {
+        "en": "The lines are in VAT category Z (zero rate), but the seller has no VAT number (BT-31).",
+        "fr": "Les lignes relèvent de la catégorie de TVA Z (taux zéro), mais le vendeur n'a pas de numéro de TVA (BT-31)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-Z-02.xml",
+        "pdf": "fixed/BR-Z-02.pdf"
+      }
+    },
+    {
+      "id": "BR-Z-03",
+      "status": "invalid",
+      "rule": "BR-Z-03",
+      "fires": [
+        "BR-Z-02",
+        "BR-Z-03"
+      ],
+      "files": {
+        "xml": "invalid/BR-Z-03.xml",
+        "pdf": "invalid/BR-Z-03.pdf"
+      },
+      "description": {
+        "en": "A document level allowance is in VAT category Z (zero rate), like the lines, but the seller has no VAT number (BT-31) (BR-Z-02, the same check for the lines, fails too).",
+        "fr": "Une remise au niveau du document relève de la catégorie de TVA Z (taux zéro), comme les lignes, mais le vendeur n'a pas de numéro de TVA (BT-31) (BR-Z-02, le même contrôle pour les lignes, échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-Z-03.xml",
+        "pdf": "fixed/BR-Z-03.pdf"
+      }
+    },
+    {
+      "id": "BR-Z-04",
+      "status": "invalid",
+      "rule": "BR-Z-04",
+      "fires": [
+        "BR-Z-02",
+        "BR-Z-04"
+      ],
+      "files": {
+        "xml": "invalid/BR-Z-04.xml",
+        "pdf": "invalid/BR-Z-04.pdf"
+      },
+      "description": {
+        "en": "A document level charge is in VAT category Z (zero rate), like the lines, but the seller has no VAT number (BT-31) (BR-Z-02, the same check for the lines, fails too).",
+        "fr": "Des frais au niveau du document relèvent de la catégorie de TVA Z (taux zéro), comme les lignes, mais le vendeur n'a pas de numéro de TVA (BT-31) (BR-Z-02, le même contrôle pour les lignes, échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-Z-04.xml",
+        "pdf": "fixed/BR-Z-04.pdf"
+      }
+    },
+    {
+      "id": "BR-E-02",
+      "status": "invalid",
+      "rule": "BR-E-02",
+      "fires": [
+        "BR-E-02"
+      ],
+      "files": {
+        "xml": "invalid/BR-E-02.xml",
+        "pdf": "invalid/BR-E-02.pdf"
+      },
+      "description": {
+        "en": "The lines are in VAT category E (exempt), but the seller has no VAT number (BT-31).",
+        "fr": "Les lignes relèvent de la catégorie de TVA E (exonération), mais le vendeur n'a pas de numéro de TVA (BT-31)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-E-02.xml",
+        "pdf": "fixed/BR-E-02.pdf"
+      }
+    },
+    {
+      "id": "BR-E-03",
+      "status": "invalid",
+      "rule": "BR-E-03",
+      "fires": [
+        "BR-E-02",
+        "BR-E-03"
+      ],
+      "files": {
+        "xml": "invalid/BR-E-03.xml",
+        "pdf": "invalid/BR-E-03.pdf"
+      },
+      "description": {
+        "en": "A document level allowance is in VAT category E (exempt), like the lines, but the seller has no VAT number (BT-31) (BR-E-02, the same check for the lines, fails too).",
+        "fr": "Une remise au niveau du document relève de la catégorie de TVA E (exonération), comme les lignes, mais le vendeur n'a pas de numéro de TVA (BT-31) (BR-E-02, le même contrôle pour les lignes, échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-E-03.xml",
+        "pdf": "fixed/BR-E-03.pdf"
+      }
+    },
+    {
+      "id": "BR-E-04",
+      "status": "invalid",
+      "rule": "BR-E-04",
+      "fires": [
+        "BR-E-02",
+        "BR-E-04"
+      ],
+      "files": {
+        "xml": "invalid/BR-E-04.xml",
+        "pdf": "invalid/BR-E-04.pdf"
+      },
+      "description": {
+        "en": "A document level charge is in VAT category E (exempt), like the lines, but the seller has no VAT number (BT-31) (BR-E-02, the same check for the lines, fails too).",
+        "fr": "Des frais au niveau du document relèvent de la catégorie de TVA E (exonération), comme les lignes, mais le vendeur n'a pas de numéro de TVA (BT-31) (BR-E-02, le même contrôle pour les lignes, échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-E-04.xml",
+        "pdf": "fixed/BR-E-04.pdf"
+      }
+    },
+    {
+      "id": "BR-AE-02",
+      "status": "invalid",
+      "rule": "BR-AE-02",
+      "fires": [
+        "BR-AE-02"
+      ],
+      "files": {
+        "xml": "invalid/BR-AE-02.xml",
+        "pdf": "invalid/BR-AE-02.pdf"
+      },
+      "description": {
+        "en": "The lines are in VAT category AE (reverse charge), but the seller has no VAT number (BT-31).",
+        "fr": "Les lignes relèvent de la catégorie de TVA AE (autoliquidation), mais le vendeur n'a pas de numéro de TVA (BT-31)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-AE-02.xml",
+        "pdf": "fixed/BR-AE-02.pdf"
+      }
+    },
+    {
+      "id": "BR-AE-03",
+      "status": "invalid",
+      "rule": "BR-AE-03",
+      "fires": [
+        "BR-AE-02",
+        "BR-AE-03"
+      ],
+      "files": {
+        "xml": "invalid/BR-AE-03.xml",
+        "pdf": "invalid/BR-AE-03.pdf"
+      },
+      "description": {
+        "en": "A document level allowance is in VAT category AE (reverse charge), like the lines, but the seller has no VAT number (BT-31) (BR-AE-02, the same check for the lines, fails too).",
+        "fr": "Une remise au niveau du document relève de la catégorie de TVA AE (autoliquidation), comme les lignes, mais le vendeur n'a pas de numéro de TVA (BT-31) (BR-AE-02, le même contrôle pour les lignes, échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-AE-03.xml",
+        "pdf": "fixed/BR-AE-03.pdf"
+      }
+    },
+    {
+      "id": "BR-AE-04",
+      "status": "invalid",
+      "rule": "BR-AE-04",
+      "fires": [
+        "BR-AE-02",
+        "BR-AE-04"
+      ],
+      "files": {
+        "xml": "invalid/BR-AE-04.xml",
+        "pdf": "invalid/BR-AE-04.pdf"
+      },
+      "description": {
+        "en": "A document level charge is in VAT category AE (reverse charge), like the lines, but the seller has no VAT number (BT-31) (BR-AE-02, the same check for the lines, fails too).",
+        "fr": "Des frais au niveau du document relèvent de la catégorie de TVA AE (autoliquidation), comme les lignes, mais le vendeur n'a pas de numéro de TVA (BT-31) (BR-AE-02, le même contrôle pour les lignes, échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-AE-04.xml",
+        "pdf": "fixed/BR-AE-04.pdf"
+      }
+    },
+    {
+      "id": "BR-IC-02",
+      "status": "invalid",
+      "rule": "BR-IC-02",
+      "fires": [
+        "BR-IC-02"
+      ],
+      "files": {
+        "xml": "invalid/BR-IC-02.xml",
+        "pdf": "invalid/BR-IC-02.pdf"
+      },
+      "description": {
+        "en": "The lines are in VAT category K (intra-Community supply), but the buyer has no VAT number (BT-48).",
+        "fr": "Les lignes relèvent de la catégorie de TVA K (livraison intracommunautaire), mais l'acheteur n'a pas de numéro de TVA (BT-48)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-IC-02.xml",
+        "pdf": "fixed/BR-IC-02.pdf"
+      }
+    },
+    {
+      "id": "BR-IC-03",
+      "status": "invalid",
+      "rule": "BR-IC-03",
+      "fires": [
+        "BR-IC-02",
+        "BR-IC-03"
+      ],
+      "files": {
+        "xml": "invalid/BR-IC-03.xml",
+        "pdf": "invalid/BR-IC-03.pdf"
+      },
+      "description": {
+        "en": "A document level allowance is in VAT category K (intra-Community supply), like the lines, but the buyer has no VAT number (BT-48) (BR-IC-02, the same check for the lines, fails too).",
+        "fr": "Une remise au niveau du document relève de la catégorie de TVA K (livraison intracommunautaire), comme les lignes, mais l'acheteur n'a pas de numéro de TVA (BT-48) (BR-IC-02, le même contrôle pour les lignes, échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-IC-03.xml",
+        "pdf": "fixed/BR-IC-03.pdf"
+      }
+    },
+    {
+      "id": "BR-IC-04",
+      "status": "invalid",
+      "rule": "BR-IC-04",
+      "fires": [
+        "BR-IC-02",
+        "BR-IC-04"
+      ],
+      "files": {
+        "xml": "invalid/BR-IC-04.xml",
+        "pdf": "invalid/BR-IC-04.pdf"
+      },
+      "description": {
+        "en": "A document level charge is in VAT category K (intra-Community supply), like the lines, but the buyer has no VAT number (BT-48) (BR-IC-02, the same check for the lines, fails too).",
+        "fr": "Des frais au niveau du document relèvent de la catégorie de TVA K (livraison intracommunautaire), comme les lignes, mais l'acheteur n'a pas de numéro de TVA (BT-48) (BR-IC-02, le même contrôle pour les lignes, échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-IC-04.xml",
+        "pdf": "fixed/BR-IC-04.pdf"
+      }
+    },
+    {
+      "id": "BR-G-02",
+      "status": "invalid",
+      "rule": "BR-G-02",
+      "fires": [
+        "BR-G-02"
+      ],
+      "files": {
+        "xml": "invalid/BR-G-02.xml",
+        "pdf": "invalid/BR-G-02.pdf"
+      },
+      "description": {
+        "en": "The lines are in VAT category G (export outside the EU), but the seller has no VAT number (BT-31).",
+        "fr": "Les lignes relèvent de la catégorie de TVA G (exportation hors de l'UE), mais le vendeur n'a pas de numéro de TVA (BT-31)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-G-02.xml",
+        "pdf": "fixed/BR-G-02.pdf"
+      }
+    },
+    {
+      "id": "BR-G-03",
+      "status": "invalid",
+      "rule": "BR-G-03",
+      "fires": [
+        "BR-G-02",
+        "BR-G-03"
+      ],
+      "files": {
+        "xml": "invalid/BR-G-03.xml",
+        "pdf": "invalid/BR-G-03.pdf"
+      },
+      "description": {
+        "en": "A document level allowance is in VAT category G (export outside the EU), like the lines, but the seller has no VAT number (BT-31) (BR-G-02, the same check for the lines, fails too).",
+        "fr": "Une remise au niveau du document relève de la catégorie de TVA G (exportation hors de l'UE), comme les lignes, mais le vendeur n'a pas de numéro de TVA (BT-31) (BR-G-02, le même contrôle pour les lignes, échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-G-03.xml",
+        "pdf": "fixed/BR-G-03.pdf"
+      }
+    },
+    {
+      "id": "BR-G-04",
+      "status": "invalid",
+      "rule": "BR-G-04",
+      "fires": [
+        "BR-G-02",
+        "BR-G-04"
+      ],
+      "files": {
+        "xml": "invalid/BR-G-04.xml",
+        "pdf": "invalid/BR-G-04.pdf"
+      },
+      "description": {
+        "en": "A document level charge is in VAT category G (export outside the EU), like the lines, but the seller has no VAT number (BT-31) (BR-G-02, the same check for the lines, fails too).",
+        "fr": "Des frais au niveau du document relèvent de la catégorie de TVA G (exportation hors de l'UE), comme les lignes, mais le vendeur n'a pas de numéro de TVA (BT-31) (BR-G-02, le même contrôle pour les lignes, échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-G-04.xml",
+        "pdf": "fixed/BR-G-04.pdf"
+      }
+    },
+    {
+      "id": "BR-O-02",
+      "status": "invalid",
+      "rule": "BR-O-02",
+      "fires": [
+        "BR-O-02"
+      ],
+      "files": {
+        "xml": "invalid/BR-O-02.xml",
+        "pdf": "invalid/BR-O-02.pdf"
+      },
+      "description": {
+        "en": "The lines are in VAT category O (outside the scope of VAT), but the seller gives a VAT number (BT-31).",
+        "fr": "Les lignes relèvent de la catégorie de TVA O (hors du champ de la TVA), mais le vendeur indique un numéro de TVA (BT-31)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-O-02.xml",
+        "pdf": "fixed/BR-O-02.pdf"
+      }
+    },
+    {
+      "id": "BR-O-03",
+      "status": "invalid",
+      "rule": "BR-O-03",
+      "fires": [
+        "BR-O-02",
+        "BR-O-03"
+      ],
+      "files": {
+        "xml": "invalid/BR-O-03.xml",
+        "pdf": "invalid/BR-O-03.pdf"
+      },
+      "description": {
+        "en": "A document level allowance is in VAT category O (outside the scope of VAT), like the lines, but the seller gives a VAT number (BT-31) (BR-O-02, the same check for the lines, fails too).",
+        "fr": "Une remise au niveau du document relève de la catégorie de TVA O (hors du champ de la TVA), comme les lignes, mais le vendeur indique un numéro de TVA (BT-31) (BR-O-02, le même contrôle pour les lignes, échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-O-03.xml",
+        "pdf": "fixed/BR-O-03.pdf"
+      }
+    },
+    {
+      "id": "BR-O-04",
+      "status": "invalid",
+      "rule": "BR-O-04",
+      "fires": [
+        "BR-O-02",
+        "BR-O-04"
+      ],
+      "files": {
+        "xml": "invalid/BR-O-04.xml",
+        "pdf": "invalid/BR-O-04.pdf"
+      },
+      "description": {
+        "en": "A document level charge is in VAT category O (outside the scope of VAT), like the lines, but the seller gives a VAT number (BT-31) (BR-O-02, the same check for the lines, fails too).",
+        "fr": "Des frais au niveau du document relèvent de la catégorie de TVA O (hors du champ de la TVA), comme les lignes, mais le vendeur indique un numéro de TVA (BT-31) (BR-O-02, le même contrôle pour les lignes, échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-O-04.xml",
+        "pdf": "fixed/BR-O-04.pdf"
+      }
+    },
+    {
+      "id": "BR-Z-05",
+      "status": "invalid",
+      "rule": "BR-Z-05",
+      "fires": [
+        "BR-Z-05"
+      ],
+      "files": {
+        "xml": "invalid/BR-Z-05.xml",
+        "pdf": "invalid/BR-Z-05.pdf"
+      },
+      "description": {
+        "en": "The first line is in VAT category Z (zero rate), but its VAT rate (BT-152) is 19 % instead of 0 %.",
+        "fr": "La première ligne relève de la catégorie de TVA Z (taux zéro), mais son taux de TVA (BT-152) est de 19 % au lieu de 0 %."
+      },
+      "fixed": {
+        "xml": "fixed/BR-Z-05.xml",
+        "pdf": "fixed/BR-Z-05.pdf"
+      }
+    },
+    {
+      "id": "BR-Z-06",
+      "status": "invalid",
+      "rule": "BR-Z-06",
+      "fires": [
+        "BR-Z-06"
+      ],
+      "files": {
+        "xml": "invalid/BR-Z-06.xml",
+        "pdf": "invalid/BR-Z-06.pdf"
+      },
+      "description": {
+        "en": "A document level allowance is in VAT category Z (zero rate), but its VAT rate (BT-96) is 19 % instead of 0 %.",
+        "fr": "Une remise au niveau du document relève de la catégorie de TVA Z (taux zéro), mais son taux de TVA (BT-96) est de 19 % au lieu de 0 %."
+      },
+      "fixed": {
+        "xml": "fixed/BR-Z-06.xml",
+        "pdf": "fixed/BR-Z-06.pdf"
+      }
+    },
+    {
+      "id": "BR-Z-07",
+      "status": "invalid",
+      "rule": "BR-Z-07",
+      "fires": [
+        "BR-Z-07"
+      ],
+      "files": {
+        "xml": "invalid/BR-Z-07.xml",
+        "pdf": "invalid/BR-Z-07.pdf"
+      },
+      "description": {
+        "en": "A document level charge is in VAT category Z (zero rate), but its VAT rate (BT-103) is 19 % instead of 0 %.",
+        "fr": "Des frais au niveau du document relèvent de la catégorie de TVA Z (taux zéro), mais son taux de TVA (BT-103) est de 19 % au lieu de 0 %."
+      },
+      "fixed": {
+        "xml": "fixed/BR-Z-07.xml",
+        "pdf": "fixed/BR-Z-07.pdf"
+      }
+    },
+    {
+      "id": "BR-E-05",
+      "status": "invalid",
+      "rule": "BR-E-05",
+      "fires": [
+        "BR-E-05"
+      ],
+      "files": {
+        "xml": "invalid/BR-E-05.xml",
+        "pdf": "invalid/BR-E-05.pdf"
+      },
+      "description": {
+        "en": "The first line is in VAT category E (exempt), but its VAT rate (BT-152) is 19 % instead of 0 %.",
+        "fr": "La première ligne relève de la catégorie de TVA E (exonération), mais son taux de TVA (BT-152) est de 19 % au lieu de 0 %."
+      },
+      "fixed": {
+        "xml": "fixed/BR-E-05.xml",
+        "pdf": "fixed/BR-E-05.pdf"
+      }
+    },
+    {
+      "id": "BR-E-06",
+      "status": "invalid",
+      "rule": "BR-E-06",
+      "fires": [
+        "BR-E-06"
+      ],
+      "files": {
+        "xml": "invalid/BR-E-06.xml",
+        "pdf": "invalid/BR-E-06.pdf"
+      },
+      "description": {
+        "en": "A document level allowance is in VAT category E (exempt), but its VAT rate (BT-96) is 19 % instead of 0 %.",
+        "fr": "Une remise au niveau du document relève de la catégorie de TVA E (exonération), mais son taux de TVA (BT-96) est de 19 % au lieu de 0 %."
+      },
+      "fixed": {
+        "xml": "fixed/BR-E-06.xml",
+        "pdf": "fixed/BR-E-06.pdf"
+      }
+    },
+    {
+      "id": "BR-E-07",
+      "status": "invalid",
+      "rule": "BR-E-07",
+      "fires": [
+        "BR-E-07"
+      ],
+      "files": {
+        "xml": "invalid/BR-E-07.xml",
+        "pdf": "invalid/BR-E-07.pdf"
+      },
+      "description": {
+        "en": "A document level charge is in VAT category E (exempt), but its VAT rate (BT-103) is 19 % instead of 0 %.",
+        "fr": "Des frais au niveau du document relèvent de la catégorie de TVA E (exonération), mais son taux de TVA (BT-103) est de 19 % au lieu de 0 %."
+      },
+      "fixed": {
+        "xml": "fixed/BR-E-07.xml",
+        "pdf": "fixed/BR-E-07.pdf"
+      }
+    },
+    {
+      "id": "BR-AE-05",
+      "status": "invalid",
+      "rule": "BR-AE-05",
+      "fires": [
+        "BR-AE-05"
+      ],
+      "files": {
+        "xml": "invalid/BR-AE-05.xml",
+        "pdf": "invalid/BR-AE-05.pdf"
+      },
+      "description": {
+        "en": "The first line is in VAT category AE (reverse charge), but its VAT rate (BT-152) is 19 % instead of 0 %.",
+        "fr": "La première ligne relève de la catégorie de TVA AE (autoliquidation), mais son taux de TVA (BT-152) est de 19 % au lieu de 0 %."
+      },
+      "fixed": {
+        "xml": "fixed/BR-AE-05.xml",
+        "pdf": "fixed/BR-AE-05.pdf"
+      }
+    },
+    {
+      "id": "BR-AE-06",
+      "status": "invalid",
+      "rule": "BR-AE-06",
+      "fires": [
+        "BR-AE-06"
+      ],
+      "files": {
+        "xml": "invalid/BR-AE-06.xml",
+        "pdf": "invalid/BR-AE-06.pdf"
+      },
+      "description": {
+        "en": "A document level allowance is in VAT category AE (reverse charge), but its VAT rate (BT-96) is 19 % instead of 0 %.",
+        "fr": "Une remise au niveau du document relève de la catégorie de TVA AE (autoliquidation), mais son taux de TVA (BT-96) est de 19 % au lieu de 0 %."
+      },
+      "fixed": {
+        "xml": "fixed/BR-AE-06.xml",
+        "pdf": "fixed/BR-AE-06.pdf"
+      }
+    },
+    {
+      "id": "BR-AE-07",
+      "status": "invalid",
+      "rule": "BR-AE-07",
+      "fires": [
+        "BR-AE-07"
+      ],
+      "files": {
+        "xml": "invalid/BR-AE-07.xml",
+        "pdf": "invalid/BR-AE-07.pdf"
+      },
+      "description": {
+        "en": "A document level charge is in VAT category AE (reverse charge), but its VAT rate (BT-103) is 19 % instead of 0 %.",
+        "fr": "Des frais au niveau du document relèvent de la catégorie de TVA AE (autoliquidation), mais son taux de TVA (BT-103) est de 19 % au lieu de 0 %."
+      },
+      "fixed": {
+        "xml": "fixed/BR-AE-07.xml",
+        "pdf": "fixed/BR-AE-07.pdf"
+      }
+    },
+    {
+      "id": "BR-IC-05",
+      "status": "invalid",
+      "rule": "BR-IC-05",
+      "fires": [
+        "BR-IC-05"
+      ],
+      "files": {
+        "xml": "invalid/BR-IC-05.xml",
+        "pdf": "invalid/BR-IC-05.pdf"
+      },
+      "description": {
+        "en": "The first line is in VAT category K (intra-Community supply), but its VAT rate (BT-152) is 19 % instead of 0 %.",
+        "fr": "La première ligne relève de la catégorie de TVA K (livraison intracommunautaire), mais son taux de TVA (BT-152) est de 19 % au lieu de 0 %."
+      },
+      "fixed": {
+        "xml": "fixed/BR-IC-05.xml",
+        "pdf": "fixed/BR-IC-05.pdf"
+      }
+    },
+    {
+      "id": "BR-IC-06",
+      "status": "invalid",
+      "rule": "BR-IC-06",
+      "fires": [
+        "BR-IC-06"
+      ],
+      "files": {
+        "xml": "invalid/BR-IC-06.xml",
+        "pdf": "invalid/BR-IC-06.pdf"
+      },
+      "description": {
+        "en": "A document level allowance is in VAT category K (intra-Community supply), but its VAT rate (BT-96) is 19 % instead of 0 %.",
+        "fr": "Une remise au niveau du document relève de la catégorie de TVA K (livraison intracommunautaire), mais son taux de TVA (BT-96) est de 19 % au lieu de 0 %."
+      },
+      "fixed": {
+        "xml": "fixed/BR-IC-06.xml",
+        "pdf": "fixed/BR-IC-06.pdf"
+      }
+    },
+    {
+      "id": "BR-IC-07",
+      "status": "invalid",
+      "rule": "BR-IC-07",
+      "fires": [
+        "BR-IC-07"
+      ],
+      "files": {
+        "xml": "invalid/BR-IC-07.xml",
+        "pdf": "invalid/BR-IC-07.pdf"
+      },
+      "description": {
+        "en": "A document level charge is in VAT category K (intra-Community supply), but its VAT rate (BT-103) is 19 % instead of 0 %.",
+        "fr": "Des frais au niveau du document relèvent de la catégorie de TVA K (livraison intracommunautaire), mais son taux de TVA (BT-103) est de 19 % au lieu de 0 %."
+      },
+      "fixed": {
+        "xml": "fixed/BR-IC-07.xml",
+        "pdf": "fixed/BR-IC-07.pdf"
+      }
+    },
+    {
+      "id": "BR-G-05",
+      "status": "invalid",
+      "rule": "BR-G-05",
+      "fires": [
+        "BR-G-05"
+      ],
+      "files": {
+        "xml": "invalid/BR-G-05.xml",
+        "pdf": "invalid/BR-G-05.pdf"
+      },
+      "description": {
+        "en": "The first line is in VAT category G (export outside the EU), but its VAT rate (BT-152) is 19 % instead of 0 %.",
+        "fr": "La première ligne relève de la catégorie de TVA G (exportation hors de l'UE), mais son taux de TVA (BT-152) est de 19 % au lieu de 0 %."
+      },
+      "fixed": {
+        "xml": "fixed/BR-G-05.xml",
+        "pdf": "fixed/BR-G-05.pdf"
+      }
+    },
+    {
+      "id": "BR-G-06",
+      "status": "invalid",
+      "rule": "BR-G-06",
+      "fires": [
+        "BR-G-06"
+      ],
+      "files": {
+        "xml": "invalid/BR-G-06.xml",
+        "pdf": "invalid/BR-G-06.pdf"
+      },
+      "description": {
+        "en": "A document level allowance is in VAT category G (export outside the EU), but its VAT rate (BT-96) is 19 % instead of 0 %.",
+        "fr": "Une remise au niveau du document relève de la catégorie de TVA G (exportation hors de l'UE), mais son taux de TVA (BT-96) est de 19 % au lieu de 0 %."
+      },
+      "fixed": {
+        "xml": "fixed/BR-G-06.xml",
+        "pdf": "fixed/BR-G-06.pdf"
+      }
+    },
+    {
+      "id": "BR-G-07",
+      "status": "invalid",
+      "rule": "BR-G-07",
+      "fires": [
+        "BR-G-07"
+      ],
+      "files": {
+        "xml": "invalid/BR-G-07.xml",
+        "pdf": "invalid/BR-G-07.pdf"
+      },
+      "description": {
+        "en": "A document level charge is in VAT category G (export outside the EU), but its VAT rate (BT-103) is 19 % instead of 0 %.",
+        "fr": "Des frais au niveau du document relèvent de la catégorie de TVA G (exportation hors de l'UE), mais son taux de TVA (BT-103) est de 19 % au lieu de 0 %."
+      },
+      "fixed": {
+        "xml": "fixed/BR-G-07.xml",
+        "pdf": "fixed/BR-G-07.pdf"
+      }
+    },
+    {
+      "id": "BR-O-05",
+      "status": "invalid",
+      "rule": "BR-O-05",
+      "fires": [
+        "BR-O-05"
+      ],
+      "files": {
+        "xml": "invalid/BR-O-05.xml",
+        "pdf": "invalid/BR-O-05.pdf"
+      },
+      "description": {
+        "en": "The first line is outside the scope of VAT (O), yet gives a VAT rate (BT-152), 0 %; this category has no rate.",
+        "fr": "La première ligne relève de la catégorie hors du champ de la TVA (O), et indique pourtant un taux de TVA (BT-152), 0 % ; cette catégorie n'a pas de taux."
+      },
+      "fixed": {
+        "xml": "fixed/BR-O-05.xml",
+        "pdf": "fixed/BR-O-05.pdf"
+      }
+    },
+    {
+      "id": "BR-O-06",
+      "status": "invalid",
+      "rule": "BR-O-06",
+      "fires": [
+        "BR-O-06"
+      ],
+      "files": {
+        "xml": "invalid/BR-O-06.xml",
+        "pdf": "invalid/BR-O-06.pdf"
+      },
+      "description": {
+        "en": "A document level allowance is outside the scope of VAT (O), yet gives a VAT rate (BT-96), 0 %; this category has no rate.",
+        "fr": "Une remise au niveau du document relève de la catégorie hors du champ de la TVA (O), et indique pourtant un taux de TVA (BT-96), 0 % ; cette catégorie n'a pas de taux."
+      },
+      "fixed": {
+        "xml": "fixed/BR-O-06.xml",
+        "pdf": "fixed/BR-O-06.pdf"
+      }
+    },
+    {
+      "id": "BR-O-07",
+      "status": "invalid",
+      "rule": "BR-O-07",
+      "fires": [
+        "BR-O-07"
+      ],
+      "files": {
+        "xml": "invalid/BR-O-07.xml",
+        "pdf": "invalid/BR-O-07.pdf"
+      },
+      "description": {
+        "en": "A document level charge is outside the scope of VAT (O), yet gives a VAT rate (BT-103), 0 %; this category has no rate.",
+        "fr": "Des frais au niveau du document relèvent de la catégorie hors du champ de la TVA (O), et indique pourtant un taux de TVA (BT-103), 0 % ; cette catégorie n'a pas de taux."
+      },
+      "fixed": {
+        "xml": "fixed/BR-O-07.xml",
+        "pdf": "fixed/BR-O-07.pdf"
+      }
+    },
+    {
+      "id": "BR-S-05",
+      "status": "invalid",
+      "rule": "BR-S-05",
+      "fires": [
+        "BR-S-05"
+      ],
+      "files": {
+        "xml": "invalid/BR-S-05.xml",
+        "pdf": "invalid/BR-S-05.pdf"
+      },
+      "description": {
+        "en": "The first line is in VAT category S (standard rate), but its VAT rate (BT-152) is 0 %.",
+        "fr": "La première ligne relève de la catégorie de TVA S (taux normal), mais son taux de TVA (BT-152) est de 0 %."
+      },
+      "fixed": {
+        "xml": "fixed/BR-S-05.xml",
+        "pdf": "fixed/BR-S-05.pdf"
+      }
+    },
+    {
+      "id": "BR-S-06",
+      "status": "invalid",
+      "rule": "BR-S-06",
+      "fires": [
+        "BR-S-06"
+      ],
+      "files": {
+        "xml": "invalid/BR-S-06.xml",
+        "pdf": "invalid/BR-S-06.pdf"
+      },
+      "description": {
+        "en": "A document level allowance is in VAT category S (standard rate), but its VAT rate (BT-96) is 0 %.",
+        "fr": "Une remise au niveau du document relève de la catégorie de TVA S (taux normal), mais son taux de TVA (BT-96) est de 0 %."
+      },
+      "fixed": {
+        "xml": "fixed/BR-S-06.xml",
+        "pdf": "fixed/BR-S-06.pdf"
+      }
+    },
+    {
+      "id": "BR-S-07",
+      "status": "invalid",
+      "rule": "BR-S-07",
+      "fires": [
+        "BR-S-07"
+      ],
+      "files": {
+        "xml": "invalid/BR-S-07.xml",
+        "pdf": "invalid/BR-S-07.pdf"
+      },
+      "description": {
+        "en": "A document level charge is in VAT category S (standard rate), but its VAT rate (BT-103) is 0 %.",
+        "fr": "Des frais au niveau du document relèvent de la catégorie de TVA S (taux normal), mais son taux de TVA (BT-103) est de 0 %."
+      },
+      "fixed": {
+        "xml": "fixed/BR-S-07.xml",
+        "pdf": "fixed/BR-S-07.pdf"
+      }
+    },
+    {
+      "id": "BR-Z-08",
+      "status": "invalid",
+      "rule": "BR-Z-08",
+      "fires": [
+        "BR-Z-08"
+      ],
+      "files": {
+        "xml": "invalid/BR-Z-08.xml",
+        "pdf": "invalid/BR-Z-08.pdf"
+      },
+      "description": {
+        "en": "The taxable amount of the VAT breakdown in VAT category Z (zero rate) (BT-116) is 1 € more than the net amounts of its lines (BT-131).",
+        "fr": "La base de la ventilation de TVA de la catégorie de TVA Z (taux zéro) (BT-116) dépasse de 1 € la somme des montants nets de ses lignes (BT-131)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-Z-08.xml",
+        "pdf": "fixed/BR-Z-08.pdf"
+      }
+    },
+    {
+      "id": "BR-Z-09",
+      "status": "invalid",
+      "rule": "BR-Z-09",
+      "fires": [
+        "BR-Z-09",
+        "BR-CO-17"
+      ],
+      "files": {
+        "xml": "invalid/BR-Z-09.xml",
+        "pdf": "invalid/BR-Z-09.pdf"
+      },
+      "description": {
+        "en": "The VAT breakdown in VAT category Z (zero rate) has a VAT amount (BT-117) of 19 % of its taxable amount instead of 0; the VAT total follows it (BR-CO-17, on the VAT amount against the taxable amount times the rate, fails too).",
+        "fr": "La ventilation de TVA de la catégorie de TVA Z (taux zéro) a un montant de TVA (BT-117) de 19 % de sa base au lieu de 0 ; le total de TVA le suit (BR-CO-17, sur le montant de TVA comparé à la base multipliée par le taux, échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-Z-09.xml",
+        "pdf": "fixed/BR-Z-09.pdf"
+      }
+    },
+    {
+      "id": "BR-E-08",
+      "status": "invalid",
+      "rule": "BR-E-08",
+      "fires": [
+        "BR-E-08"
+      ],
+      "files": {
+        "xml": "invalid/BR-E-08.xml",
+        "pdf": "invalid/BR-E-08.pdf"
+      },
+      "description": {
+        "en": "The taxable amount of the VAT breakdown in VAT category E (exempt) (BT-116) is 1 € more than the net amounts of its lines (BT-131).",
+        "fr": "La base de la ventilation de TVA de la catégorie de TVA E (exonération) (BT-116) dépasse de 1 € la somme des montants nets de ses lignes (BT-131)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-E-08.xml",
+        "pdf": "fixed/BR-E-08.pdf"
+      }
+    },
+    {
+      "id": "BR-E-09",
+      "status": "invalid",
+      "rule": "BR-E-09",
+      "fires": [
+        "BR-E-09",
+        "BR-CO-17"
+      ],
+      "files": {
+        "xml": "invalid/BR-E-09.xml",
+        "pdf": "invalid/BR-E-09.pdf"
+      },
+      "description": {
+        "en": "The VAT breakdown in VAT category E (exempt) has a VAT amount (BT-117) of 19 % of its taxable amount instead of 0; the VAT total follows it (BR-CO-17, on the VAT amount against the taxable amount times the rate, fails too).",
+        "fr": "La ventilation de TVA de la catégorie de TVA E (exonération) a un montant de TVA (BT-117) de 19 % de sa base au lieu de 0 ; le total de TVA le suit (BR-CO-17, sur le montant de TVA comparé à la base multipliée par le taux, échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-E-09.xml",
+        "pdf": "fixed/BR-E-09.pdf"
+      }
+    },
+    {
+      "id": "BR-AE-08",
+      "status": "invalid",
+      "rule": "BR-AE-08",
+      "fires": [
+        "BR-AE-08"
+      ],
+      "files": {
+        "xml": "invalid/BR-AE-08.xml",
+        "pdf": "invalid/BR-AE-08.pdf"
+      },
+      "description": {
+        "en": "The taxable amount of the VAT breakdown in VAT category AE (reverse charge) (BT-116) is 1 € more than the net amounts of its lines (BT-131).",
+        "fr": "La base de la ventilation de TVA de la catégorie de TVA AE (autoliquidation) (BT-116) dépasse de 1 € la somme des montants nets de ses lignes (BT-131)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-AE-08.xml",
+        "pdf": "fixed/BR-AE-08.pdf"
+      }
+    },
+    {
+      "id": "BR-AE-09",
+      "status": "invalid",
+      "rule": "BR-AE-09",
+      "fires": [
+        "BR-AE-09",
+        "BR-CO-17"
+      ],
+      "files": {
+        "xml": "invalid/BR-AE-09.xml",
+        "pdf": "invalid/BR-AE-09.pdf"
+      },
+      "description": {
+        "en": "The VAT breakdown in VAT category AE (reverse charge) has a VAT amount (BT-117) of 19 % of its taxable amount instead of 0; the VAT total follows it (BR-CO-17, on the VAT amount against the taxable amount times the rate, fails too).",
+        "fr": "La ventilation de TVA de la catégorie de TVA AE (autoliquidation) a un montant de TVA (BT-117) de 19 % de sa base au lieu de 0 ; le total de TVA le suit (BR-CO-17, sur le montant de TVA comparé à la base multipliée par le taux, échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-AE-09.xml",
+        "pdf": "fixed/BR-AE-09.pdf"
+      }
+    },
+    {
+      "id": "BR-AE-10",
+      "status": "invalid",
+      "rule": "BR-AE-10",
+      "fires": [
+        "BR-AE-10"
+      ],
+      "files": {
+        "xml": "invalid/BR-AE-10.xml",
+        "pdf": "invalid/BR-AE-10.pdf"
+      },
+      "description": {
+        "en": "The VAT breakdown in VAT category AE (reverse charge) gives neither an exemption reason (BT-120) nor an exemption reason code (BT-121).",
+        "fr": "La ventilation de TVA de la catégorie de TVA AE (autoliquidation) n'indique ni motif d'exonération (BT-120) ni code de motif (BT-121)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-AE-10.xml",
+        "pdf": "fixed/BR-AE-10.pdf"
+      }
+    },
+    {
+      "id": "BR-IC-08",
+      "status": "invalid",
+      "rule": "BR-IC-08",
+      "fires": [
+        "BR-IC-08"
+      ],
+      "files": {
+        "xml": "invalid/BR-IC-08.xml",
+        "pdf": "invalid/BR-IC-08.pdf"
+      },
+      "description": {
+        "en": "The taxable amount of the VAT breakdown in VAT category K (intra-Community supply) (BT-116) is 1 € more than the net amounts of its lines (BT-131).",
+        "fr": "La base de la ventilation de TVA de la catégorie de TVA K (livraison intracommunautaire) (BT-116) dépasse de 1 € la somme des montants nets de ses lignes (BT-131)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-IC-08.xml",
+        "pdf": "fixed/BR-IC-08.pdf"
+      }
+    },
+    {
+      "id": "BR-IC-09",
+      "status": "invalid",
+      "rule": "BR-IC-09",
+      "fires": [
+        "BR-IC-09",
+        "BR-CO-17"
+      ],
+      "files": {
+        "xml": "invalid/BR-IC-09.xml",
+        "pdf": "invalid/BR-IC-09.pdf"
+      },
+      "description": {
+        "en": "The VAT breakdown in VAT category K (intra-Community supply) has a VAT amount (BT-117) of 19 % of its taxable amount instead of 0; the VAT total follows it (BR-CO-17, on the VAT amount against the taxable amount times the rate, fails too).",
+        "fr": "La ventilation de TVA de la catégorie de TVA K (livraison intracommunautaire) a un montant de TVA (BT-117) de 19 % de sa base au lieu de 0 ; le total de TVA le suit (BR-CO-17, sur le montant de TVA comparé à la base multipliée par le taux, échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-IC-09.xml",
+        "pdf": "fixed/BR-IC-09.pdf"
+      }
+    },
+    {
+      "id": "BR-IC-10",
+      "status": "invalid",
+      "rule": "BR-IC-10",
+      "fires": [
+        "BR-IC-10"
+      ],
+      "files": {
+        "xml": "invalid/BR-IC-10.xml",
+        "pdf": "invalid/BR-IC-10.pdf"
+      },
+      "description": {
+        "en": "The VAT breakdown in VAT category K (intra-Community supply) gives neither an exemption reason (BT-120) nor an exemption reason code (BT-121).",
+        "fr": "La ventilation de TVA de la catégorie de TVA K (livraison intracommunautaire) n'indique ni motif d'exonération (BT-120) ni code de motif (BT-121)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-IC-10.xml",
+        "pdf": "fixed/BR-IC-10.pdf"
+      }
+    },
+    {
+      "id": "BR-G-08",
+      "status": "invalid",
+      "rule": "BR-G-08",
+      "fires": [
+        "BR-G-08"
+      ],
+      "files": {
+        "xml": "invalid/BR-G-08.xml",
+        "pdf": "invalid/BR-G-08.pdf"
+      },
+      "description": {
+        "en": "The taxable amount of the VAT breakdown in VAT category G (export outside the EU) (BT-116) is 1 € more than the net amounts of its lines (BT-131).",
+        "fr": "La base de la ventilation de TVA de la catégorie de TVA G (exportation hors de l'UE) (BT-116) dépasse de 1 € la somme des montants nets de ses lignes (BT-131)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-G-08.xml",
+        "pdf": "fixed/BR-G-08.pdf"
+      }
+    },
+    {
+      "id": "BR-G-09",
+      "status": "invalid",
+      "rule": "BR-G-09",
+      "fires": [
+        "BR-G-09",
+        "BR-CO-17"
+      ],
+      "files": {
+        "xml": "invalid/BR-G-09.xml",
+        "pdf": "invalid/BR-G-09.pdf"
+      },
+      "description": {
+        "en": "The VAT breakdown in VAT category G (export outside the EU) has a VAT amount (BT-117) of 19 % of its taxable amount instead of 0; the VAT total follows it (BR-CO-17, on the VAT amount against the taxable amount times the rate, fails too).",
+        "fr": "La ventilation de TVA de la catégorie de TVA G (exportation hors de l'UE) a un montant de TVA (BT-117) de 19 % de sa base au lieu de 0 ; le total de TVA le suit (BR-CO-17, sur le montant de TVA comparé à la base multipliée par le taux, échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-G-09.xml",
+        "pdf": "fixed/BR-G-09.pdf"
+      }
+    },
+    {
+      "id": "BR-G-10",
+      "status": "invalid",
+      "rule": "BR-G-10",
+      "fires": [
+        "BR-G-10"
+      ],
+      "files": {
+        "xml": "invalid/BR-G-10.xml",
+        "pdf": "invalid/BR-G-10.pdf"
+      },
+      "description": {
+        "en": "The VAT breakdown in VAT category G (export outside the EU) gives neither an exemption reason (BT-120) nor an exemption reason code (BT-121).",
+        "fr": "La ventilation de TVA de la catégorie de TVA G (exportation hors de l'UE) n'indique ni motif d'exonération (BT-120) ni code de motif (BT-121)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-G-10.xml",
+        "pdf": "fixed/BR-G-10.pdf"
+      }
+    },
+    {
+      "id": "BR-O-08",
+      "status": "invalid",
+      "rule": "BR-O-08",
+      "fires": [
+        "BR-O-08"
+      ],
+      "files": {
+        "xml": "invalid/BR-O-08.xml",
+        "pdf": "invalid/BR-O-08.pdf"
+      },
+      "description": {
+        "en": "The taxable amount of the VAT breakdown in VAT category O (outside the scope of VAT) (BT-116) is 1 € more than the net amounts of its lines (BT-131).",
+        "fr": "La base de la ventilation de TVA de la catégorie de TVA O (hors du champ de la TVA) (BT-116) dépasse de 1 € la somme des montants nets de ses lignes (BT-131)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-O-08.xml",
+        "pdf": "fixed/BR-O-08.pdf"
+      }
+    },
+    {
+      "id": "BR-O-09",
+      "status": "invalid",
+      "rule": "BR-O-09",
+      "fires": [
+        "BR-O-09",
+        "BR-CO-17"
+      ],
+      "files": {
+        "xml": "invalid/BR-O-09.xml",
+        "pdf": "invalid/BR-O-09.pdf"
+      },
+      "description": {
+        "en": "The VAT breakdown in VAT category O (outside the scope of VAT) has a VAT amount (BT-117) of 19 % of its taxable amount instead of 0; the VAT total follows it (BR-CO-17, on the VAT amount against the taxable amount times the rate, fails too).",
+        "fr": "La ventilation de TVA de la catégorie de TVA O (hors du champ de la TVA) a un montant de TVA (BT-117) de 19 % de sa base au lieu de 0 ; le total de TVA le suit (BR-CO-17, sur le montant de TVA comparé à la base multipliée par le taux, échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-O-09.xml",
+        "pdf": "fixed/BR-O-09.pdf"
+      }
+    },
+    {
+      "id": "BR-O-10",
+      "status": "invalid",
+      "rule": "BR-O-10",
+      "fires": [
+        "BR-O-10"
+      ],
+      "files": {
+        "xml": "invalid/BR-O-10.xml",
+        "pdf": "invalid/BR-O-10.pdf"
+      },
+      "description": {
+        "en": "The VAT breakdown in VAT category O (outside the scope of VAT) gives neither an exemption reason (BT-120) nor an exemption reason code (BT-121).",
+        "fr": "La ventilation de TVA de la catégorie de TVA O (hors du champ de la TVA) n'indique ni motif d'exonération (BT-120) ni code de motif (BT-121)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-O-10.xml",
+        "pdf": "fixed/BR-O-10.pdf"
+      }
+    },
+    {
+      "id": "BR-S-10",
+      "status": "invalid",
+      "rule": "BR-S-10",
+      "fires": [
+        "BR-S-10"
+      ],
+      "files": {
+        "xml": "invalid/BR-S-10.xml",
+        "pdf": "invalid/BR-S-10.pdf"
+      },
+      "description": {
+        "en": "The VAT breakdown in VAT category S (standard rate) gives an exemption reason (BT-120), « Standard rate »; a category that charges VAT, or charges it at 0 %, has none.",
+        "fr": "La ventilation de TVA de la catégorie de TVA S (taux normal) indique un motif d'exonération (BT-120), « Standard rate » ; une catégorie qui applique la TVA, même à 0 %, n'en a pas."
+      }
+    },
+    {
+      "id": "BR-Z-10",
+      "status": "invalid",
+      "rule": "BR-Z-10",
+      "fires": [
+        "BR-Z-10"
+      ],
+      "files": {
+        "xml": "invalid/BR-Z-10.xml",
+        "pdf": "invalid/BR-Z-10.pdf"
+      },
+      "description": {
+        "en": "The VAT breakdown in VAT category Z (zero rate) gives an exemption reason (BT-120), « Zero rated »; a category that charges VAT, or charges it at 0 %, has none.",
+        "fr": "La ventilation de TVA de la catégorie de TVA Z (taux zéro) indique un motif d'exonération (BT-120), « Zero rated » ; une catégorie qui applique la TVA, même à 0 %, n'en a pas."
+      },
+      "fixed": {
+        "xml": "fixed/BR-Z-10.xml",
+        "pdf": "fixed/BR-Z-10.pdf"
+      }
+    },
+    {
+      "id": "BR-IC-11",
+      "status": "invalid",
+      "rule": "BR-IC-11",
+      "fires": [
+        "BR-IC-11"
+      ],
+      "files": {
+        "xml": "invalid/BR-IC-11.xml",
+        "pdf": "invalid/BR-IC-11.pdf"
+      },
+      "description": {
+        "en": "The lines are an intra-Community supply (K), but the invoice gives neither an actual delivery date (BT-72) nor an invoicing period (BG-14).",
+        "fr": "Les lignes sont une livraison intracommunautaire (K), mais la facture n'indique ni date de livraison (BT-72) ni période de facturation (BG-14)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-IC-11.xml",
+        "pdf": "fixed/BR-IC-11.pdf"
+      }
+    },
+    {
+      "id": "BR-IC-12",
+      "status": "invalid",
+      "rule": "BR-IC-12",
+      "fires": [
+        "BR-IC-12"
+      ],
+      "files": {
+        "xml": "invalid/BR-IC-12.xml",
+        "pdf": "invalid/BR-IC-12.pdf"
+      },
+      "description": {
+        "en": "The lines are an intra-Community supply (K), but the invoice has no deliver-to address, so no deliver-to country (BT-80).",
+        "fr": "Les lignes sont une livraison intracommunautaire (K), mais la facture n'a pas d'adresse de livraison, donc pas de pays de livraison (BT-80)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-IC-12.xml",
+        "pdf": "fixed/BR-IC-12.pdf"
+      }
+    },
+    {
+      "id": "BR-B-01",
+      "status": "invalid",
+      "rule": "BR-B-01",
+      "fires": [
+        "BR-B-01",
+        "FX-SCH-A-000587",
+        "FX-SCH-A-000619"
+      ],
+      "files": {
+        "xml": "invalid/BR-B-01.xml",
+        "pdf": "invalid/BR-B-01.pdf"
+      },
+      "description": {
+        "en": "The lines are in VAT category B (split payment, Italy's) (B) on an invoice between two companies outside Italy (the Factur-X profile rules FX-SCH-A-000587 and FX-SCH-A-000619, which do not accept category B, fail too).",
+        "fr": "Les lignes relèvent de la catégorie de TVA B (paiement scindé, italien) (B) sur une facture entre deux entreprises hors d'Italie (les règles du profil Factur-X FX-SCH-A-000587 et FX-SCH-A-000619, qui n'acceptent pas la catégorie B, échouent aussi)."
+      }
+    },
+    {
+      "id": "BR-B-02",
+      "status": "invalid",
+      "rule": "BR-B-02",
+      "fires": [
+        "BR-B-01",
+        "BR-B-02",
+        "FX-SCH-A-000587",
+        "FX-SCH-A-000619"
+      ],
+      "files": {
+        "xml": "invalid/BR-B-02.xml",
+        "pdf": "invalid/BR-B-02.pdf"
+      },
+      "description": {
+        "en": "The second line is in VAT category B (split payment, Italy's) (B), the first at the standard rate (S) (BR-B-01, as the invoice is not Italian, and the Factur-X profile rules FX-SCH-A-000587 and FX-SCH-A-000619, which do not accept category B, fail too).",
+        "fr": "La deuxième ligne relève de la catégorie de TVA B (paiement scindé, italien) (B), la première du taux normal (S) (BR-B-01, la facture n'étant pas italienne, et les règles du profil Factur-X FX-SCH-A-000587 et FX-SCH-A-000619, qui n'acceptent pas la catégorie B, échouent aussi)."
+      }
+    },
+    {
+      "id": "BR-O-11",
+      "status": "invalid",
+      "rule": "BR-O-11",
+      "fires": [
+        "BR-O-11",
+        "BR-O-12"
+      ],
+      "files": {
+        "xml": "invalid/BR-O-11.xml",
+        "pdf": "invalid/BR-O-11.pdf"
+      },
+      "description": {
+        "en": "The invoice is outside the scope of VAT (O), but it also has an empty VAT breakdown at the standard rate, S 19 % (BR-O-12, whose test in CII is the same, fails too).",
+        "fr": "La facture est hors du champ de la TVA (O), mais elle a aussi une ventilation de TVA vide au taux normal, S 19 % (BR-O-12, dont le test en CII est le même, échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-O-11.xml",
+        "pdf": "fixed/BR-O-11.pdf"
+      }
+    },
+    {
+      "id": "BR-O-12",
+      "status": "invalid",
+      "rule": "BR-O-12",
+      "fires": [
+        "BR-O-11",
+        "BR-O-12"
+      ],
+      "files": {
+        "xml": "invalid/BR-O-12.xml",
+        "pdf": "invalid/BR-O-12.pdf"
+      },
+      "description": {
+        "en": "The invoice is outside the scope of VAT (O), but its second line is at the standard rate, S 19 %, with its own VAT breakdown (BR-O-11, whose test in CII is the same, fails too).",
+        "fr": "La facture est hors du champ de la TVA (O), mais sa deuxième ligne est au taux normal, S 19 %, avec sa propre ventilation de TVA (BR-O-11, dont le test en CII est le même, échoue aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-O-12.xml",
+        "pdf": "fixed/BR-O-12.pdf"
+      }
+    },
+    {
+      "id": "BR-O-13",
+      "status": "invalid",
+      "rule": "BR-O-13",
+      "fires": [
+        "BR-O-11",
+        "BR-O-12",
+        "BR-O-13",
+        "BR-O-14"
+      ],
+      "files": {
+        "xml": "invalid/BR-O-13.xml",
+        "pdf": "invalid/BR-O-13.pdf"
+      },
+      "description": {
+        "en": "The invoice is outside the scope of VAT (O), but a document level allowance is at the standard rate, S 19 %, with its own VAT breakdown (BR-O-14, whose test in CII is the same, and BR-O-11 and BR-O-12, on that breakdown, fail too).",
+        "fr": "La facture est hors du champ de la TVA (O), mais une remise au niveau du document est au taux normal, S 19 %, avec sa propre ventilation de TVA (BR-O-14, dont le test en CII est le même, et BR-O-11 et BR-O-12, sur cette ventilation, échouent aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-O-13.xml",
+        "pdf": "fixed/BR-O-13.pdf"
+      }
+    },
+    {
+      "id": "BR-O-14",
+      "status": "invalid",
+      "rule": "BR-O-14",
+      "fires": [
+        "BR-O-11",
+        "BR-O-12",
+        "BR-O-13",
+        "BR-O-14"
+      ],
+      "files": {
+        "xml": "invalid/BR-O-14.xml",
+        "pdf": "invalid/BR-O-14.pdf"
+      },
+      "description": {
+        "en": "The invoice is outside the scope of VAT (O), but a document level charge is at the standard rate, S 19 %, with its own VAT breakdown (BR-O-13, whose test in CII is the same, and BR-O-11 and BR-O-12, on that breakdown, fail too).",
+        "fr": "La facture est hors du champ de la TVA (O), mais des frais au niveau du document est au taux normal, S 19 %, avec sa propre ventilation de TVA (BR-O-13, dont le test en CII est le même, et BR-O-11 et BR-O-12, sur cette ventilation, échouent aussi)."
+      },
+      "fixed": {
+        "xml": "fixed/BR-O-14.xml",
+        "pdf": "fixed/BR-O-14.pdf"
+      }
     }
   ],
   "annotated": {

@@ -98,7 +98,21 @@ FR_CO_12 = (
     "France's BR-FR-CO-12, which asks an invoice in another currency than EUR for its VAT in euros",
     "la règle française BR-FR-CO-12, qui demande à une facture dans une autre devise que EUR sa TVA en euros",
 )
+FR_15 = (
+    "France's BR-FR-15, on the VAT categories France accepts, for the lines and the VAT breakdown",
+    "la règle française BR-FR-15, sur les catégories de TVA que la France admet, pour les lignes et la ventilation de TVA",
+)
 FRENCH_ALSO = {
+    "BR-B-01": (
+        ("BR-FR-15_BT-95_BT-118", "BR-FR-15_BT-95_BT-151"),
+        f"The lines are in VAT category B (split payment, Italy's) on an invoice between two companies outside Italy (the Factur-X profile rules FX-SCH-A-000587 and FX-SCH-A-000619, which do not accept category B, and {FR_15[0]}, fail too).",
+        f"Les lignes relèvent de la catégorie de TVA B (paiement scindé, italien) sur une facture entre deux entreprises hors d'Italie (les règles du profil Factur-X FX-SCH-A-000587 et FX-SCH-A-000619, qui n'acceptent pas la catégorie B, et {FR_15[1]}, échouent aussi).",
+    ),
+    "BR-B-02": (
+        ("BR-FR-15_BT-95_BT-118", "BR-FR-15_BT-95_BT-151"),
+        f"The second line is in VAT category B (split payment, Italy's), the first at the standard rate (S) (BR-B-01, as the invoice is not Italian, the Factur-X profile rules FX-SCH-A-000587 and FX-SCH-A-000619, which do not accept category B, and {FR_15[0]}, fail too).",
+        f"La deuxième ligne relève de la catégorie de TVA B (paiement scindé, italien), la première du taux normal (S) (BR-B-01, la facture n'étant pas italienne, les règles du profil Factur-X FX-SCH-A-000587 et FX-SCH-A-000619, qui n'acceptent pas la catégorie B, et {FR_15[1]}, échouent aussi).",
+    ),
     "BR-02": (
         ("BR-FR-02_BT-1",),
         f"The invoice number (BT-1) is empty ({FR_02[0]}, fails too).",
@@ -205,6 +219,9 @@ def _under_br_fr_dec_01(v):
 # The core EN 16931 rules (BR-01 to BR-65) and the code list rules (BR-CL) on the French invoice, with the French rules
 # that fail next to them.
 CORE = tuple(_with_french_rules(v) for v in (*en16931.core(cii.FRENCH), *en16931.code_lists(cii.FRENCH)))
+
+# The VAT category rules (BR-S, BR-Z, BR-E, BR-AE, BR-IC, BR-G, BR-O, BR-B) on the French invoice.
+VAT_CATEGORIES = tuple(_with_french_rules(v) for v in en16931.vat_categories(cii.FRENCH))
 
 _FRENCH_DECIMALS = en16931.decimals(cii.FRENCH)
 DECIMALS = tuple(_under_br_fr_dec_01(v) for v in _FRENCH_DECIMALS if v.rule in FR_DEC_01)
@@ -895,6 +912,7 @@ VARIANTS = (
     ),
     # the core EN 16931 rules and the code list rules (BR-CL), written once in the en16931 target
     *CORE,
+    *VAT_CATEGORIES,
 )
 
 

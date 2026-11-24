@@ -26,6 +26,9 @@ class Variant:
     # the edit that gives the same invoice without the mistake, when that is not simply the variant without its
     # edit (the variant's edit both sets a context and breaks the rule)
     fixed: object = None
+    # the baseline keys that give the same invoice without the mistake, when the mistake is in the changes (a line in
+    # the wrong VAT category, whose totals the invoice computes from it): they replace the variant's own
+    fixed_changes: dict = None
 
 
 def ram(tag):
@@ -601,3 +604,128 @@ def build(base, variant=None):
     if variant and variant.edit:
         variant.edit(root)
     return root
+
+
+# Edits on a VAT category's breakdown (BG-23) and rates, for the VAT category rules (BR-S, BR-Z, BR-E, BR-AE, BR-IC,
+# BR-G, BR-O).
+
+
+def _breakdowns(root, category):
+    settlement = first(root, "ApplicableHeaderTradeSettlement")
+    return [t for t in settlement.iterfind(ram("ApplicableTradeTax")) if t.findtext(ram("CategoryCode")) == category]
+
+
+def _line_nets(root, category):
+    return [
+        item.findtext(f".//{ram('LineTotalAmount')}")
+        for item in root.iter(ram("IncludedSupplyChainTradeLineItem"))
+        if item.findtext(f".//{ram('ApplicableTradeTax')}/{ram('CategoryCode')}") == category
+    ]
+
+
+def breakdown_per_line(category):
+    """Replace a category's VAT breakdown with one per line of that category, each with its line's net amount as
+    taxable amount (BT-116): one breakdown per line instead of one per category and rate."""
+
+    def edit(root):
+        tax = _breakdowns(root, category)[0]
+        for net in reversed(_line_nets(root, category)):
+            copy_ = copy.deepcopy(tax)
+            copy_.find(ram("BasisAmount")).text = net
+            tax.addnext(copy_)
+        tax.getparent().remove(tax)
+
+    return edit
+
+
+def drop_breakdown(category):
+    """Remove a category's VAT breakdown, and nothing else: the totals stay as computed with it."""
+
+    def edit(root):
+        tax = _breakdowns(root, category)[0]
+        tax.getparent().remove(tax)
+
+    return edit
+
+
+def breakdown_basis(category, delta):
+    """Add delta to a category's taxable amount (BT-116) only."""
+
+    def edit(root):
+        node = _breakdowns(root, category)[0].find(ram("BasisAmount"))
+        node.text = f"{Decimal(node.text) + Decimal(delta):.2f}"
+
+    return edit
+
+
+def breakdown_vat(category, rate):
+    """Give a category's VAT breakdown a VAT amount (BT-117) of rate % of its taxable amount, its rate (BT-119)
+    unchanged; the VAT total and the totals after it follow."""
+
+    def edit(root):
+        tax = _breakdowns(root, category)[0]
+        vat = (Decimal(tax.findtext(ram("BasisAmount"))) * Decimal(rate) / 100).quantize(Decimal("0.01"))
+        delta = vat - Decimal(tax.findtext(ram("CalculatedAmount")))
+        tax.find(ram("CalculatedAmount")).text = f"{vat:.2f}"
+        shift(float(delta), "TaxTotalAmount", "GrandTotalAmount", "DuePayableAmount")(root)
+
+    return edit
+
+
+def no_exemption(category):
+    """Remove the exemption reason (BT-120) and its code (BT-121) of a category's VAT breakdown."""
+
+    def edit(root):
+        for tax in _breakdowns(root, category):
+            for tag in ("ExemptionReason", "ExemptionReasonCode"):
+                for node in tax.findall(ram(tag)):
+                    tax.remove(node)
+
+    return edit
+
+
+def add_exemption_reason(category, text):
+    """Give a category's VAT breakdown an exemption reason (BT-120)."""
+
+    def edit(root):
+        insert(_breakdowns(root, category)[0], new("ram:ExemptionReason", text), before="BasisAmount")
+
+    return edit
+
+
+def add_breakdown(category, rate):
+    """Add an empty VAT breakdown (taxable amount and VAT 0.00) of a category and rate, after the others."""
+
+    def edit(root):
+        tax = new("ram:ApplicableTradeTax")
+        sub(tax, "ram:CalculatedAmount", "0.00")
+        sub(tax, "ram:TypeCode", "VAT")
+        sub(tax, "ram:BasisAmount", "0.00")
+        sub(tax, "ram:CategoryCode", category)
+        sub(tax, "ram:RateApplicablePercent", rate)
+        settlement = first(root, "ApplicableHeaderTradeSettlement")
+        settlement.findall(ram("ApplicableTradeTax"))[-1].addnext(tax)
+
+    return edit
+
+
+def set_rate(where, rate):
+    """Write a VAT rate on the first line (where="line", BT-152), the document level allowance ("allowance", BT-96)
+    or charge ("charge", BT-103), whatever its category: a rate where the category wants another, or none."""
+
+    def edit(root):
+        if where == "line":
+            tax = first(root, "SpecifiedLineTradeSettlement", "ApplicableTradeTax")
+        else:
+            indicator = "true" if where == "charge" else "false"
+            tax = next(
+                ac.find(ram("CategoryTradeTax"))
+                for ac in first(root, "ApplicableHeaderTradeSettlement").iterfind(ram("SpecifiedTradeAllowanceCharge"))
+                if ac.findtext(f"{ram('ChargeIndicator')}/{{{NS['udt']}}}Indicator") == indicator
+            )
+        node = tax.find(ram("RateApplicablePercent"))
+        if node is None:
+            node = sub(tax, "ram:RateApplicablePercent")
+        node.text = rate
+
+    return edit

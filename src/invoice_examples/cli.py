@@ -38,6 +38,10 @@ def fixed_counterpart(target, v):
     """A variant that first sets a context (an allowance, a charge, lines…) and then breaks a rule also gets the same
     invoice before the break, which passes every rule: its page compares with it, and so can the reader. None for the
     others, which compare with the valid invoice."""
+    if v.fixed_changes:
+        return cii.to_bytes(
+            target.build(dataclasses.replace(v, changes={**v.changes, **v.fixed_changes}, edit=v.fixed))
+        )
     if (v.changes and v.edit) or v.fixed:
         return cii.to_bytes(target.build(dataclasses.replace(v, edit=v.fixed)))
     return None

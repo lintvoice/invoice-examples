@@ -63,6 +63,7 @@ LABELS = {
             "O": "hors champ",
             "L": "Canaries",
             "M": "Ceuta et Melilla",
+            "B": "paiement scindé",
         },
         "absent": "absent",
         "thousands": " ",  # a narrow no-break space
@@ -80,7 +81,13 @@ LABELS = {
         "seller": "Vendeur",
         "buyer": "Acheteur",
         # the party's identifiers, label and value, in the order of the codes BT-30, BT-29, BT-31, BT-34
-        "ids": (("SIREN", "legal"), ("SIRET", "siret"), ("N° TVA", "vat"), ("Adresse élec.", "address")),
+        "ids": (
+            ("SIREN", "legal"),
+            ("SIRET", "siret"),
+            ("N° TVA", "vat"),
+            ("N° fiscal", "tax"),
+            ("Adresse élec.", "address"),
+        ),
         "rows": ("Date", "Échéance", "Commande", "Cadre"),
         "columns": ("Désignation", "Qté", "Prix unit. HT", "TVA", "Montant HT"),
         "no_unit": "{} sans unité",
@@ -100,6 +107,7 @@ LABELS = {
         "breakdown": "TVA PAR TAUX",
         "breakdown_columns": ("Taux", "Base HT", "TVA"),
         "no_exemption_reason": "Motif d'exonération absent",
+        "no_rate": "aucun",  # the VAT rate of a line or a breakdown outside the scope of VAT (O), which has none
         "notes": "CONDITIONS ET MENTIONS",
         "no_terms": "Conditions de paiement absentes",
         "missing_note": "Mention absente : {}",
@@ -135,6 +143,7 @@ LABELS = {
             "O": "outside the scope of VAT",
             "L": "Canary Islands",
             "M": "Ceuta and Melilla",
+            "B": "split payment",
         },
         "absent": "missing",
         "thousands": ",",
@@ -151,7 +160,13 @@ LABELS = {
         "error": "Error",
         "seller": "Seller",
         "buyer": "Buyer",
-        "ids": (("Legal ID", "legal"), ("ID", "global"), ("VAT ID", "vat"), ("E-address", "address")),
+        "ids": (
+            ("Legal ID", "legal"),
+            ("ID", "global"),
+            ("VAT ID", "vat"),
+            ("Tax number", "tax"),
+            ("E-address", "address"),
+        ),
         "rows": ("Date", "Due", "Order", "Process"),
         "columns": ("Item", "Qty", "Unit price", "VAT", "Net amount"),
         "no_unit": "{} no unit",
@@ -171,6 +186,7 @@ LABELS = {
         "breakdown": "VAT PER RATE",
         "breakdown_columns": ("Rate", "Taxable amount", "VAT"),
         "no_exemption_reason": "Exemption reason missing",
+        "no_rate": "none",
         "notes": "TERMS AND NOTES",
         "no_terms": "Payment terms missing",
         "missing_note": "Note missing: {}",
@@ -219,6 +235,7 @@ def _party(root, tag):
         "siret": _text(root, f"{p}/ram:GlobalID[@schemeID='0009']"),
         "global": _text(root, f"{p}/ram:GlobalID"),
         "vat": _text(root, f"{p}/ram:SpecifiedTaxRegistration/ram:ID[@schemeID='VA']"),
+        "tax": _text(root, f"{p}/ram:SpecifiedTaxRegistration/ram:ID[@schemeID='FC']"),
         "address": _text(root, f"{p}/ram:URIUniversalCommunication/ram:URIID"),
     }
 
@@ -261,6 +278,7 @@ def read(xml_bytes, t=LABELS["fr"]):
                 "rate": _text(
                     item, ".//ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:RateApplicablePercent"
                 ),
+                "category": _text(item, ".//ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode"),
                 "net": _text(item, ".//ram:SpecifiedTradeSettlementLineMonetarySummation/ram:LineTotalAmount"),
                 "adjustments": _adjustments(item, "ram:SpecifiedLineTradeSettlement/ram:SpecifiedTradeAllowanceCharge"),
             }
@@ -405,8 +423,9 @@ class _Page:
         self.value(x, y - 29, p["street"], (key, "street"))
         self.value(x, y - 40, p["city"], (key, "city"))
         y -= 56
+        # codes: each identifier's business term; None for one the party has no term for (a buyer's tax number)
         for (label, field), bt in zip(self.t["ids"], codes, strict=True):
-            if not p[field] and not self.changed((key, field)):
+            if bt is None or (not p[field] and not self.changed((key, field))):
                 continue
             self.text(x, y, label, size=7.5, color=MUTED)
             w = self.value(x + 58, y, p[field] or self.t["absent"], (key, field), "Plex-Mono", 8.5)
@@ -448,7 +467,7 @@ class _Page:
         c.setStrokeColor(ACCENT)
         c.setLineWidth(2)
         c.line(M, H - 40, W - M, H - 40)
-        self.party(M, H - 60, t["seller"], "seller", ("BT-30", "BT-29", "BT-31", "BT-34"))
+        self.party(M, H - 60, t["seller"], "seller", ("BT-30", "BT-29", "BT-31", "BT-32", "BT-34"))
         title = t["titles"].get(d["type"], t["titles"]["380"])
         self.value(W - M, H - 66, title.upper(), ("type",), "Plex-SemiBold", 24, "r")
         w = self.value(W - M, H - 84, d["number"] or t["absent"], ("number",), "Plex-Mono", 10, "r")
@@ -466,7 +485,7 @@ class _Page:
             self.text(W - M - 80, y, label, size=8, color=MUTED, align="r")
             self.code(W - M - 84 - c.stringWidth(label, "Plex", 8), y, bt, "r")
             self.value(W - M, y, v, (key,), "Plex-Mono", 8.5, "r")
-        y = min(self.party(340, H - 170, t["buyer"], "buyer", ("BT-47", "BT-46", "BT-48", "BT-49")), H - 250) - 14
+        y = min(self.party(340, H - 170, t["buyer"], "buyer", ("BT-47", "BT-46", "BT-48", None, "BT-49")), H - 250) - 14
         y = self.lines(y)
         y = min(self.totals(y - 14), self.breakdown(y - 14))
         notes = self.note_rows()
@@ -497,7 +516,10 @@ class _Page:
             changed = self.changed(("lines", i, "qty")) or self.changed(("lines", i, "unit"))
             self.value(330, y, qty if unit else t["no_unit"].format(qty), (), "Plex-Mono", 8.5, "r", bad=changed)
             self.value(400, y, self.money(line["price"]), ("lines", i, "price"), "Plex-Mono", 8.5, "r")
-            self.value(450, y, _number(line["rate"], t, t["percent"]), ("lines", i, "rate"), "Plex-Mono", 8.5, "r")
+            rate = (
+                t["no_rate"] if not line["rate"] and line["category"] == "O" else _number(line["rate"], t, t["percent"])
+            )
+            self.value(450, y, rate, ("lines", i, "rate"), "Plex-Mono", 8.5, "r")
             self.value(W - M, y, self.money(line["net"]), ("lines", i, "net"), "Plex-Mono", 8.5, "r")
             for j, a in enumerate(line.get("adjustments") or []):
                 y -= 13
@@ -564,11 +586,15 @@ class _Page:
         for i, row in enumerate(d["breakdown"]):
             keys = ("breakdown", i)
             name = t["categories"].get(row["category"])
-            rate = _number(row["rate"], t, t["percent"])
-            self.value(M, y, f"{rate} · {name}" if name else rate, (*keys, "rate"), "Plex-Mono", 8.5)
+            if not row["rate"] and row["category"] == "O":  # no rate: the category alone
+                self.value(M, y, name, (*keys, "rate"), "Plex-Mono", 8.5)
+            else:
+                rate = _number(row["rate"], t, t["percent"])
+                self.value(M, y, f"{rate} · {name}" if name else rate, (*keys, "rate"), "Plex-Mono", 8.5)
             self.value(M + 190, y, self.money(row["basis"]), (*keys, "basis"), "Plex-Mono", 8.5, "r")
             self.value(M + 262, y, self.money(row["amount"]), (*keys, "amount"), "Plex-Mono", 8.5, "r")
-            if row["category"] in NEEDS_REASON:
+            # the exemption reason of the categories that need one, and any reason a category gives without needing it
+            if row["category"] in NEEDS_REASON or row["reason"]:
                 y -= 11
                 reason = row["reason"] or t["no_exemption_reason"]
                 self.value(M + 12, y, reason, (*keys, "reason"), size=8, bad=None if row["reason"] else True)
