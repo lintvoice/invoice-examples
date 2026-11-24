@@ -31,6 +31,11 @@ NO_EXAMPLE = {
     "BR-49": "no example: the Factur-X EN 16931 schema requires the payment means type code (BT-81)",
     "BR-54": "no example: the Factur-X EN 16931 schema requires both the name (BT-160) and the value (BT-161) of an "
     "item attribute",
+    # Their official test is true() in every EN 16931 1.3.17 and Factur-X 1.09.2 Schematron: no invoice fails them.
+    "BR-CO-05": "no example: its official test is always true, so no invoice fails it",
+    "BR-CO-06": "no example: its official test is always true, so no invoice fails it",
+    "BR-CO-07": "no example: its official test is always true, so no invoice fails it",
+    "BR-CO-08": "no example: its official test is always true, so no invoice fails it",
 }
 # Rules that an EN 16931 invoice cannot reach, or only through cases we do not generate yet.
 NOT_APPLICABLE = (
